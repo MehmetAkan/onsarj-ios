@@ -1,0 +1,30 @@
+# Satır sonlarını tüm makinelerde aynı tut.
+* text=auto eol=lf
+
+# Metin dosyaları
+*.swift      text eol=lf
+*.pbxproj    text eol=lf
+*.xcconfig   text eol=lf
+*.xcstrings  text eol=lf
+*.plist      text eol=lf
+*.entitlements text eol=lf
+*.yml        text eol=lf
+*.yaml       text eol=lf
+*.json       text eol=lf
+*.md         text eol=lf
+*.sh         text eol=lf
+
+# İkili dosyalar — git bunları birleştirmeye çalışmasın
+*.png        binary
+*.jpg        binary
+*.jpeg       binary
+*.gif        binary
+*.pdf        binary
+*.zip        binary
+*.ttf        binary
+*.otf        binary
+*.xcuserstate binary
+
+# project.pbxproj için merge=union KULLANILMIYOR.
+# Union birleştirme çakışmayı sessizce "çözer" ama bozuk bir proje dosyası
+# üretebilir. Çakışmanın görünür olması, sessizce bozulmasından iyidir.

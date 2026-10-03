@@ -1,0 +1,66 @@
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+## Xcode — kullanıcıya özel dosyalar
+## (xcshareddata KASITLI olarak dışarıda bırakılmadı: şemalar paylaşılmalı, CI'ya gerekli)
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad
+*.xcscmblueprint
+*.xccheckout
+*.perspectivev3
+*.mode1v3
+*.mode2v3
+*.pbxuser
+
+## Derleme çıktıları
+build/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.app
+*.moved-aside
+timeline.xctimeline
+playground.xcworkspace
+
+## Swift Package Manager
+## NOT: Package.resolved İŞLENİR (ignore edilmez).
+## Ekibin ve CI'ın aynı bağımlılık sürümlerini derlemesi buna bağlıdır.
+.build/
+.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+Packages/*/.build/
+
+## Gizli anahtarlar — ASLA depoya girmez
+Config/Secrets.xcconfig
+.netrc
+*.p8
+*.p12
+*.cer
+*.certSigningRequest
+*.mobileprovision
+*.provisionprofile
+GoogleService-Info.plist
+
+## VS Code
+## Ortak ayar dosyaları paylaşılır, kişisel olanlar paylaşılmaz.
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+## Araçlar ve günlükler
+*.log
+.swiftpm/configuration/
+.sourcekit-lsp/
+fastlane/report.xml
+fastlane/Preview.html
+
+## Geçici dosyalar
+*.swp
+*~
+*.orig
+*.rej
