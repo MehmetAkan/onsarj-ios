@@ -317,12 +317,13 @@ onsarj-ios/
 ├── Config/                            tüm derleme ayarları (Xcode arayüzünde DEĞİL)
 │   ├── Base.xcconfig
 │   ├── Debug.xcconfig
-│   ├── Staging.xcconfig
 │   ├── Release.xcconfig
 │   └── Secrets.xcconfig.template      gerçek dosya .gitignore'da
+│                                      (Staging.xcconfig K-20 ile ertelendi)
 │
 ├── Tooling/Scripts/
 │   ├── bootstrap.sh                   yeni geliştirici kurulumu
+│   ├── verify-ios.sh                  xcodebuild ile iOS doğrulaması (K-18)
 │   └── generate-api-client.sh
 │
 ├── ci_scripts/                        Xcode Cloud (kökte olmak ZORUNDA)
@@ -360,6 +361,12 @@ StationDetailFeature/
    açmak, proje sahibinin onayını gerektirir.
 5. `Package.swift` dosyalarındaki bağımlılık listeleri mimari kuralların denetleyicisidir.
    Bağımlılık orada yazılı değilse import derleme hatası verir. Bu listeler gevşetilmez.
+6. **Boş modülün yer tutucusu yalnızca yorum satırıdır.** SPM her hedefte en az bir `.swift`
+   dosyası ister; bu dosya sembol içermez. Modül adıyla aynı adda boş tip (`public enum
+   OnsarjCore {}`) tanımlanmaz — modül adıyla çakışır ve nitelikli ad yazarken karışıklık
+   yaratır. Modüle ilk gerçek tip eklendiğinde yer tutucu dosya silinir.
+7. **`Telemetry` modülüne SDK eklenmez** (K-19). SDK yalnızca `TelemetryAdapters` hedefinde
+   bulunur ve yalnızca `App/Composition/` oradan bağlar.
 
 ---
 
@@ -440,7 +447,10 @@ Kural: Bir adım, `PROGRESS.md` güncellenmeden tamamlanmış sayılmaz.
 | K-08 | MVP'de tüm özellikler ücretsizdir. Abonelik Faz 2'dedir. `EntitlementService` protokol olarak şimdiden kurulur. | 2026-09 |
 | K-09 | Bildirim: iOS'ta **doğrudan APNs** (.p8, token tabanlı). Firebase SDK projeye girmez. Android FCM kullanır; hedefleme mantığı her iki platform için de backend'dedir. Bildirim yükü yapısal hedef taşır (`tip`, `hedef: {ekran, id}`, benzersiz id) ve ekran isimleri iki platformda aynıdır. Sessiz bildirime kritik iş yüklenmez. **Bağlı not:** K-12/K-13/K-14 için Firebase ailesi seçilirse bu karar yeniden açılır; geçiş `PushNotifications` modülüyle sınırlı kalacak şekilde yazılır. | 2026-09 |
 | K-17 | `.xcodeproj` **depoda tutulur**, proje üretici araç (Tuist/XcodeGen) kullanılmaz. Gerekçe: Xcode projesinde yalnızca 4 hedef var (uygulama, widget, 2 test); kodun tamamı SPM paketlerinde olduğu için dosya ekleme proje dosyasına dokunmaz; tüm derleme ayarları xcconfig'te durur. **Geçiş eşiği:** şu üçünden biri olursa XcodeGen'e geçilir — proje dosyasında 3 kez git çakışması yaşanması, Xcode hedef sayısının 6'yı geçmesi, ekibin 4 kişiyi aşması. | 2026-09 |
-| K-18 | Geliştirme ortamı: **kod yazımı VS Code**, geri kalan her şey **Xcode**. Xcode'da kalanlar: simülatör, gerçek cihaz ve CarPlay testi, kod imzalama ve yetkiler, proje/şema ayarları, Instruments ile performans ölçümü, String Catalog düzenleme. Kod çoğunluğu SPM paketlerinde olduğu için VS Code'da `swift build` ve `swift test` ile modül bazında çalışılabilir. | 2026-09 |
+| K-18 | Geliştirme ortamı: **kod yazımı VS Code**, geri kalan her şey **Xcode**. Xcode'da kalanlar: simülatör, gerçek cihaz ve CarPlay testi, kod imzalama ve yetkiler, proje/şema ayarları, Instruments ile performans ölçümü, String Catalog düzenleme. **Doğrulama komutu ayrımı:** `swift build` ana makine (macOS) için derler, `.iOS(.v17)` bildirimi orada sınanmaz. Bu yüzden `swift build` yalnızca platformdan bağımsız modüllerde (`Domain`, `Services`, `Core`'un UIKit kullanmayan kısımları) hızlı geri bildirim aracıdır. UIKit, CarPlay, ActivityKit veya Mapbox kullanan her modülün doğrulaması `xcodebuild -destination 'generic/platform=iOS Simulator'` ile yapılır; komut `Tooling/Scripts/verify-ios.sh` içine sarılır ve elle yazılmaz. | 2026-09 |
+
+| K-19 | `Telemetry` modülü **yalnızca protokol** barındırır, hiçbir SDK'ya bağlanmaz. K-12/K-13 ile araç seçildiğinde SDK ayrı bir `TelemetryAdapters` hedefine konur ve yalnızca `App/Composition/` oradan bağlar. Aksi halde `Telemetry`'ye bağlı 11 modül dolaylı olarak o SDK'ya bağlanmış olurdu. Telemetry bağımlılığı: tüm servisler + `Networking`. Özelliklere eklenmez; ekran görüntüleme olayları `AppRouter` üzerinden tek noktadan kaydedilir. | 2026-09 |
+| K-20 | `Staging.xcconfig` ve staging yapılandırması **ertelendi.** Backend ortam adresleri belli olmadan (K-10) oluşturmak, uydurma değer yazmak anlamına gelirdi. Şimdilik Debug ve Release var; API adresleri ve Mapbox token'ı `Secrets.xcconfig` ile Mapbox adımında gelecek. | 2026-09 |
 
 ### 9.2 Bekleyen kararlar
 
