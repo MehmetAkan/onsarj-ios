@@ -1,0 +1,57 @@
+name: Lint
+
+# NEDEN LINUX (CLAUDE.md K-07):
+# GitHub'ın macOS makineleri 10 kat çarpanla ücretlendirilir. Lint ve biçim kontrolü
+# macOS gerektirmediği için Linux'ta çalışır. macOS saatleri yalnızca Xcode Cloud'daki
+# derleme ve testler için harcanır.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Aynı dal için yeni bir gönderim gelirse eskisini iptal et.
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  swiftlint:
+    name: SwiftLint
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/realm/swiftlint:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SwiftLint sürümü
+        run: swiftlint --version
+
+      - name: Kuralları denetle
+        # --strict: uyarılar da hata sayılır.
+        # Kod tabanı temizken başlamak, sonradan birikmiş uyarıyı temizlemekten kolaydır.
+        run: swiftlint lint --strict --reporter github-actions-logging
+
+  swift-format:
+    name: swift-format
+    runs-on: ubuntu-latest
+    container:
+      image: swift:6.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Swift sürümü
+        run: swift --version
+
+      - name: Biçimi denetle
+        # Dosyaları değiştirmez, yalnızca denetler. Biçim düzeltmesi geliştiricinin
+        # makinesinde `swift format --in-place` ile yapılır.
+        run: |
+          swift format lint \
+            --configuration .swift-format \
+            --recursive \
+            --strict \
+            App Packages
