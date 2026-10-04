@@ -195,6 +195,13 @@
 			);
 			mainGroup = 018CDE91306EE71D0021EF7D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0150A4DB30724D7A00D86AAB /* XCLocalSwiftPackageReference "Packages/Domain" */,
+				0150A4DC3072503100D86AAB /* XCLocalSwiftPackageReference "Packages/Core" */,
+				0150A4DD3072504B00D86AAB /* XCLocalSwiftPackageReference "Packages/Features" */,
+				0150A4DE3072506100D86AAB /* XCLocalSwiftPackageReference "Packages/Services" */,
+				0150A4DF3072508B00D86AAB /* XCLocalSwiftPackageReference "Packages/MapboxKit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 018CDE9B306EE71D0021EF7D /* Products */;
 			projectDirPath = "";
@@ -556,6 +563,29 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		0150A4DB30724D7A00D86AAB /* XCLocalSwiftPackageReference "Packages/Domain" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Domain;
+		};
+		0150A4DC3072503100D86AAB /* XCLocalSwiftPackageReference "Packages/Core" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Core;
+		};
+		0150A4DD3072504B00D86AAB /* XCLocalSwiftPackageReference "Packages/Features" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Features;
+		};
+		0150A4DE3072506100D86AAB /* XCLocalSwiftPackageReference "Packages/Services" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Services;
+		};
+		0150A4DF3072508B00D86AAB /* XCLocalSwiftPackageReference "Packages/MapboxKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/MapboxKit;
+		};
+/* End XCLocalSwiftPackageReference section */
 	};
 	rootObject = 018CDE92306EE71D0021EF7D /* Project object */;
 	validationLevel = 1;
