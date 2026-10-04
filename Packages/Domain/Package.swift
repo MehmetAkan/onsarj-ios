@@ -6,7 +6,7 @@ let package = Package(
     name: "Domain",
     platforms: [.iOS(.v17)],
     products: [
-        .library(name: "OnsarjDomain", targets: ["OnsarjDomain"]),
+        .library(name: "OnsarjDomain", targets: ["OnsarjDomain"])
     ],
     targets: [
         .target(name: "OnsarjDomain"),
