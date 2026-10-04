@@ -1,0 +1,46 @@
+# CODEOWNERS — onsarj iOS
+#
+# Bir dosya değiştiğinde GitHub, buradaki sahibi inceleme isteğine otomatik ekler.
+# Alttaki satır üstündekini EZER; en spesifik eşleşme kazanır.
+#
+# Ekip şu an tek kişi. Ekip büyüdükçe modül grupları ayrı sahiplere dağıtılacak;
+# yapı bunun için hazır bırakıldı.
+
+# ─── Varsayılan sahip ───
+*                               @MehmetAkan
+
+# ─── Mimari ve kurallar: değişikliği her zaman proje sahibi onaylar ───
+/CLAUDE.md                      @MehmetAkan
+/PROGRESS.md                    @MehmetAkan
+/CODEOWNERS                     @MehmetAkan
+/.swiftlint.yml                 @MehmetAkan
+/.swift-format                  @MehmetAkan
+/.gitignore                     @MehmetAkan
+/.gitattributes                 @MehmetAkan
+
+# ─── Proje ve derleme yapılandırması ───
+/Onsarj.xcodeproj/              @MehmetAkan
+/Config/                        @MehmetAkan
+/ci_scripts/                    @MehmetAkan
+/.github/                       @MehmetAkan
+/Tooling/                       @MehmetAkan
+
+# ─── Bağımlılık grafiği: mimari sınırları bu dosyalar zorlar ───
+# Buradaki her değişiklik mimari karardır, dikkatle incelenmelidir.
+/Packages/Core/Package.swift        @MehmetAkan
+/Packages/Domain/Package.swift      @MehmetAkan
+/Packages/MapboxKit/Package.swift   @MehmetAkan
+/Packages/Services/Package.swift    @MehmetAkan
+/Packages/Features/Package.swift    @MehmetAkan
+
+# ─── Modül grupları ───
+# Ekip büyüdüğünde buradaki sahipler değiştirilecek.
+/Packages/Domain/               @MehmetAkan
+/Packages/Core/                 @MehmetAkan
+/Packages/MapboxKit/            @MehmetAkan
+/Packages/Services/             @MehmetAkan
+/Packages/Features/             @MehmetAkan
+
+# ─── Uygulama hedefi: sahneler, bağımlılık bağlama, yönlendirme ───
+/App/                           @MehmetAkan
+/Widgets/                       @MehmetAkan

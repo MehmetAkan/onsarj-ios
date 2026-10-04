@@ -1,0 +1,121 @@
+# SwiftLint yapılandırması — onsarj iOS
+#
+# İŞ BÖLÜMÜ: Biçimlendirme (girinti, satır sonu, boşluk) swift-format'ın işidir.
+# SwiftLint burada yalnızca kuralları denetler. Biçimlendirme kuralları bilerek kapatılmıştır;
+# açılırsa iki araç birbirinin çıktısını bozar.
+
+included:
+  - App
+  - Widgets
+  - Packages
+
+excluded:
+  - .build
+  - DerivedData
+  - Packages/Core/.build
+  - Packages/Domain/.build
+  - Packages/MapboxKit/.build
+  - Packages/Services/.build
+  - Packages/Features/.build
+
+# ─── Biçimlendirme kuralları: swift-format'a bırakıldı ───
+disabled_rules:
+  - trailing_whitespace
+  - vertical_whitespace
+  - opening_brace
+  - statement_position
+  - colon
+  - comma
+  - trailing_comma
+  - closure_spacing
+  - return_arrow_whitespace
+
+# ─── CLAUDE.md kurallarını zorlayan ek kurallar ───
+opt_in_rules:
+  - force_unwrapping              # Bölüm 6.1: zorla açma (!) kullanılmaz
+  - implicitly_unwrapped_optional
+  - empty_count
+  - empty_string
+  - first_where
+  - last_where
+  - contains_over_filter_count
+  - redundant_nil_coalescing
+  - unused_import
+  - explicit_init
+  - closure_end_indentation
+  - overridden_super_call
+  - prohibited_super_call
+  - fatal_error_message
+  - multiline_parameters
+  - toggle_bool
+  - sorted_first_last
+  - convenience_type
+  - discouraged_object_literal
+  - legacy_multiple
+
+# ─── Hata seviyesine çıkarılanlar ───
+# Bunlar uyarı değil, hatadır. CI'da derlemeyi durdurur.
+force_cast: error
+force_try: error
+force_unwrapping: error
+todo: error                       # Bölüm 2.3: TODO/FIXME bırakılmaz
+
+# ─── Uzunluk sınırları (CLAUDE.md bölüm 2.4) ───
+type_body_length:
+  warning: 300
+  error: 400                      # 400 satırı geçen tip bölünür
+
+function_body_length:
+  warning: 30
+  error: 40                       # 40 satırı geçen fonksiyon bölünür
+
+file_length:
+  warning: 400
+  error: 500
+  ignore_comment_only_lines: true
+
+line_length:
+  warning: 120
+  error: 160
+  ignores_urls: true
+  ignores_comments: false
+
+cyclomatic_complexity:
+  warning: 8
+  error: 12
+
+nesting:
+  type_level: 2
+  function_level: 3
+
+type_name:
+  min_length: 3
+  max_length: 50
+
+identifier_name:
+  min_length: 2
+  excluded: [id, x, y, z, to, at, on, km, kw, up]
+
+# ─── Projeye özel kurallar ───
+custom_rules:
+  no_print:
+    name: "print kullanılmaz"
+    regex: '(?<![\w.])print\s*\('
+    message: "CLAUDE.md 6.1: print yerine OnsarjCore içindeki loglama arayüzü kullanılır."
+    severity: error
+
+  no_mapbox_outside_mapboxkit:
+    name: "Mapbox yalnızca MapboxKit içinde"
+    regex: '^\s*import\s+Mapbox'
+    included: '.*/(App|Widgets|Packages/(Core|Domain|Services|Features))/.*\.swift'
+    message: "CLAUDE.md 5.3 kural 3: Mapbox yalnızca MapboxKit paketinde import edilir."
+    severity: error
+
+  no_hardcoded_hex_color:
+    name: "Sabit renk kodu yazılmaz"
+    regex: '#[0-9A-Fa-f]{6}\b'
+    included: '.*/(App|Widgets|Packages/(Features|Services))/.*\.swift'
+    message: "CLAUDE.md 6.1: renkler DesignSystem token'larından gelir."
+    severity: error
+
+reporter: "xcode"
