@@ -9,14 +9,13 @@ Yeni katılan biri yalnızca `CLAUDE.md` ve bu dosyayı okuyarak projenin durumu
 
 ## Şu an neredeyiz
 
-**Durum:** Proje iskeleti tamamlandı, paketler Xcode'a bağlandı, GitHub'a yüklendi.
-Uygulama derleniyor ve boş bir ekran gösteriyor.
+**Durum:** Altyapı tamamlandı. Proje iskeleti, 30 modüllük paket mimarisi, kod kalitesi
+araçları ve CI (GitHub Actions + Xcode Cloud) çalışıyor. Tasarım sisteminin temel
+katmanı yazıldı: renk paleti, tipografi, boşluk ve yarıçap token'ları.
 
-**Sırada:** Kod kalitesi araçları — `.swiftlint.yml`, `.swift-format`, `CODEOWNERS`,
-`Tooling/Scripts/verify-ios.sh`.
+**Sırada:** İlk ekran. Bu akışta anlamsal renk token'ları ve koyu tema da tanımlanacak.
 
-**Yazılmış ekran veya iş mantığı yok.** 30 modül oluşturuldu ancak hepsi boş; her birinde
-yalnızca tek yorum satırı içeren bir yer tutucu dosya var.
+**Yazılmış ekran veya iş mantığı yok.** `DesignSystem` dışındaki 29 modül hâlâ boş.
 
 ---
 
@@ -24,6 +23,130 @@ yalnızca tek yorum satırı içeren bir yer tutucu dosya var.
 
 Her adım şu başlıklarla yazılır: ne yapıldı, hangi dosyalar, alınan kararlar, bilinen eksikler,
 sıradaki adım. En yeni kayıt en üstte olacak şekilde eklenir.
+
+---
+
+## Adım 9 — Tasarım sisteminin temel katmanı
+**Tarih:** 2026-10-04
+
+**Ne yapıldı**
+- `ColorPalette.swift`: 7 aile, 77 renk basamağı (gray, green, red, blue, indigo,
+  violet, purple), hepsi 50–950 arası.
+- `Typography.swift`: Dynamic Type üzerine kurulu metin token'ları + yazı boyutu
+  aralığını sınırlayan `onsarjDynamicTypeRange()`.
+- `Spacing.swift`: 4pt ızgaraya oturan boşluk ölçeği, ekran kenar boşluğu,
+  minimum dokunma alanı.
+- `Radius.swift`: kullanım yerine göre adlandırılmış köşe yarıçapları.
+- `DesignSystem.swift` yer tutucusu silindi.
+
+**Dosyalar**
+- Eklendi: `Packages/Core/Sources/DesignSystem/{ColorPalette,Typography,Spacing,Radius}.swift`
+- Silindi: `Packages/Core/Sources/DesignSystem/DesignSystem.swift`
+- Değişti: `CLAUDE.md` (bölüm 6.5, 6.6, 6.7)
+
+**Renklerin kaynağı**
+- Marka tarafından verilenler: `#4BBC17` (logo yeşili → green500), `#050715`
+  (koyu marka rengi → gray950), `#F5F5F6` (gray100), `#E6E6EA` (gray200),
+  `#C3C3CD` (gray300).
+- Gray ve green ölçekleri bu çapalardan OKLCH uzayında türetildi; basamaklar
+  algısal olarak eşit aralıklı.
+- Red, blue, indigo, violet, purple **Tailwind v4'ün resmi OKLCH tanımlarından**
+  çevrildi. Dikkat: v4'te değerler v3'ten farklı (örn. `red500` artık `#FB2C36`).
+
+**Kararlar**
+- **İki katmanlı renk sistemi (CLAUDE.md 6.5).** Ham palet + anlamsal token'lar.
+  Ham palet `public` bırakıldı; başlangıçta `internal` yapılıp erişimin derleyiciyle
+  engellenmesi önerildi ancak tasarımı tek kişi yönettiği için gereksiz sürtünme
+  yaratacağı gerekçesiyle reddedildi.
+- **Tipografi Dynamic Type üzerine kuruldu.** `Font.system(size:)` kullanılmıyor.
+  Desteklenen aralık `xSmall`–`xxxLarge`; erişilebilirlik kademeleri kapsam dışı.
+- **Test matrisi (CLAUDE.md 6.7):** her ekran Large ve xxxLarge yazı boyutlarında,
+  iPhone SE ve Pro Max'te kontrol edilir.
+- Değişen sayılar için sabit genişlikli rakam token'ları (`numeric`). Navigasyonda
+  sayı güncellenirken metnin yatayda zıplamasını önlüyor.
+- Özel yazı tipi yok, sistem yazı tipi kullanılıyor.
+
+**Doğrulama**
+- `swift build` (Core paketi) hatasız.
+- `swiftlint lint --strict` ve `swift format lint --strict` temiz.
+
+**Bilinen eksikler**
+- **Anlamsal renk token'ları ve koyu tema yok.** İlk ekran yazılırken tanımlanacak.
+- `onsarjDynamicTypeRange()` tanımlandı ama hiçbir yere bağlanmadı. `DesignSystem`
+  henüz uygulama hedefine bağlı değil; ilk ekranda `App/OnsarjApp.swift` içinde
+  kök görünüme uygulanacak.
+- Buton köşe yarıçapı belirsiz: paylaşılan iki tasarımda farklı görünüyor
+  (`Radius.pill` mi `Radius.field` mi). İlk butonda netleşecek.
+- Yeşilin 700–950 tonları sRGB sınırına dayandı; koyu zeminde fazla parlak
+  görünürse yumuşatılacak.
+
+**Sıradaki adım:** İlk ekran + anlamsal renk token'ları + koyu tema.
+
+---
+
+## Adım 8 — CI kurulumu
+**Tarih:** 2026-10-04
+
+**Ne yapıldı**
+- **GitHub Actions** (`.github/workflows/lint.yml`): SwiftLint ve swift-format,
+  Linux makinelerinde. İki iş de yeşil.
+- **Xcode Cloud** "Build and Test" akışı: Branch Changes (main), Pull Request Changes
+  (herhangi bir daldan main'e), Manual Start. Eylemler: Build - iOS, Test - iOS.
+  Post-Actions boş.
+- Paylaşılan Xcode şeması ve Xcode Cloud manifest dosyası depoya eklendi.
+
+**Dosyalar**
+- Eklendi: `.github/workflows/lint.yml`,
+  `Onsarj.xcodeproj/xcshareddata/xcschemes/Onsarj.xcscheme`,
+  `Onsarj.xcodeproj/xcshareddata/xcodecloud/manifest.json`
+
+**Yaşanan sorunlar ve çözümleri**
+- GitHub hesabında faturalandırma kilidi vardı, işler hiç başlamadı. Ödeme çözülünce
+  düzeldi. Free plan ayda 2.000 Linux dakikası veriyor; lint işlerimiz ~1 dakika sürüyor.
+- `swift format --strict` ilk çalıştırmada `Packages/Domain/Package.swift` içindeki
+  gereksiz virgülü yakaladı. `swift format --in-place` ile düzeltildi.
+- **Şema `xcuserdata` içindeydi**, yani depoyu klonlayan kimse göremezdi. Sebep:
+  "Autocreate schemes" açık olduğu için Xcode şemayı diske yazmıyordu. Edit Scheme
+  açılıp kapatılınca dosya oluştu ve `xcshareddata`'ya alındı.
+- `actions/checkout@v4` Node.js 20 uyarısı verdi → `v5`'e yükseltildi.
+  `ubuntu-latest` 19 Ekim 2026'da Ubuntu 26'ya taşınacağı için `ubuntu-24.04`'e sabitlendi.
+
+**Bilinen eksikler**
+- TestFlight dağıtımı yok. Archive eylemi ve Post-Action, kod imzalama ve CarPlay
+  yetkisiyle (K-01) birlikte kurulacak.
+- Belge değişikliklerinde (`.md`) derleme atlanmıyor. Xcode Cloud saatlerinden
+  tasarruf için "Custom Conditions" ile `.md` hariç tutulabilir.
+- Xcode Cloud, Xcode 27 kullanıyor. Yerel sürümle ayrışırsa sabitlemek gerekebilir.
+
+---
+
+## Adım 7 — Kod kalitesi araçları
+**Tarih:** 2026-10-04
+
+**Ne yapıldı**
+- `.swiftlint.yml`: kural denetimi. Uzunluk sınırları CLAUDE.md'den alındı
+  (tip 400, fonksiyon 40 satır). `force_unwrapping`, `force_cast`, `force_try`
+  ve `todo` hata seviyesinde.
+- Üç özel SwiftLint kuralı CLAUDE.md kurallarını denetliyor: `no_print`,
+  `no_mapbox_outside_mapboxkit`, `no_hardcoded_hex_color`.
+- `.swift-format`: biçimlendirme. 120 karakter satır, 4 boşluk girinti.
+- `CODEOWNERS`: modül sahiplikleri. `Package.swift` dosyaları ayrıca işaretlendi —
+  oradaki her değişiklik mimari karardır.
+- `Tooling/Scripts/verify-ios.sh`: uygulama şemasını ve beş paketi iOS hedefi için
+  `xcodebuild` ile derler. Paket şema adlarını çalışma anında keşfeder.
+
+**Kararlar**
+- **İş bölümü:** biçimlendirme swift-format'ın, kurallar SwiftLint'in işi.
+  SwiftLint'in biçimlendirme kuralları kapatıldı; ikisi birden açık olsa birbirinin
+  çıktısını bozar.
+- **SwiftLint derleme aşamasına eklenmedi.** Her derlemeyi yavaşlatır ve açık olan
+  User Script Sandboxing ayarıyla çakışır. Betikle ve CI'da çalışıyor.
+- swift-format'ta `NeverForceUnwrap` ve benzerleri kapatıldı; SwiftLint zaten
+  hata seviyesinde yakalıyor, ikisi birden açık olsa çift uyarı çıkar.
+
+**Doğrulama**
+- `swiftlint lint` ve `swift format lint` temiz.
+- `verify-ios.sh` tüm paketleri derledi, hepsi geçti.
 
 ---
 

@@ -453,6 +453,34 @@ Kurallar:
 - Mevcut bir token'ın karşıladığı işlev için ikinci bir ad açılmaz. Eklemeden önce
   `SemanticColors` dosyasına bakılır.
 
+### 6.6 Tipografi ve ölçeklenme
+
+Sistem yazı tipi kullanılır, özel yazı tipi yoktur.
+
+- Metin stilleri `Typography` token'larından gelir. `Font.system(size:)` **kullanılmaz**:
+  boyutu sabitler ve kullanıcının yazı boyutu ayarına tepki vermez.
+- Token adı işlevi anlatır, puntoyu değil (`font20` değil `sectionTitle`).
+- Desteklenen aralık: `xSmall` – `xxxLarge` (iOS'un standart aralığının tamamı).
+  Erişilebilirlik kademeleri kapsam dışıdır; uygulama kökünde
+  `onsarjDynamicTypeRange()` ile sınırlanır.
+- Değişen sayılar (kalan menzil, varış saati, batarya yüzdesi, şarj gücü) `numeric`
+  token'larını kullanır. Sabit genişlikli rakamlar, sayı güncellendiğinde metnin
+  yatayda zıplamasını önler — sürüş halindeki kullanıcı için kritiktir.
+
+### 6.7 Yerleşim ve test matrisi
+
+- Sabit genişlik/yükseklik yazılmaz. Esnek yerleşim kullanılır, görseller
+  `maxWidth: .infinity` ile sınırlandırılır, taşabilecek içerik kaydırılabilir olur.
+- **Her ekran dört kombinasyonda kontrol edilir:**
+
+| | iPhone SE | iPhone Pro Max |
+|---|---|---|
+| **Large** (varsayılan) | ✓ | ✓ |
+| **xxxLarge** | ✓ | ✓ |
+
+- SE + xxxLarge en zor durumdur; orada bozulmayan ekran sahada da bozulmaz.
+- Bir ekran bu matriste doğrulanmadan tamamlanmış sayılmaz.
+
 ### 6.2 İsimlendirme
 - Protokol: `StationRepository` — uygulaması: `RemoteStationRepository`, `CachedStationRepository`
 - Görünüm: `StationDetailView` — durum nesnesi: `StationDetailModel`
