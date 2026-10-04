@@ -9,9 +9,11 @@ Yeni katılan biri yalnızca `CLAUDE.md` ve bu dosyayı okuyarak projenin durumu
 
 ## Şu an neredeyiz
 
-**Durum:** Proje iskeleti kuruldu ve GitHub'a yüklendi. Henüz ürün kodu yazılmadı.
+**Durum:** Proje iskeleti tamamlandı, paketler Xcode'a bağlandı, GitHub'a yüklendi.
+Uygulama derleniyor ve boş bir ekran gösteriyor.
 
-**Sırada:** Paketlerin Xcode projesine bağlanması.
+**Sırada:** Kod kalitesi araçları — `.swiftlint.yml`, `.swift-format`, `CODEOWNERS`,
+`Tooling/Scripts/verify-ios.sh`.
 
 **Yazılmış ekran veya iş mantığı yok.** 30 modül oluşturuldu ancak hepsi boş; her birinde
 yalnızca tek yorum satırı içeren bir yer tutucu dosya var.
@@ -22,6 +24,47 @@ yalnızca tek yorum satırı içeren bir yer tutucu dosya var.
 
 Her adım şu başlıklarla yazılır: ne yapıldı, hangi dosyalar, alınan kararlar, bilinen eksikler,
 sıradaki adım. En yeni kayıt en üstte olacak şekilde eklenir.
+
+---
+
+## Adım 6 — Paketlerin Xcode projesine bağlanması
+**Tarih:** 2026-10-04
+
+**Ne yapıldı**
+- Beş yerel paket Xcode projesine eklendi (File → Add Package Dependencies → **Add Local**).
+  Ekleme sırası bağımlılık yönünü izledi: Domain, Core, MapboxKit, Services, Features.
+- Uygulama hedefine yalnızca `OnsarjCore` ve `OnsarjDomain` ürünleri bağlandı.
+- Şablon artığı `ContentView.swift` silindi, yerine `App/RootView.swift` yazıldı.
+  Gömülü "Hello, world!" metni ve `#Preview` bloğu kaldırıldı.
+- `App/OnsarjApp.swift` içindeki çağrı `RootView()` olarak güncellendi.
+
+**Dosyalar**
+- Eklendi: `App/RootView.swift`
+- Silindi: `App/ContentView.swift`
+- Değişti: `App/OnsarjApp.swift`, `Onsarj.xcodeproj/project.pbxproj`
+
+**Kurallar ve kararlar**
+- **Bağlama kuralı:** Bir paket ürünü uygulama hedefine, ancak `App/` içindeki bir dosya onu
+  gerçekten import ettiğinde bağlanır. 30 ürünü birden bağlamak kullanılmayan bağımlılıklar
+  yaratır ve derleme grafiğini şişirir.
+- **K-18 genişletildi:** Günlük akış VS Code + Xcode önizleme kanvası. Hot reload aracı
+  (InjectionNext, HotSwiftUI) kullanılmayacak; her SwiftUI görünümüne geliştirme aracına özel
+  satır eklemeyi gerektiriyor ve bu bölüm 2.3 ile çatışıyor.
+- **CLAUDE.md bölüm 2.6 eklendi:** Ajanlara iş devretme kuralları. Ajanların ne okuyacağı,
+  neye dokunmayacağı, hangi durumlarda durup soracağı ve `PROGRESS.md` kaydının zorunlu alanları.
+
+**Doğrulama**
+- Command+B hatasız derledi; Command+R ile simülatörde boş ekran açıldı.
+- `git status --short` yalnızca beklenen dosyaları gösterdi; `Packages/` altında
+  istenmeyen değişiklik yok.
+
+**Bilinen eksikler**
+- SwiftUI önizlemesi "Cannot use previews in this file" uyarısı verdi. İlk gerçek ekranda
+  tekrar bakılacak; `SWIFT_COMPILATION_MODE = incremental` ayarıyla ilgili olabilir.
+- `verify-ios.sh` henüz yazılmadı.
+
+**Sıradaki adım:** Kod kalitesi araçları — `.swiftlint.yml`, `.swift-format`, `CODEOWNERS`,
+`Tooling/Scripts/verify-ios.sh`.
 
 ---
 

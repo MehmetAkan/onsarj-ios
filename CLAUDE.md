@@ -74,14 +74,61 @@ Varsayımda bulunulmaz. Varsayım gerekiyorsa açıkça yazılır: "Şunu varsay
 - Ne yapıldı, hangi dosyalar eklendi/değişti, ne karar verildi, sırada ne var — hepsi yazılır.
 - Bu dosya projenin hafızasıdır. Yeni katılan biri sadece bunu okuyarak durumu anlayabilmelidir.
 
-### 2.6 Git işlemleri yapılmaz
+### 2.6 Ajanlara iş devretme
+
+Bu projede kodun önemli bir kısmını yapay zekâ ajanları yazacak. Proje sahipleri planı verir
+ve yapıyı denetler. Aşağıdaki kurallar ajanlar için bağlayıcıdır.
+
+**Her görevin başında okunacaklar:** `CLAUDE.md` (bu dosya) ve `PROGRESS.md`. İkisini okumadan
+kod yazılmaz. `PROGRESS.md`'nin en üstündeki "Şu an neredeyiz" bölümü, projenin hangi aşamada
+olduğunu söyler.
+
+**Asla dokunulmayacaklar:**
+- Git: `init`, `add`, `commit`, `push`, `pull`, `merge`, dal açma, PR. Hiçbiri yapılmaz.
+- `Onsarj.xcodeproj` ve `project.pbxproj`. Proje dosyası yalnızca Xcode arayüzünden değişir.
+- `Package.swift` dosyalarındaki **bağımlılık listeleri.** Yeni hedef veya bağımlılık eklemek
+  mimari karardır.
+- `Config/*.xcconfig` dosyaları.
+- `CLAUDE.md` bölüm 9 (Karar Defteri). Kararları yalnızca proje sahipleri yazar.
+
+**Durup soru sorulacak durumlar.** Bunlardan biriyle karşılaşıldığında kod yazılmaz,
+ne yapıldığı anlatılır ve soru sorulur:
+- Yeni bir üçüncü parti bağımlılık gerekiyorsa
+- `OnsarjDomain` içindeki bir model veya protokol değişecekse (iki platformu da etkiler)
+- Yeni bir modül veya hedef gerekiyorsa
+- Ekranlar arası yeni bir geçiş gerekiyorsa (`AppRouter` ve `Route` değişikliği)
+- API sözleşmesinde eksik veya tutarsızlık varsa
+- Bekleyen bir karara (bölüm 9.2) dayanan bir noktaya gelinmişse
+- Ürün davranışı belirsizse: kullanıcı ne görmeli, hata durumunda ne olmalı, boş durumda ne olmalı
+- Bu dosyadaki bir kuralı çiğnemek gerekiyorsa
+- İki makul çözüm varsa ve seçim geri dönüşü zor sonuçlar doğuruyorsa
+
+**Görev sonunda `PROGRESS.md` güncellenir.** Yeni kayıt dosyanın **en üstüne**, mevcut
+adımların önüne eklenir (birden fazla ajan çalışırken çakışmayı azaltır). Kayıt şu alanları
+zorunlu olarak içerir:
+
+| Alan | İçerik |
+|---|---|
+| Başlık ve tarih | `## Adım N — kısa başlık` + tarih |
+| Ne yapıldı | Somut, 3-6 madde. "İyileştirmeler yapıldı" gibi belirsiz ifade kabul edilmez. |
+| Dosyalar | Eklenen, değişen ve silinen dosyaların yolları |
+| Kararlar | Alınan kararlar ve sorulması gereken açık noktalar, varsa K numarasıyla |
+| Doğrulama | Hangi komut çalıştırıldı ve sonucu ne oldu (`swift build`, `verify-ios.sh`, test) |
+| Bilinen eksikler | Yarım kalan veya bilerek yapılmayan şeyler |
+| Sıradaki adım | Bir sonraki mantıklı iş |
+
+**Görev sonu raporu.** Ajan işi bitirince şunları söyler: ne yapıldı, hangi dosyalar değişti,
+doğrulama sonuçları, kuralla çatıştığı için yapılmayan şeyler, ve proje sahibinin karar vermesi
+gereken açık noktalar. Rapor dışında ek iş yapılmaz.
+
+### 2.7 Git işlemleri yapılmaz
 - `git push`, `git pull`, `git merge`, dal (branch) oluşturma, birleştirme isteği (PR) açma
   işlemlerini **yalnızca proje sahibi yapar.**
 - Asistan yerel dosya değişikliği yapar ve ne değiştiğini bildirir. Commit dahi önerilse de
   kendiliğinden atılmaz.
 - Uzak depoya, CI'ya veya dağıtım ortamlarına hiçbir işlem gönderilmez.
 
-### 2.7 Değişikliğin etkisini bildir
+### 2.8 Değişikliğin etkisini bildir
 Bir değişiklik yapıldığında şu üç şey söylenir: ne değişti, neden değişti, neyi etkileyebilir.
 Özellikle başka modülleri, ekip arkadaşlarının açık çalışmalarını veya API sözleşmesini
 etkileyen değişikliklerde bu zorunludur.
@@ -447,7 +494,7 @@ Kural: Bir adım, `PROGRESS.md` güncellenmeden tamamlanmış sayılmaz.
 | K-08 | MVP'de tüm özellikler ücretsizdir. Abonelik Faz 2'dedir. `EntitlementService` protokol olarak şimdiden kurulur. | 2026-09 |
 | K-09 | Bildirim: iOS'ta **doğrudan APNs** (.p8, token tabanlı). Firebase SDK projeye girmez. Android FCM kullanır; hedefleme mantığı her iki platform için de backend'dedir. Bildirim yükü yapısal hedef taşır (`tip`, `hedef: {ekran, id}`, benzersiz id) ve ekran isimleri iki platformda aynıdır. Sessiz bildirime kritik iş yüklenmez. **Bağlı not:** K-12/K-13/K-14 için Firebase ailesi seçilirse bu karar yeniden açılır; geçiş `PushNotifications` modülüyle sınırlı kalacak şekilde yazılır. | 2026-09 |
 | K-17 | `.xcodeproj` **depoda tutulur**, proje üretici araç (Tuist/XcodeGen) kullanılmaz. Gerekçe: Xcode projesinde yalnızca 4 hedef var (uygulama, widget, 2 test); kodun tamamı SPM paketlerinde olduğu için dosya ekleme proje dosyasına dokunmaz; tüm derleme ayarları xcconfig'te durur. **Geçiş eşiği:** şu üçünden biri olursa XcodeGen'e geçilir — proje dosyasında 3 kez git çakışması yaşanması, Xcode hedef sayısının 6'yı geçmesi, ekibin 4 kişiyi aşması. | 2026-09 |
-| K-18 | Geliştirme ortamı: **kod yazımı VS Code**, geri kalan her şey **Xcode**. Xcode'da kalanlar: simülatör, gerçek cihaz ve CarPlay testi, kod imzalama ve yetkiler, proje/şema ayarları, Instruments ile performans ölçümü, String Catalog düzenleme. **Doğrulama komutu ayrımı:** `swift build` ana makine (macOS) için derler, `.iOS(.v17)` bildirimi orada sınanmaz. Bu yüzden `swift build` yalnızca platformdan bağımsız modüllerde (`Domain`, `Services`, `Core`'un UIKit kullanmayan kısımları) hızlı geri bildirim aracıdır. UIKit, CarPlay, ActivityKit veya Mapbox kullanan her modülün doğrulaması `xcodebuild -destination 'generic/platform=iOS Simulator'` ile yapılır; komut `Tooling/Scripts/verify-ios.sh` içine sarılır ve elle yazılmaz. | 2026-09 |
+| K-18 | Geliştirme ortamı: **kod yazımı VS Code**, geri kalan her şey **Xcode**. Xcode'da kalanlar: simülatör, gerçek cihaz ve CarPlay testi, kod imzalama ve yetkiler, proje/şema ayarları, Instruments ile performans ölçümü, String Catalog düzenleme. **Doğrulama komutu ayrımı:** `swift build` ana makine (macOS) için derler, `.iOS(.v17)` bildirimi orada sınanmaz. Bu yüzden `swift build` yalnızca platformdan bağımsız modüllerde (`Domain`, `Services`, `Core`'un UIKit kullanmayan kısımları) hızlı geri bildirim aracıdır. UIKit, CarPlay, ActivityKit veya Mapbox kullanan her modülün doğrulaması `xcodebuild -destination 'generic/platform=iOS Simulator'` ile yapılır; komut `Tooling/Scripts/verify-ios.sh` içine sarılır ve elle yazılmaz. **Günlük akış:** kod VS Code'da yazılır, Xcode açık kalır ve ikinci ekranda SwiftUI önizleme kanvası durur; VS Code'da kaydedilen dosyayı Xcode diskten yeniden yükler ve önizleme yenilenir. Hot reload aracı (InjectionNext, HotSwiftUI vb.) **kullanılmaz**: her SwiftUI görünümüne yalnızca geliştirme aracı için satır eklemeyi gerektirir ve bu, bölüm 2.3'teki "üretim kodunda geliştirme artığı bulunmaz" kuralıyla çatışır. | 2026-09 |
 
 | K-19 | `Telemetry` modülü **yalnızca protokol** barındırır, hiçbir SDK'ya bağlanmaz. K-12/K-13 ile araç seçildiğinde SDK ayrı bir `TelemetryAdapters` hedefine konur ve yalnızca `App/Composition/` oradan bağlar. Aksi halde `Telemetry`'ye bağlı 11 modül dolaylı olarak o SDK'ya bağlanmış olurdu. Telemetry bağımlılığı: tüm servisler + `Networking`. Özelliklere eklenmez; ekran görüntüleme olayları `AppRouter` üzerinden tek noktadan kaydedilir. | 2026-09 |
 | K-20 | `Staging.xcconfig` ve staging yapılandırması **ertelendi.** Backend ortam adresleri belli olmadan (K-10) oluşturmak, uydurma değer yazmak anlamına gelirdi. Şimdilik Debug ve Release var; API adresleri ve Mapbox token'ı `Secrets.xcconfig` ile Mapbox adımında gelecek. | 2026-09 |
