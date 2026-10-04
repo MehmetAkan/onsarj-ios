@@ -430,6 +430,29 @@ StationDetailFeature/
 - Kullanıcıya görünen hiçbir metin koda gömülmez; String Catalog üzerinden gelir.
 - Renk, yazı tipi ve boşluk değerleri koda gömülmez; `DesignSystem` token'ları kullanılır.
 
+### 6.5 İki katmanlı renk sistemi
+
+Renkler iki katmandan oluşur ve bu ayrım **derleyici tarafından zorlanır**:
+
+**Katman 1 — Ham palet (`Palette`).** `gray50`–`gray950`, `green50`–`green950`, ayrıca
+red, blue, indigo, violet, purple. Temadan bağımsız sabit değerler. Ölçek Tailwind'in
+50–950 basamaklandırmasını izler, OKLCH uzayında algısal olarak eşit aralıklıdır.
+
+**Katman 2 — Anlamsal token'lar.** `backgroundPrimary`, `textSecondary`, `actionPrimary`
+gibi **işlev** adları taşır, renk adı değil. Her token'ın açık ve koyu tema karşılığı vardır.
+Token'lar ihtiyaç doğdukça, ekran tasarlanırken eklenir.
+
+Kurallar:
+- Ekranların varsayılan renk kaynağı anlamsal token'dır. Ham basamağa doğrudan başvurmak
+  istisnadır; aynı ham basamak birden çok yerde tekrar ediyorsa o renk token olmayı hak
+  ediyor demektir.
+- Token adı rengi değil işlevi anlatır. Koyu temada yeşil daha açık bir tona kayabilir;
+  `green500` adı o zaman yalan söyler, `actionPrimary` söylemez.
+- Yeni token eklenirken açık ve koyu tema değerleri **birlikte** tanımlanır. Tek temalı
+  token eklenmez.
+- Mevcut bir token'ın karşıladığı işlev için ikinci bir ad açılmaz. Eklemeden önce
+  `SemanticColors` dosyasına bakılır.
+
 ### 6.2 İsimlendirme
 - Protokol: `StationRepository` — uygulaması: `RemoteStationRepository`, `CachedStationRepository`
 - Görünüm: `StationDetailView` — durum nesnesi: `StationDetailModel`
