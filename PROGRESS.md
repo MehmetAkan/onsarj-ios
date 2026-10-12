@@ -20,6 +20,49 @@ katmanı yazıldı: renk paleti, tipografi, boşluk ve yarıçap token'ları.
 
 ---
 
+## Adım 13 — Karşılama ekranı görsel düzeltmeleri (cihaz testi sonrası)
+**Tarih:** 2026-10-12
+
+**Ne yapıldı** (proje sahibinin iPhone 16 üzerindeki testine göre)
+- Logo %10 büyütüldü: `BrandAsset.logoHeight` 32 → 35pt.
+- Slayt illüstrasyonları ekranın iki kenarına dayanıyor (yatay kenar boşluğu yalnızca
+  metne uygulanıyor). Dikey alan yetmezse görsel küçülmüyor, üstten/alttan kırpılıyor
+  (CSS `object-fit: cover` karşılığı). Yeterli alanda doğal oranında, kırpılmadan görünüyor.
+- Slayt başlığı `Typography.title` (28pt) → `Typography.display` (34pt); harf aralığı
+  punto büyüklüğünün %1'i kadar daraltıldı (`@ScaledMetric`, yazı boyutuyla ölçekleniyor).
+  İlk denemedeki %10 cihazda fazla sıkı göründü.
+- Başlık–açıklama arası `Spacing.sm` → `Spacing.xs`.
+- Birincil buton yüksekliği ~54 → 58pt. İlk denemede 64pt (%20) ve 20pt yazı denendi;
+  cihazda fazla büyük göründü, yükseklik %10 azaltıldı ve yazı 17pt'ye geri alındı.
+- Giriş satırı `Typography.caption` (13pt) → `Typography.secondary` (15pt).
+
+**Dosyalar**
+- Değişti: `Packages/Core/Sources/DesignSystem/BrandAsset.swift`,
+  `Packages/Features/Sources/AuthFeature/WelcomeView.swift`,
+  `Packages/Features/Sources/AuthFeature/Components/OnboardingSlide.swift`
+
+**Kararlar**
+- `Typography.button` önce 20pt'ye çıkarıldı, cihaz kontrolünden sonra 17pt'ye geri alındı.
+  Sonuçta `Typography.swift` değişmedi.
+- İllüstrasyon en-boy oranı `OnboardingSlide` içinde `private` sabit (1:1). Görseller kare
+  değişirse güncellenmeli.
+- Buton en küçük yüksekliği (`58`) ve başlık harf aralığı (`-0.34`, 34pt'nin %1'i) bileşene
+  özel `private` sabitler (Adım 12'deki "boyut ≠ boşluk" kararı).
+
+**Doğrulama**
+- `swift build` (Core, Features): geçti.
+- `verify-ios.sh --app`: geçti.
+- `swiftlint --strict` ve `swift format lint --strict`: ajanın dosyalarında ihlal yok. Tek ihlal
+  hâlâ `App/RootView.swift` sonunda satır sonu eksik (proje sahibinin dosyası).
+
+**Bilinen eksikler**
+- Değişiklikler cihazda ve iPhone SE + xxxLarge'da henüz gözle kontrol edilmedi.
+- `WelcomeModel` birim testleri (Adım 12'den devam).
+
+**Sıradaki adım:** Proje sahibinin cihaz kontrolü ve sonraki görsel düzeltmeler.
+
+---
+
 ## Adım 12 — Karşılama ekranı düzeltmeleri ve macOS platform bildirimi
 **Tarih:** 2026-10-12
 

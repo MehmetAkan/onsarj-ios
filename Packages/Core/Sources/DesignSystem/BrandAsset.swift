@@ -14,5 +14,5 @@ public enum BrandAsset {
     ///
     /// Görselin doğal boyutu (291×82 pt) ekranda fazla yer kaplar; logo her yerde
     /// bu yükseklikle gösterilir.
-    public static let logoHeight: CGFloat = 32
+    public static let logoHeight: CGFloat = 35
 }

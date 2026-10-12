@@ -87,7 +87,7 @@ public struct WelcomeView: View {
                 loginButton
             }
         }
-        .font(Typography.caption)
+        .font(Typography.secondary)
     }
 
     private var loginQuestion: some View {
@@ -113,14 +113,17 @@ public struct WelcomeView: View {
 
 /// Birincil buton görünümü: tam genişlik, basılıyken koyulaşan dolgu.
 private struct PrimaryButtonStyle: ButtonStyle {
+    /// Butonun en küçük yüksekliği. Yazı büyüdükçe buton da uzar.
+    private static let minHeight: CGFloat = 58
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(Typography.button)
             .foregroundStyle(Theme.onActionPrimary)
             .multilineTextAlignment(.center)
-            .padding(.vertical, Spacing.lg)
+            .padding(.vertical, Spacing.md)
             .padding(.horizontal, Spacing.lg)
-            .frame(maxWidth: .infinity, minHeight: Spacing.minTapTarget)
+            .frame(maxWidth: .infinity, minHeight: Self.minHeight)
             .background(
                 configuration.isPressed ? Theme.actionPrimaryPressed : Theme.actionPrimary,
                 in: RoundedRectangle(cornerRadius: Radius.button)
