@@ -1,15 +1,17 @@
-//
-//  RootView.swift
-//  Onsarj
-//
-
+import AuthFeature
+import DesignSystem
 import SwiftUI
 
 /// Uygulamanın kök görünümü.
-/// Gerçek içerik, AppRouter ve ilk özellik modülleri eklendiğinde buraya bağlanacak.
+///
+/// Şu an yalnızca karşılama ekranını gösterir. Ekranlar arası geçiş `AppRouter`
+/// ile kurulacak; o gelene kadar karşılama ekranının kapanışları boştur.
 struct RootView: View {
     var body: some View {
-        Color(.systemBackground)
-            .ignoresSafeArea()
+        WelcomeView(
+            onContinue: {},
+            onLogin: {}
+        )
+        .onsarjDynamicTypeRange()
     }
 }

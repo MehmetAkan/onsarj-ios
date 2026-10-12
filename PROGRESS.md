@@ -13,9 +13,128 @@ Yeni katılan biri yalnızca `CLAUDE.md` ve bu dosyayı okuyarak projenin durumu
 araçları ve CI (GitHub Actions + Xcode Cloud) çalışıyor. Tasarım sisteminin temel
 katmanı yazıldı: renk paleti, tipografi, boşluk ve yarıçap token'ları.
 
-**Sırada:** İlk ekran — karşılama (onboarding). Ajana görev olarak verildi.
+**Sırada:** `WelcomeModel` birim testleri (projenin ilk testi).
 
-**Yazılmış ekran veya iş mantığı yok.** `DesignSystem` dışındaki 29 modül hâlâ boş.
+**İlk ekran yazıldı ve uygulamaya bağlandı:** `RootView` → `WelcomeView` (Adım 11–12).
+`DesignSystem`, `Localization` ve `AuthFeature` dışındaki modüller boş.
+
+---
+
+## Adım 12 — Karşılama ekranı düzeltmeleri ve macOS platform bildirimi
+**Tarih:** 2026-10-12
+
+**Ne yapıldı**
+- Beş paketin `platforms` bildirimine `.macOS(.v14)` eklendi. `swift build` artık beş pakette
+  de macOS'ta geçiyor; günlük geri bildirim döngüsü hızlı kalıyor.
+- Otomatik ilerleme **son slaytta duruyor**, başa dönülmüyor. Son slayda bir kez
+  ulaşıldıktan sonra zamanlayıcı bir daha başlamıyor; parmakla kaydırma çalışmaya devam ediyor.
+- `BrandAsset.logoHeight` (32pt) eklendi; logo bu yükseklikte, genişliği en-boy oranından
+  hesaplanarak gösteriliyor (önceden doğal boyutu 291×82 pt idi).
+- `PageIndicator` nokta boyutları `Spacing` yerine dosyaya özel `private` sabitlerden
+  geliyor (çap 8pt, aktif kapsül genişliği 24pt). Noktalar arası aralık `Spacing.sm` kaldı.
+- `WelcomeModel` zamanlayıcı mantığı üç bağımsız koşulu birleştiriyor: ortam izni
+  (ön plan + VoiceOver kapalı), kullanıcının kaydırması (sıfırlama), son slayda ulaşılması.
+
+**Dosyalar**
+- Değişti: `Packages/{Core,Domain,MapboxKit,Services,Features}/Package.swift` (yalnızca
+  `platforms` satırı), `Packages/Core/Sources/DesignSystem/BrandAsset.swift`,
+  `Packages/Features/Sources/AuthFeature/{WelcomeModel,WelcomeView}.swift`,
+  `Packages/Features/Sources/AuthFeature/Components/PageIndicator.swift`
+
+**Kararlar** (proje sahibi)
+- **macOS 14 platform bildirimi:** ucuz çözüm kabul edildi. iOS'a özel API'ler
+  (`UIApplication` vb.) girdikçe `swift build` yine kırılacak; o noktada `verify-ios.sh`'a
+  tek paket doğrulayan bir seçenek eklenecek. `.tabViewStyle(.page)` için `#if os(iOS)`
+  koruması bu yüzden yerinde kaldı (macOS'ta bu stil yok).
+- **Son slaytta durma:** kullanıcı üç slaydı da görmüştür; döngü bilgi eklemeden hareket
+  ekler ve `TabView` başa dönerken geriye kayarak bozuk görünür.
+- **Varsayım (yanlışsa söyleyin):** son slayda ulaşıldıktan sonra kullanıcı geri kaydırsa
+  da otomatik ilerleme yeniden başlamaz. Uygulama arka plandan dönünce de başlamaz.
+- **Buton stili** `WelcomeView` içinde `private` kalıyor; telefon girişi ekranında ikinci
+  kullanımla `DesignSystem`'e taşınacak.
+- **Boyut ≠ boşluk:** bileşene özel boyutlar o bileşenin `private` sabitidir; paylaşılan
+  marka öğesinin boyutu (`logoHeight`) `DesignSystem`'dedir.
+
+**Doğrulama**
+- `swift build`: Domain, Core, Services, MapboxKit, Features — hepsi geçti.
+- `verify-ios.sh`: tüm şemalar geçti (uygulama dahil; `RootView` artık `WelcomeView` gösteriyor).
+- `swiftlint lint --strict` ve `swift format lint --strict`: ajanın dosyalarında ihlal yok.
+  Tek ihlal `App/RootView.swift` sonunda satır sonu eksik (proje sahibinin bağlama
+  çalışması; ajan dokunmadı).
+
+**Bilinen eksikler**
+- `WelcomeModel` birim testi yok; ayrı görev olarak verilecek (projenin ilk testi, deseni
+  kuracak): kaydırınca sıfırlama, arka planda durma, VoiceOver'da durma, son slaytta durma.
+- Önizleme matrisi (CLAUDE.md 6.7) Xcode kanvasında gözle kontrol edilmedi.
+
+**Sıradaki adım:** `WelcomeModel` birim testleri.
+
+---
+
+## Adım 11 — Karşılama (onboarding) ekranı
+**Tarih:** 2026-10-12
+
+**Ne yapıldı**
+- `WelcomeView`: logo, üç slaytlı kaydırmalı alan (`TabView` + `.page`), sayfa göstergesi,
+  tam genişlik birincil buton ve "Giriş yap" satırı. Ekran geçiş yapmaz; `onContinue` ve
+  `onLogin` kapanışlarını dışarı açar (CLAUDE.md 5.3 kural 1).
+- `WelcomeModel` (`@Observable`): aktif slayt ve 3 saniyelik otomatik ilerleme. Son slayttan
+  sonra başa döner. Kullanıcı kaydırınca zamanlayıcı sıfırdan başlar. Uygulama ön planda
+  değilken veya VoiceOver açıkken otomatik ilerleme durur.
+- `PageIndicator`: aktif nokta kapsül, pasifler yuvarlak, geçiş animasyonlu. Ekran
+  okuyucudan gizli (gezinme kaydırmalı alandan yapılır).
+- String Catalog kuruldu: `Localizable.xcstrings`, 9 `welcome.*` anahtarı, en + tr.
+  `Bundle.onsarj` erişim noktası eklendi.
+- `BrandAsset.logo`: `DesignSystem` içindeki logoya erişim noktası.
+- Önizleme: iPhone SE (3rd generation) ve iPhone 17 Pro Max × `Large` ve `xxxLarge`.
+
+**Dosyalar**
+- Eklendi: `Packages/Features/Sources/AuthFeature/{WelcomeView,WelcomeModel}.swift`,
+  `Packages/Features/Sources/AuthFeature/Components/{OnboardingSlide,PageIndicator}.swift`,
+  `Packages/Core/Sources/Localization/LocalizationBundle.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`,
+  `Packages/Core/Sources/DesignSystem/BrandAsset.swift`
+- Değişti: `Packages/Core/Package.swift` (`defaultLocalization: "en"`; `Localization` ve
+  `DesignSystem` hedeflerine `resources`), `Packages/Features/Package.swift` (`AuthFeature`
+  hedefine `resources`). Görevde izin verilen satırlar dışında değişiklik yok.
+- Silindi: `Packages/Features/Sources/AuthFeature/AuthFeature.swift`,
+  `Packages/Core/Sources/Localization/Localization.swift` (yer tutucular, CLAUDE.md 5.6 kural 6)
+
+**Kararlar**
+- **Buton köşesi `Radius.button`** (Adım 10 kararı). Görev metni `Radius.pill` diyordu;
+  proje sahibine soruldu, `Radius.button` onaylandı.
+- **`.tabViewStyle(.page)` `#if os(iOS)` ile korundu** (proje sahibi onayı, `SemanticColors`
+  emsali). macOS'ta bu stil yok.
+- Görev metnindeki `Assets.xcassets` yerine mevcut `Media.xcassets` kullanıldı (Adım 10
+  kararı; SPM katalog adına bakmaz).
+- Birincil buton stili `WelcomeView.swift` içinde `private` tanımlandı. İkinci ekranda
+  birincil buton gerektiğinde `DesignSystem`'e ortak bileşen olarak taşınmalı.
+- Giriş satırı `ViewThatFits` ile sığmazsa alt alta diziliyor (SE + xxxLarge).
+- Sayfa göstergesi nokta boyutları `Spacing.sm` (çap) ve `Spacing.xl` (aktif genişlik)
+  token'larından alındı; ayrı bir boyut token'ı yok.
+
+**Doğrulama**
+- `swift build` (Core): başarılı.
+- `swift build` (Features): **başarısız.** Paket yalnızca `.iOS(.v17)` bildiriyor; macOS'ta
+  varsayılan dağıtım hedefi düşük olduğu için `@Observable` (macOS 14) ve `Duration`
+  (macOS 13) kullanılamıyor. Kod hatası değil, platform bildirimi meselesi (açık nokta).
+- `Tooling/Scripts/verify-ios.sh`: tüm şemalar geçti (uygulama + 5 paket, AuthFeature dahil).
+- `swiftlint lint --strict`: yeni dosyalarda ihlal yok. Önceden var olan 2 hata:
+  `Radius.swift` ve `SemanticColors.swift` sonunda satır sonu eksik.
+- `swift format lint --strict`: yeni dosyalarda ihlal yok. Önceden var olan hatalar:
+  aynı iki dosyada satır sonu, `Typography.swift:70` `public extension`.
+- Önizleme matrisi Xcode kanvasında **gözle kontrol edilmedi** (ajan ortamında kanvas yok).
+
+**Bilinen eksikler**
+- Ekran uygulamaya bağlı değil; `RootView` hâlâ boş. `DesignSystem`, `Localization`,
+  `AuthFeature` ürünlerinin uygulama hedefine Xcode arayüzünden eklenmesi gerekiyor.
+- `onsarjDynamicTypeRange()` hâlâ uygulanmadı (uygulama köküne bağlanınca).
+- Son slayttan ilk slayda dönüşte `TabView` aradaki slaytların üzerinden geriye kayar.
+  Kesintisiz sonsuz döngü görünümü istenirse ayrı iş.
+- `WelcomeModel` için birim testi yazılmadı (görev kapsamında değildi).
+- Logo SVG'nin doğal boyutunda (291×82 pt) gösteriliyor; logo boyutu için token yok.
+
+**Sıradaki adım:** Karşılama ekranını `RootView`'a bağlamak ve 6.7 matrisinde gözle kontrol.
 
 ---
 

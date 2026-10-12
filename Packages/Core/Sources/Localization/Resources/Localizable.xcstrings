@@ -1,0 +1,168 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "welcome.action.continue" : {
+      "comment" : "Karşılama ekranı, birincil buton.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue with Phone"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telefon ile Devam Et"
+          }
+        }
+      }
+    },
+    "welcome.login.action" : {
+      "comment" : "Karşılama ekranı, giriş satırındaki bağlantı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log in"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giriş yap"
+          }
+        }
+      }
+    },
+    "welcome.login.question" : {
+      "comment" : "Karşılama ekranı, giriş satırındaki soru.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already have an account?"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zaten hesabın var mı?"
+          }
+        }
+      }
+    },
+    "welcome.slide.charger.body" : {
+      "comment" : "Karşılama ekranı, birinci slayt açıklaması.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See availability, prices, and nearby places at every station."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Her istasyonun doluluğunu, fiyatını ve çevresindeki yerleri gör."
+          }
+        }
+      }
+    },
+    "welcome.slide.charger.title" : {
+      "comment" : "Karşılama ekranı, birinci slayt başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find the Right Charger"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doğru Şarjı Bul"
+          }
+        }
+      }
+    },
+    "welcome.slide.navigation.body" : {
+      "comment" : "Karşılama ekranı, üçüncü slayt açıklaması.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn-by-turn navigation with live battery and station updates."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canlı batarya ve istasyon bilgisiyle adım adım yol tarifi."
+          }
+        }
+      }
+    },
+    "welcome.slide.navigation.title" : {
+      "comment" : "Karşılama ekranı, üçüncü slayt başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drive Without Worry"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İçin Rahat Sür"
+          }
+        }
+      }
+    },
+    "welcome.slide.route.body" : {
+      "comment" : "Karşılama ekranı, ikinci slayt açıklaması.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We add charging stops and estimate your battery at every step."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şarj duraklarını ekleyelim, her adımda bataryanı tahmin edelim."
+          }
+        }
+      }
+    },
+    "welcome.slide.route.title" : {
+      "comment" : "Karşılama ekranı, ikinci slayt başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan Your Route"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rotanı Planla"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

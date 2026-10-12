@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "Features",
-    platforms: [.iOS(.v17)],
+    platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
         .library(name: "AuthFeature", targets: ["AuthFeature"]),
         .library(name: "GarageFeature", targets: ["GarageFeature"]),
@@ -33,7 +33,8 @@ let package = Package(
                 .product(name: "OnsarjDomain", package: "Domain"),
                 .product(name: "DesignSystem", package: "Core"),
                 .product(name: "Localization", package: "Core"),
-            ]
+            ],
+            resources: [.process("Resources")]
         ),
         .target(
             name: "GarageFeature",

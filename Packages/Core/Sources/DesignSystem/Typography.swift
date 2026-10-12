@@ -67,7 +67,7 @@ public enum Typography {
     public static let numericLarge = Font.title.weight(.bold).monospacedDigit()
 }
 
-public extension View {
+extension View {
 
     /// Uygulamanın desteklediği yazı boyutu aralığını sınırlar.
     ///
@@ -77,7 +77,7 @@ public extension View {
     /// test edilemez.
     ///
     /// Uygulama kökünde bir kez uygulanır.
-    func onsarjDynamicTypeRange() -> some View {
+    public func onsarjDynamicTypeRange() -> some View {
         dynamicTypeSize(.xSmall ... .xxxLarge)
     }
 }

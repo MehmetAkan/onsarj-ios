@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "MapboxKit",
-    platforms: [.iOS(.v17)],
+    platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
         .library(name: "MapEngine", targets: ["MapEngine"]),
         .library(name: "NavigationEngine", targets: ["NavigationEngine"]),

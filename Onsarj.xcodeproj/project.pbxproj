@@ -6,6 +6,11 @@
 	objectVersion = 110;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		01224337307D649C00C5DF77 /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 01224336307D649C00C5DF77 /* DesignSystem */; };
+		01224339307D649C00C5DF77 /* AuthFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 01224338307D649C00C5DF77 /* AuthFeature */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		018CDEA8306EE71E0021EF7D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -54,6 +59,8 @@
 		018CDE97306EE71D0021EF7D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				01224337307D649C00C5DF77 /* DesignSystem in Frameworks */,
+				01224339307D649C00C5DF77 /* AuthFeature in Frameworks */,
 			);
 		};
 		018CDEA4306EE71E0021EF7D /* Frameworks */ = {
@@ -79,6 +86,13 @@
 			path = Config;
 			sourceTree = "<group>";
 		};
+		01224335307D649C00C5DF77 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		018CDE91306EE71D0021EF7D = {
 			isa = PBXGroup;
 			children = (
@@ -86,6 +100,7 @@
 				018CDE9C306EE71D0021EF7D /* App */,
 				018CDEAA306EE71E0021EF7D /* OnsarjTests */,
 				018CDEB4306EE71E0021EF7D /* OnsarjUITests */,
+				01224335307D649C00C5DF77 /* Frameworks */,
 				018CDE9B306EE71D0021EF7D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -117,6 +132,10 @@
 				018CDE9C306EE71D0021EF7D /* App */,
 			);
 			name = Onsarj;
+			packageProductDependencies = (
+				01224336307D649C00C5DF77 /* DesignSystem */,
+				01224338307D649C00C5DF77 /* AuthFeature */,
+			);
 			productName = Onsarj;
 			productReference = 018CDE9A306EE71D0021EF7D /* Onsarj.app */;
 			productType = "com.apple.product-type.application";
@@ -586,6 +605,19 @@
 			relativePath = Packages/MapboxKit;
 		};
 /* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		01224336307D649C00C5DF77 /* DesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0150A4DC3072503100D86AAB /* XCLocalSwiftPackageReference "Packages/Core" */;
+			productName = DesignSystem;
+		};
+		01224338307D649C00C5DF77 /* AuthFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0150A4DD3072504B00D86AAB /* XCLocalSwiftPackageReference "Packages/Features" */;
+			productName = AuthFeature;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 018CDE92306EE71D0021EF7D /* Project object */;
 	validationLevel = 1;
