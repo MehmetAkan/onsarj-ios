@@ -20,6 +20,47 @@ katmanı yazıldı: renk paleti, tipografi, boşluk ve yarıçap token'ları.
 
 ---
 
+## Adım 14 — Karşılama ekranı: başlık, açıklama hizası, buton köşesi
+**Tarih:** 2026-10-12
+
+**Ne yapıldı** (proje sahibinin cihaz kontrolüne göre)
+- Slayt başlığı `Typography.display` (34pt) → `Typography.title` (28pt). İstek ~%10
+  küçültmeydi (~31pt); Dynamic Type'ta 34 ile 28 arasında kademe yok, en yakın olan seçildi.
+  Harf aralığı %2 daraltmaya çıkarıldı (28pt için -0,56, `relativeTo: .title`); %1 cihazda
+  yetersiz göründü.
+- Açıklama metni en az 2 satırlık yer kaplıyor (`lineLimit(2...)`). Tek satıra sığan
+  açıklamada da görsel ve başlık diğer slaytlarla aynı hizada kalıyor. Metin 2 satırı
+  aşarsa (dar ekran, büyük yazı) kırpılmadan uzuyor.
+- `Radius.button` 16 → 20pt.
+- Açıklama sütunu en fazla 300pt genişliğinde (`@ScaledMetric`, yazı boyutuyla ölçekleniyor).
+  Geniş ekranlarda (Pro Max) 1. slaydın açıklaması tek satıra sığıyor ve altında boş satır
+  kalıyordu; artık altı açıklama da (en + tr) iki satıra bölünüyor. Metinlerin tek satır
+  genişliği 15pt'de ölçüldü: 370–434pt.
+
+**Dosyalar**
+- Değişti: `Packages/Core/Sources/DesignSystem/Radius.swift`,
+  `Packages/Features/Sources/AuthFeature/Components/OnboardingSlide.swift`
+
+**Kararlar**
+- Açıklamanın satırları elle bölünmedi (metne `\n` eklenmedi). Satırın nerede kırılacağı
+  ekran genişliğine, dile ve yazı boyutuna bağlı; elle bölme SE ve xxxLarge'da bozulur.
+  Bunun yerine her açıklamaya en az 2 satırlık yer ayrıldı.
+- `Radius.button` yalnızca bu butonda kullanılıyor; token değeri güncellendi.
+
+**Doğrulama**
+- `swift build` (Core, Features): geçti. `verify-ios.sh --app`: geçti.
+- `lineLimit(2...)` davranışı `ImageRenderer` ile ölçüldü: tek satırlık metin 2 satır
+  yüksekliği aldı, uzun metin sınırsız uzadı.
+- Lint: ajanın dosyalarında ihlal yok. `App/RootView.swift` sonunda satır sonu eksik
+  (proje sahibinin dosyası).
+
+**Bilinen eksikler**
+- Cihazda gözle kontrol edilmedi. `WelcomeModel` birim testleri bekliyor.
+
+**Sıradaki adım:** Proje sahibinin cihaz kontrolü.
+
+---
+
 ## Adım 13 — Karşılama ekranı görsel düzeltmeleri (cihaz testi sonrası)
 **Tarih:** 2026-10-12
 
