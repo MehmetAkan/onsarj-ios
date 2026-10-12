@@ -294,7 +294,7 @@ onsarj-ios/
 │   │   ├── Route.swift
 │   │   └── DeepLinkHandler.swift      bildirim hedefi → ekran
 │   ├── Resources/
-│   │   ├── Assets.xcassets
+│   │   ├── Media.xcassets
 │   │   └── PrivacyInfo.xcprivacy
 │   └── Support/
 │       ├── Info.plist
