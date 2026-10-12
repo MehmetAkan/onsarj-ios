@@ -19,6 +19,12 @@ public enum Radius {
     /// 16pt — kartlar, liste blokları, bilgi panelleri.
     public static let card: CGFloat = 16
 
+    /// 16pt — birincil ve ikincil butonlar.
+    ///
+    /// Şu an `card` ile aynı değerde. Ayrı token olmasının sebebi, ileride buton
+    /// yuvarlaklığının kart yuvarlaklığından bağımsız değişebilmesi.
+    public static let button: CGFloat = 16
+
     /// 24pt — alt sayfalar (bottom sheet), büyük paneller.
     public static let sheet: CGFloat = 24
 

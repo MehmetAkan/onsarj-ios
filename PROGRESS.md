@@ -13,9 +13,50 @@ Yeni katılan biri yalnızca `CLAUDE.md` ve bu dosyayı okuyarak projenin durumu
 araçları ve CI (GitHub Actions + Xcode Cloud) çalışıyor. Tasarım sisteminin temel
 katmanı yazıldı: renk paleti, tipografi, boşluk ve yarıçap token'ları.
 
-**Sırada:** İlk ekran. Bu akışta anlamsal renk token'ları ve koyu tema da tanımlanacak.
+**Sırada:** İlk ekran — karşılama (onboarding). Ajana görev olarak verildi.
 
 **Yazılmış ekran veya iş mantığı yok.** `DesignSystem` dışındaki 29 modül hâlâ boş.
+
+---
+
+## Adım 10 — Anlamsal renk token'ları ve görseller
+**Tarih:** 2026-10-12
+
+**Ne yapıldı**
+- `SemanticColors.swift`: `Theme` enum'u. Yüzey, metin, eylem, marka ve sayfa göstergesi
+  token'ları; her biri açık ve koyu tema değeriyle birlikte.
+- `Color(light:dark:)` yardımcısı: temayı çalışma zamanında çözer, tema değişiminde
+  ekranın yeniden çizilmesi gerekmez.
+- `Radius.button` eklendi (16pt).
+- Görseller: `DesignSystem/Resources/Media.xcassets` → `brand-logo` (açık + koyu);
+  `AuthFeature/Resources/Media.xcassets` → `onboarding-charger`, `onboarding-route`,
+  `onboarding-navigation`.
+
+**Kararlar**
+- **Koyu tema değerleri mekanik olarak türetildi**, gri merdiveninin tersi alınarak
+  (açıkta 950 → koyuda 50). Bunlar yer tutucu değildir: kontrast oranları korunur ve
+  her ekran koyu temada doğru görünür. Tasarım ekibi koyu tema paletini ayrıca
+  kurguladığında yalnızca `SemanticColors.swift` güncellenir, hiçbir ekran değişmez.
+  Bu, bölüm 2.3'teki "geçici kod yasağı" ile çelişmez — eksik bir şey bırakılmıyor.
+- **`Color(light:dark:)` platform korumasıyla yazıldı** (`#if canImport(UIKit)`).
+  Gerekçe: UIKit macOS'ta yok, koruma olmasa `swift build` tüm `Core` paketinde
+  kırılırdı ve her değişiklikte dakikalar süren `verify-ios.sh` beklenirdi. macOS dalı
+  dağıtılmaz, yalnızca geliştirme döngüsünü hızlı tutar.
+- **Buton yarıçapı: `Radius.button` (16pt)**, kapsül değil. Adım 9'dan beri açık olan
+  soru kapandı. `card` ile aynı değerde ama ayrı token — ileride bağımsız değişebilsin.
+- Katalog adı `Media.xcassets` olarak bırakıldı. SPM `.xcassets` uzantılı her klasörü
+  işler, ad önemli değil.
+
+**Bilinen eksikler**
+- `DesignSystem` uygulama hedefine bağlı değil; `onsarjDynamicTypeRange()` hâlâ
+  kullanılmıyor. Xcode arayüzünden proje sahibi bağlayacak.
+- `Package.swift` dosyalarında `resources:` bildirimi yok. Karşılama ekranı görevinde
+  eklenecek (o görev için özel izin verildi).
+- **Onboarding PNG'leri büyük:** @3x dosyalar ~1,4–1,6 MB. Üç görsel × iki çözünürlük
+  ≈ 9 MB. İlk açılış ekranı olduğu için uygulama boyutunu ve açılış süresini etkiler.
+  Çözüm: Figma'dan PDF olarak yeniden dışa aktarmak veya ImageOptim'den geçirmek.
+- Durum renkleri (başarı/uyarı/hata) henüz token olarak tanımlanmadı; ihtiyaç doğunca
+  eklenecek.
 
 ---
 

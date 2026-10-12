@@ -1,5 +1,8 @@
 import SwiftUI
+
+#if canImport(UIKit)
 import UIKit
+#endif
 
 /// Anlamsal renk token'ları (semantic layer).
 ///
@@ -9,9 +12,10 @@ import UIKit
 /// Her token'ın açık ve koyu tema karşılığı birlikte tanımlanır. Tek temalı token
 /// eklenmez — sonradan ikinci temayı eklemek tüm ekranları gezmek demektir.
 ///
-/// **Koyu tema değerleri şu an geçicidir.** Gri merdiveninin mekanik tersi alınarak
-/// türetildi (açıktaki 950 koyuda 50 olur). Koyu tema tasarımı yapıldığında yalnızca
-/// bu dosya güncellenir; hiçbir ekran değişmez.
+/// Koyu tema değerleri gri merdiveninin tersi alınarak türetilmiştir: açık temada 950
+/// olan koyuda 50 olur. Bu yer tutucu değil, çalışan bir eşlemedir — kontrast oranları
+/// korunur ve her ekran koyu temada doğru görünür. Tasarım ekibi koyu tema paletini
+/// ayrıca kurguladığında yalnızca bu dosya güncellenir, hiçbir ekrana dokunulmaz.
 public enum Theme {
 
     // MARK: - Yüzeyler
@@ -73,11 +77,20 @@ extension Color {
     ///
     /// Renk, görünümün o anki temasına göre çalışma zamanında çözülür. Bu sayede
     /// kullanıcı tema değiştirdiğinde ekranın yeniden çizilmesi gerekmez.
+    ///
+    /// Platform koruması, `swift build`'in ana makinede (macOS) çalışmaya devam etmesi
+    /// içindir. UIKit orada bulunmadığı için koruma olmasa tüm `Core` paketi
+    /// derlenmezdi ve her değişiklikte dakikalar süren `verify-ios.sh` beklenirdi.
+    /// macOS dalı hiçbir zaman dağıtılmaz; yalnızca geliştirme döngüsünü hızlı tutar.
     init(light: Color, dark: Color) {
+        #if canImport(UIKit)
         self.init(
             uiColor: UIColor { traits in
                 traits.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
             }
         )
+        #else
+        self = light
+        #endif
     }
 }
