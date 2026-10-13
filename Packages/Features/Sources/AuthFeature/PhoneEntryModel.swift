@@ -1,74 +1,41 @@
+import Localization
 import Observation
+import PhoneNumbers
 
-/// Telefon numarası giriş ekranının durumu: girilen rakamlar, biçimlendirme ve geçerlilik.
+/// Telefon numarası giriş ekranının durumu: seçili ülke ve çözümlenmiş numara.
 ///
-/// Numara yalnızca rakam olarak saklanır; parantez ve boşluklar gösterim sırasında
-/// ülkenin gruplama kalıbına göre eklenir.
+/// Numara kuralları (biçim, uzunluk, geçerlilik) `PhoneNumberFormatter`'dan gelir;
+/// model elle kural yazmaz.
 @MainActor
 @Observable
 final class PhoneEntryModel {
-    let country: PhoneCountry
+    @ObservationIgnored let formatter: PhoneNumberFormatter
 
-    /// Ülke kodu hariç, yalnızca rakamlardan oluşan ulusal numara.
-    private(set) var digits: String
+    /// Girilen numara. Ülke de bunun içindedir: `+` ile başlayan bir numara
+    /// yapıştırıldığında ülke numaradan belirlenir.
+    var number: ParsedPhoneNumber
 
-    init(country: PhoneCountry, digits: String = "") {
-        self.country = country
-        self.digits = ""
-        updateNumber(from: digits)
+    var isCountryPickerPresented = false
+
+    /// - Parameters:
+    ///   - country: Başlangıç ülkesi; verilmezse cihazın bölgesinden alınır.
+    ///   - input: Başlangıç numarası.
+    init(formatter: PhoneNumberFormatter, country: PhoneCountry? = nil, input: String = "") {
+        self.formatter = formatter
+        number = formatter.parse(input, for: country ?? formatter.defaultCountry())
     }
 
-    /// Alanda görünen, biçimlendirilmiş numara.
-    ///
-    /// Her yazımda kullanıcının girdisi rakamlara indirgenip yeniden biçimlendirilir.
-    /// Atama değer değişmese de gözlemcileri uyarır; böylece alan, kabul edilmeyen bir
-    /// karakteri (fazladan rakam, harf) ekranda bırakmaz.
-    var formattedNumber: String {
-        get { format(digits) }
-        set { updateNumber(from: newValue) }
+    var country: PhoneCountry {
+        number.country
     }
 
-    /// Numara gönderilebilir mi: basamak sayısı tam ve ilk rakam ülkenin kuralına uygun.
-    var isValid: Bool {
-        guard digits.count == country.digitCount else { return false }
-        guard let leadingDigit = country.leadingDigit else { return true }
-        return digits.first == leadingDigit
+    /// Alanın yer tutucusu: seçili ülkenin örnek numarası, yoksa genel metin.
+    var placeholder: String {
+        formatter.exampleNumber(for: country) ?? String(localized: "signup.phone.placeholder", bundle: .onsarj)
     }
 
-    /// Ülke kodu dahil, yalnızca rakamlardan oluşan tam numara: `"905537359394"`.
-    var fullNumber: String {
-        country.dialCode + digits
-    }
-
-    /// Kullanıcının girdisini rakamlara indirger.
-    ///
-    /// Otomatik doldurma veya yapıştırma ile gelen biçimler de kabul edilir:
-    /// başta ülke kodu (`+90 553 …`) veya ulusal ön ek `0` (`0553 …`) varsa atılır.
-    func updateNumber(from input: String) {
-        var newDigits = input.filter { $0.isASCII && $0.isNumber }
-        if newDigits.count > country.digitCount, newDigits.hasPrefix(country.dialCode) {
-            newDigits.removeFirst(country.dialCode.count)
-        }
-        while newDigits.first == "0" {
-            newDigits.removeFirst()
-        }
-        digits = String(newDigits.prefix(country.digitCount))
-    }
-
-    /// Rakamları gruplama kalıbına yerleştirir. Kalıptaki ayraçlar yalnızca arkasından
-    /// bir rakam geliyorsa eklenir: `"5537"` → `"(553) 7"`.
-    private func format(_ digits: String) -> String {
-        var result = ""
-        var remaining = digits[...]
-        for symbol in country.groupingPattern {
-            guard let next = remaining.first else { break }
-            if symbol == PhoneCountry.digitPlaceholder {
-                result.append(next)
-                remaining = remaining.dropFirst()
-            } else {
-                result.append(symbol)
-            }
-        }
-        return result
+    /// Ülke değişince girilen rakamlar yeni ülkenin biçimine göre yeniden biçimlenir.
+    func select(_ country: PhoneCountry) {
+        number = formatter.parse(number.nationalDigits, for: country)
     }
 }

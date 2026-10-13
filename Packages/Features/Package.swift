@@ -33,6 +33,7 @@ let package = Package(
                 .product(name: "OnsarjDomain", package: "Domain"),
                 .product(name: "DesignSystem", package: "Core"),
                 .product(name: "Localization", package: "Core"),
+                .product(name: "PhoneNumbers", package: "Core"),
             ],
             resources: [.process("Resources")]
         ),

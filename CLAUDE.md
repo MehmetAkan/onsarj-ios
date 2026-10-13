@@ -240,6 +240,10 @@ Mapbox SDK bağımlılıkları **yalnızca bu paketin `Package.swift` dosyasınd
    kaynakları bulunur. Hiçbir ekran, hiçbir iş mantığı `App/` içine yazılmaz.
 10. **Paket ≠ modül.** 5 paket, ~30 hedef vardır: `Core`, `Domain`, `MapboxKit`, `Services`,
     `Features`. Her modül için ayrı `Package.swift` açılmaz.
+11. **PhoneNumberKit yalnızca `PhoneNumbers` hedefinde import edilir** (K-21). Başka hiçbir
+    modül kütüphanenin tiplerini görmez; hepsi `PhoneNumbers`'ın kendi tiplerini kullanır.
+    Kütüphane ileride değişirse yalnızca o hedef değişir. Mapbox'taki kuralın aynısıdır
+    ve SwiftLint tarafından denetlenir.
 
 ### 5.4 Harita performans kuralı
 
@@ -294,7 +298,7 @@ onsarj-ios/
 │   │   ├── Route.swift
 │   │   └── DeepLinkHandler.swift      bildirim hedefi → ekran
 │   ├── Resources/
-│   │   ├── Media.xcassets
+│   │   ├── Assets.xcassets
 │   │   └── PrivacyInfo.xcprivacy
 │   └── Support/
 │       ├── Info.plist
@@ -469,6 +473,14 @@ Sistem yazı tipi kullanılır, özel yazı tipi yoktur.
 
 ### 6.7 Yerleşim ve test matrisi
 
+- Boşluklar `Spacing`, köşe yarıçapları `Radius` token'larından gelir. Sayı yazılmaz.
+- Boşluk ölçeği 4 noktalık ızgaraya oturur; ızgara dışı değer (13, 18, 22) kullanılmaz.
+- Dokunulabilir her öğenin dokunma alanı en az `Spacing.minTapTarget` (44pt) olur.
+  Görsel boyut daha küçük olabilir, dokunma alanı olamaz.
+- Ekran kenar boşluğu her ekranda `Spacing.screenMargin`'dir; ekranlar arası geçişte
+  içeriğin yatayda kaymaması buna bağlıdır.
+- Boşluklar yazı boyutuyla ölçeklenmez. Bir bileşen gerçekten ihtiyaç duyarsa
+  `@ScaledMetric` kullanılır, bu istisnadır.
 - Sabit genişlik/yükseklik yazılmaz. Esnek yerleşim kullanılır, görseller
   `maxWidth: .infinity` ile sınırlandırılır, taşabilecek içerik kaydırılabilir olur.
 - **Her ekran dört kombinasyonda kontrol edilir:**
@@ -480,6 +492,30 @@ Sistem yazı tipi kullanılır, özel yazı tipi yoktur.
 
 - SE + xxxLarge en zor durumdur; orada bozulmayan ekran sahada da bozulmaz.
 - Bir ekran bu matriste doğrulanmadan tamamlanmış sayılmaz.
+
+### 6.8 Platform koruması ve paket doğrulaması
+
+`swift build` ana makine (macOS) için derler. UIKit orada yoktur, bu yüzden UIKit'e
+dokunan kod `swift build` ile doğrulanamaz. İki durum vardır ve karıştırılmaz:
+
+**Platform koruması (`#if canImport(UIKit)`) şu koşulların hepsi sağlanırsa kullanılır:**
+- Korunan şey küçük ve yaprak düzeyde bir parçadır (tek bir başlatıcı, tek bir yardımcı).
+- Diğer platform için **anlamlı bir karşılık** vardır (ör. `Color(light:dark:)` macOS'ta
+  açık değeri döndürür).
+- Paketin geri kalanı büyük ölçüde platformdan bağımsızdır, yani koruma sayesinde
+  `swift build` ayakta kalır ve günlük geri bildirim hızlı olur.
+
+Örnek: `Core` paketindeki `Color(light:dark:)`.
+
+**Koruma kullanılmaz, paket iOS'a özel kabul edilir:**
+- Korunacak şey bir görünüm, bileşen veya özelliğin tamamıysa.
+- Diğer platform için anlamlı bir karşılık yoksa.
+
+Bu durumda koruma eklemek, hiç çalıştırılmayan ve hiç test edilmeyen bir kod yolu
+biriktirir — bölüm 2.3'ün yasakladığı şeydir. Paketin doğrulaması
+`./Tooling/Scripts/verify-ios.sh --package <ad>` ile yapılır.
+
+`Features` ve `MapboxKit` doğası gereği iOS'a özeldir; bu paketlerde koruma yazılmaz.
 
 ### 6.2 İsimlendirme
 - Protokol: `StationRepository` — uygulaması: `RemoteStationRepository`, `CachedStationRepository`
@@ -544,6 +580,7 @@ Kural: Bir adım, `PROGRESS.md` güncellenmeden tamamlanmış sayılmaz.
 | K-07 | CI/CD: Derleme, test ve TestFlight **Xcode Cloud**'da (25 saat/ay, Developer Program'a dahil). SwiftLint ve swift-format kontrolü **GitHub Actions Linux** makinelerinde (macOS çarpanı yok). Mapbox indirme token'ı `ci_scripts/ci_post_clone.sh` içinde ortam değişkeninden `.netrc`'ye yazılır. **Yedek plan:** saatler yetmezse önce 100 saatlik plan, sonra ofiste Mac mini + self-hosted runner. Linux VPS'e iOS CI kurulamaz (macOS yalnızca Apple donanımında çalışır). | 2026-09 |
 | K-08 | MVP'de tüm özellikler ücretsizdir. Abonelik Faz 2'dedir. `EntitlementService` protokol olarak şimdiden kurulur. | 2026-09 |
 | K-09 | Bildirim: iOS'ta **doğrudan APNs** (.p8, token tabanlı). Firebase SDK projeye girmez. Android FCM kullanır; hedefleme mantığı her iki platform için de backend'dedir. Bildirim yükü yapısal hedef taşır (`tip`, `hedef: {ekran, id}`, benzersiz id) ve ekran isimleri iki platformda aynıdır. Sessiz bildirime kritik iş yüklenmez. **Bağlı not:** K-12/K-13/K-14 için Firebase ailesi seçilirse bu karar yeniden açılır; geçiş `PushNotifications` modülüyle sınırlı kalacak şekilde yazılır. | 2026-09 |
+| K-21 | **PhoneNumberKit bağımlılığı onaylandı.** Depo: `github.com/PhoneNumberKit/PhoneNumberKit` — eski `marmelroy/PhoneNumberKit` deposu terk edilmiştir, kullanılmaz. Sürüm `.upToNextMinor(from: "5.0.0")`. **Gerekçe:** uygulama çok ülkede yayınlanacak ve Türkiye'de yabancı numaralı kullanıcılar var; her ülkenin numara uzunluğu, cep ön ekleri, gruplama biçimi ve ulusal ön ek kurallarını elle yönetmek sürdürülemez. Kütüphane Google'ın libphonenumber'ının Swift'e taşınmış hali; Android ekibi de aynı kural kaynağını kullanacağı için üç tarafta aynı numara aynı sonucu verir. **Alternatifler:** (a) kendi kural tablomuz — yalnızca 2-3 ülke hedeflenseydi makuldü, hata riski ve Android'le tutarsızlık yüksek; (b) libphonenumber metadata'sından betikle üretim — bağımlılık yok ama betiğin bakımı bize kalırdı. **Bakım durumu:** 5.0.0 Mayıs 2026'da çıktı, son yayın 5.0.12 (Ekim 2026); iki ayda beş sürüm, aktif. Eski depo 4.3.0'da donduruldu ve metadata güncellemesi almıyor. 5.x ayrıca Swift 6 için `Sendable` uyumları içeriyor — strict concurrency hedefimizle uyumlu. **Not:** `PhoneNumberTextField` ve ülke seçici 5.0'da ayrı bir `PhoneNumberKitUI` paketine taşındı; giriş alanını kendimiz yazdığımız için o paket çekilmez. **Maliyet:** ~1 MB metadata. **İzolasyon:** kütüphane yalnızca `Packages/Core` içindeki `PhoneNumbers` hedefinde import edilir; başka hiçbir modül onun tiplerini görmez (bkz. 5.3 kural 11). | 2026-10 |
 | K-17 | `.xcodeproj` **depoda tutulur**, proje üretici araç (Tuist/XcodeGen) kullanılmaz. Gerekçe: Xcode projesinde yalnızca 4 hedef var (uygulama, widget, 2 test); kodun tamamı SPM paketlerinde olduğu için dosya ekleme proje dosyasına dokunmaz; tüm derleme ayarları xcconfig'te durur. **Geçiş eşiği:** şu üçünden biri olursa XcodeGen'e geçilir — proje dosyasında 3 kez git çakışması yaşanması, Xcode hedef sayısının 6'yı geçmesi, ekibin 4 kişiyi aşması. | 2026-09 |
 | K-18 | Geliştirme ortamı: **kod yazımı VS Code**, geri kalan her şey **Xcode**. Xcode'da kalanlar: simülatör, gerçek cihaz ve CarPlay testi, kod imzalama ve yetkiler, proje/şema ayarları, Instruments ile performans ölçümü, String Catalog düzenleme. **Doğrulama komutu ayrımı:** `swift build` ana makine (macOS) için derler, `.iOS(.v17)` bildirimi orada sınanmaz. Bu yüzden `swift build` yalnızca platformdan bağımsız modüllerde (`Domain`, `Services`, `Core`'un UIKit kullanmayan kısımları) hızlı geri bildirim aracıdır. UIKit, CarPlay, ActivityKit veya Mapbox kullanan her modülün doğrulaması `xcodebuild -destination 'generic/platform=iOS Simulator'` ile yapılır; komut `Tooling/Scripts/verify-ios.sh` içine sarılır ve elle yazılmaz. **Günlük akış:** kod VS Code'da yazılır, Xcode açık kalır ve ikinci ekranda SwiftUI önizleme kanvası durur; VS Code'da kaydedilen dosyayı Xcode diskten yeniden yükler ve önizleme yenilenir. Hot reload aracı (InjectionNext, HotSwiftUI vb.) **kullanılmaz**: her SwiftUI görünümüne yalnızca geliştirme aracı için satır eklemeyi gerektirir ve bu, bölüm 2.3'teki "üretim kodunda geliştirme artığı bulunmaz" kuralıyla çatışır. | 2026-09 |
 

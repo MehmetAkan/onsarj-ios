@@ -13,12 +13,76 @@ Yeni katılan biri yalnızca `CLAUDE.md` ve bu dosyayı okuyarak projenin durumu
 araçları ve CI (GitHub Actions + Xcode Cloud) çalışıyor. Tasarım sisteminin temel
 katmanı yazıldı: renk paleti, tipografi, boşluk ve yarıçap token'ları.
 
-**Sırada:** Telefon ekranının cihaz testi, ardından SMS kodu ekranı. `WelcomeModel` ve
-`PhoneEntryModel` birim testleri ayrı görev olarak bekliyor.
+**Sırada:** Uluslararası telefon girişinin cihaz testi (Adım 18), ardından SMS kodu ekranı.
+`WelcomeModel` ve `PhoneEntryModel` birim testleri ayrı görev olarak bekliyor.
 
 **Yazılan ekranlar:** Karşılama (`WelcomeView`) ve telefon girişi (`PhoneEntryView`),
 `AppRouter` ile bağlı (Adım 11–16). `DesignSystem`, `Localization`, `AuthFeature` ve
 `App/Navigation` dışındaki modüller boş.
+
+---
+
+## Adım 18 — Uluslararası telefon numarası girişi (K-21)
+**Tarih:** 2026-10-13
+
+**Ne yapıldı**
+- `PhoneNumbers` hedefi (Core): PhoneNumberKit'in tek import noktası (5.3 kural 11).
+  `PhoneNumberFormatter` (`@MainActor`; kütüphane tipleri `Sendable` değil), `PhoneCountry`
+  (ISO kodu, arama kodu, bayrak, cihaz dilinden ad), `ParsedPhoneNumber` (ülke, ulusal
+  rakamlar, biçimlenmiş metin, E.164, `isValid`).
+- `PhoneNumberTextField`: `UITextField` sarmalayıcı. Rakam dışı karakter, ulusal ön ek (`0`)
+  ve fazla basamak alana hiç girmez; yazılırken ülke biçimine göre gruplanır; imleç
+  biçimlendirmeden sonra aynı rakamın arkasında kalır; ayraç silinince önceki rakam silinir.
+  `+` ile başlayan yapıştırma/otomatik doldurmada ülke numaradan belirlenir.
+- `CountryPicker`: aranabilir liste (ad, ISO kodu, arama kodu), sheet olarak açılır. Boş
+  sonuçta `ContentUnavailableView.search`. Varsayılan ülke `Locale.current.region`, yoksa TR.
+  Ülke değişince numara yeni biçime göre yeniden biçimlenir. Yer tutucu ülkenin örnek numarası.
+- `onContinue` artık E.164 veriyor: `+905537359394`. Geçerlilik gevşek (uzunluk), kütüphaneden.
+- `verify-ios.sh --package <Paket>`: tek paketi iOS için derler, uygulamayı atlar.
+- `AppDependencies`: `PhoneNumberFormatter` tek örnek, ilk ihtiyaçta oluşturuluyor.
+
+**Dosyalar**
+- Eklendi: `Packages/Core/Sources/PhoneNumbers/{PhoneNumberFormatter,PhoneCountry,ParsedPhoneNumber}.swift`,
+  `Packages/Core/Tests/PhoneNumbersTests/PhoneNumberFormatterTests.swift`, `Packages/Core/Package.resolved`,
+  `Packages/Features/Sources/AuthFeature/Components/{PhoneNumberTextField,CountryPicker}.swift`,
+  `App/Composition/AppDependencies.swift`
+- Değişti: `Packages/Core/Package.swift`, `Packages/Features/Package.swift`,
+  `Packages/Features/Sources/AuthFeature/{PhoneEntryView,PhoneEntryModel}.swift`,
+  `Packages/Features/Sources/AuthFeature/Components/PhoneNumberField.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings` (3 anahtar),
+  `App/RootView.swift`, `App/OnsarjApp.swift`, `Tooling/Scripts/verify-ios.sh`
+- Silindi: `Packages/Features/Sources/AuthFeature/PhoneCountry.swift` (yerine `PhoneNumbers`)
+
+**Kararlar**
+- **K-21 sürüm düzeltmesi (proje sahibi onayı):** `4.3.0` yalnızca terk edilmiş
+  `marmelroy` deposunda var; yeni depo `5.0.0` ile başlıyor. Kural
+  `.upToNextMinor(from: "5.0.0")`, çözülen sürüm `5.0.12`. K-21 metni proje sahibince güncellenecek.
+- `PhoneNumberKitUI` (hazır alan ve seçici) çekilmedi; kendi alanımız yazıldı.
+- Testler ayrı `PhoneNumbersTests` hedefinde; `CoreTests` dokunulmadı (proje sahibi kararı).
+- Features için platform koruması yazılmadı; `swift build` (Features) artık macOS'ta derlenmez,
+  doğrulaması `verify-ios.sh --package Features` ile (proje sahibi kararı).
+- UIKit yazı tipi: proje sahibinin eklediği `UITypography.numeric` kullanılıyor. Ajanın
+  `Typography.swift`'e eklediği eşdeğer `numericUIFont` geri alındı (dosya HEAD ile aynı).
+- Kütüphanenin `PartialFormatter`'ı iç durum taşıyor; her çağrıda yenisi oluşturuluyor.
+  `PhoneNumberUtility` ilk oluşturmada ~25 ms (macOS ölçümü), bu yüzden tek örnek.
+- Ülke seçici sheet; ekran içi sunum, `Route` değişmedi. Ek metin anahtarları:
+  `signup.country.title`, `signup.country.search`, `signup.phone.accessibility.country`.
+- Gevşek doğrulamanın sonucu: TR'de `4XX` ile başlayan 10 haneli numara da geçerli sayılır.
+
+**Doğrulama**
+- `swift build` + `swift test` (Core): geçti; `PhoneNumbersTests` 10 test / 12 durum geçti.
+- `swift build` (Features): bilerek geçmez (UIKit). `verify-ios.sh` (tam): tüm şemalar geçti.
+- `swiftlint --strict`, `swift format lint --strict`: ajanın dosyalarında ihlal yok.
+  `UITypography.swift` ve `SemanticColors.swift` sonunda satır sonu eksik (proje sahibinin dosyaları).
+
+**Bilinen eksikler**
+- `PhoneNumbers` ürünü uygulama hedefine açıkça bağlı değil (`App/Composition` import ediyor,
+  şu an `AuthFeature` üzerinden geçişli çözülüyor). Xcode'dan bağlanmalı.
+- `PhoneNumberTextField` imleç/silme davranışı için otomatik test yok; cihazda elle denenmeli.
+- Ülke seçici kapandıktan sonra klavye yeniden açılmıyor; kullanıcı alana dokunmalı.
+- `PhoneEntryModel`, `WelcomeModel` birim testleri hâlâ ayrı görev.
+
+**Sıradaki adım:** Cihaz testi; ardından SMS kodu ekranı.
 
 ---
 

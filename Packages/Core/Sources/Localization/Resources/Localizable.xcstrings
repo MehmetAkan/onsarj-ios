@@ -1,6 +1,42 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "signup.country.search" : {
+      "comment" : "Ülke seçici, arama alanının yer tutucusu.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search country or code"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ülke veya kod ara"
+          }
+        }
+      }
+    },
+    "signup.country.title" : {
+      "comment" : "Ülke seçici, gezinme çubuğu başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select country"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ülke seç"
+          }
+        }
+      }
+    },
     "signup.phone.accessibility.back" : {
       "comment" : "Telefon girişi ekranı, geri butonunun VoiceOver etiketi.",
       "extractionState" : "manual",
@@ -33,6 +69,24 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Telefon numarasını temizle"
+          }
+        }
+      }
+    },
+    "signup.phone.accessibility.country" : {
+      "comment" : "Telefon girişi ekranı, ülke kodu düğmesinin VoiceOver etiketi. Değer olarak ülke adı ve kodu okunur.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Country code"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ülke kodu"
           }
         }
       }

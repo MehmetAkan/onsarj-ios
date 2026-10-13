@@ -16,6 +16,10 @@ let package = Package(
         .library(name: "LocationKit", targets: ["LocationKit"]),
         .library(name: "Telemetry", targets: ["Telemetry"]),
         .library(name: "PushNotifications", targets: ["PushNotifications"]),
+        .library(name: "PhoneNumbers", targets: ["PhoneNumbers"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/PhoneNumberKit/PhoneNumberKit", .upToNextMinor(from: "5.0.0"))
     ],
     targets: [
         .target(name: "OnsarjCore"),
@@ -27,6 +31,10 @@ let package = Package(
         .target(name: "LocationKit", dependencies: ["OnsarjCore"]),
         .target(name: "Telemetry", dependencies: ["OnsarjCore"]),
         .target(name: "PushNotifications", dependencies: ["OnsarjCore"]),
+        .target(
+            name: "PhoneNumbers",
+            dependencies: [.product(name: "PhoneNumberKit", package: "PhoneNumberKit")]
+        ),
         .testTarget(
             name: "CoreTests",
             dependencies: [
@@ -41,5 +49,6 @@ let package = Package(
                 "PushNotifications",
             ]
         ),
+        .testTarget(name: "PhoneNumbersTests", dependencies: ["PhoneNumbers"]),
     ]
 )

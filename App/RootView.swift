@@ -7,6 +7,8 @@ import SwiftUI
 /// Ekranların kapanışları burada `AppRouter` çağrılarına bağlanır. Henüz karşılığı
 /// olmayan istekler (giriş yap, SMS kodu adımı) ilgili ekranlar yazıldığında bağlanır.
 struct RootView: View {
+    let dependencies: AppDependencies
+
     @State private var router = AppRouter()
 
     var body: some View {
@@ -27,6 +29,7 @@ struct RootView: View {
         switch route {
         case .phoneEntry:
             PhoneEntryView(
+                formatter: dependencies.phoneNumberFormatter,
                 onBack: { router.pop() },
                 onContinue: { _ in }
             )
