@@ -2,16 +2,34 @@ import AuthFeature
 import DesignSystem
 import SwiftUI
 
-/// Uygulamanın kök görünümü.
+/// Uygulamanın kök görünümü: gezinme yığını ve ekranların `Route` karşılıkları.
 ///
-/// Şu an yalnızca karşılama ekranını gösterir. Ekranlar arası geçiş `AppRouter`
-/// ile kurulacak; o gelene kadar karşılama ekranının kapanışları boştur.
+/// Ekranların kapanışları burada `AppRouter` çağrılarına bağlanır. Henüz karşılığı
+/// olmayan istekler (giriş yap, SMS kodu adımı) ilgili ekranlar yazıldığında bağlanır.
 struct RootView: View {
+    @State private var router = AppRouter()
+
     var body: some View {
-        WelcomeView(
-            onContinue: {},
-            onLogin: {}
-        )
+        NavigationStack(path: $router.path) {
+            WelcomeView(
+                onContinue: { router.push(.phoneEntry) },
+                onLogin: {}
+            )
+            // Karşılama ekranının gezinme çubuğu yok; boş çubuk logoyu aşağı iterdi.
+            .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(for: Route.self, destination: destination)
+        }
         .onsarjDynamicTypeRange()
+    }
+
+    @ViewBuilder
+    private func destination(for route: Route) -> some View {
+        switch route {
+        case .phoneEntry:
+            PhoneEntryView(
+                onBack: { router.pop() },
+                onContinue: { _ in }
+            )
+        }
     }
 }

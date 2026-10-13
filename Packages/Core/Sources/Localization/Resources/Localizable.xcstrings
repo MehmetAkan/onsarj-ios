@@ -1,6 +1,132 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "signup.phone.accessibility.back" : {
+      "comment" : "Telefon girişi ekranı, geri butonunun VoiceOver etiketi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go back"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geri dön"
+          }
+        }
+      }
+    },
+    "signup.phone.accessibility.clear" : {
+      "comment" : "Telefon girişi ekranı, temizleme düğmesinin VoiceOver etiketi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear phone number"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telefon numarasını temizle"
+          }
+        }
+      }
+    },
+    "signup.phone.action.continue" : {
+      "comment" : "Telefon girişi ekranı, birincil buton.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Devam"
+          }
+        }
+      }
+    },
+    "signup.phone.body" : {
+      "comment" : "Telefon girişi ekranı, başlık altındaki açıklama.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We'll text you a code to verify it. This number will be your login."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doğrulamak için sana bir kod göndereceğiz. Bu numara giriş bilgin olacak."
+          }
+        }
+      }
+    },
+    "signup.phone.navTitle" : {
+      "comment" : "Telefon girişi ekranı, gezinme çubuğu başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create an account"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hesap oluştur"
+          }
+        }
+      }
+    },
+    "signup.phone.placeholder" : {
+      "comment" : "Telefon girişi ekranı, numara alanının yer tutucusu.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your phone number"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telefon numaranı gir"
+          }
+        }
+      }
+    },
+    "signup.phone.title" : {
+      "comment" : "Telefon girişi ekranı, ana başlık.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's your phone number?"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telefon numaran nedir?"
+          }
+        }
+      }
+    },
     "welcome.action.continue" : {
       "comment" : "Karşılama ekranı, birincil buton.",
       "extractionState" : "manual",

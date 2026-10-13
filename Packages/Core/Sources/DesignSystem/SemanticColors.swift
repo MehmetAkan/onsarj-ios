@@ -43,6 +43,12 @@ public enum Theme {
     /// Pasif veya devre dışı metin.
     public static let textDisabled = Color(light: Palette.gray400, dark: Palette.gray600)
 
+    /// Boş giriş alanlarındaki yer tutucu metin.
+    ///
+    /// `textSecondary`'den açıktır: yer tutucu gerçek içerik değil, doldurulacak
+    /// alanın ipucudur ve okunduğunda girilmiş veriyle karışmamalıdır.
+    public static let textPlaceholder = Color(light: Palette.gray400, dark: Palette.gray600)
+
     // MARK: - Eylem
 
     /// Birincil buton arka planı.
@@ -55,6 +61,13 @@ public enum Theme {
 
     /// Basılı durumdaki birincil buton.
     public static let actionPrimaryPressed = Color(light: Palette.gray800, dark: Palette.gray200)
+
+    /// Devre dışı birincil buton.
+    ///
+    /// Butonu gizlemez, yalnızca vurgusunu düşürür. Kullanıcı butonun orada olduğunu
+    /// ve neyi tamamlayınca etkinleşeceğini görebilmelidir. Üzerindeki metin
+    /// `onActionPrimary` olarak kalır.
+    public static let actionPrimaryDisabled = Color(light: Palette.gray700, dark: Palette.gray300)
 
     /// Marka vurgusu: seçili durumlar, aktif simgeler, logo eşliği.
     ///

@@ -65,10 +65,7 @@ public struct WelcomeView: View {
 
     private var actions: some View {
         VStack(spacing: Spacing.sm) {
-            Button(action: onContinue) {
-                Text("welcome.action.continue", bundle: .onsarj)
-            }
-            .buttonStyle(PrimaryButtonStyle())
+            PrimaryButton("welcome.action.continue", bundle: .onsarj, action: onContinue)
 
             loginRow
         }
@@ -108,27 +105,6 @@ public struct WelcomeView: View {
     /// Ekran okuyucu bir metni seslendirirken içeriğin kayması kullanıcıyı içerikten koparır.
     private func updateAutoAdvance() {
         model.setAutoAdvance(enabled: scenePhase == .active && !isVoiceOverEnabled)
-    }
-}
-
-/// Birincil buton görünümü: tam genişlik, basılıyken koyulaşan dolgu.
-private struct PrimaryButtonStyle: ButtonStyle {
-    /// Butonun en küçük yüksekliği. Yazı büyüdükçe buton da uzar.
-    private static let minHeight: CGFloat = 58
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(Typography.button)
-            .foregroundStyle(Theme.onActionPrimary)
-            .multilineTextAlignment(.center)
-            .padding(.vertical, Spacing.md)
-            .padding(.horizontal, Spacing.lg)
-            .frame(maxWidth: .infinity, minHeight: Self.minHeight)
-            .background(
-                configuration.isPressed ? Theme.actionPrimaryPressed : Theme.actionPrimary,
-                in: RoundedRectangle(cornerRadius: Radius.button)
-            )
-            .contentShape(RoundedRectangle(cornerRadius: Radius.button))
     }
 }
 

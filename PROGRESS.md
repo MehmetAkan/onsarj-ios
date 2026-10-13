@@ -13,10 +13,130 @@ Yeni katılan biri yalnızca `CLAUDE.md` ve bu dosyayı okuyarak projenin durumu
 araçları ve CI (GitHub Actions + Xcode Cloud) çalışıyor. Tasarım sisteminin temel
 katmanı yazıldı: renk paleti, tipografi, boşluk ve yarıçap token'ları.
 
-**Sırada:** `WelcomeModel` birim testleri (projenin ilk testi).
+**Sırada:** Telefon ekranının cihaz testi, ardından SMS kodu ekranı. `WelcomeModel` ve
+`PhoneEntryModel` birim testleri ayrı görev olarak bekliyor.
 
-**İlk ekran yazıldı ve uygulamaya bağlandı:** `RootView` → `WelcomeView` (Adım 11–12).
-`DesignSystem`, `Localization` ve `AuthFeature` dışındaki modüller boş.
+**Yazılan ekranlar:** Karşılama (`WelcomeView`) ve telefon girişi (`PhoneEntryView`),
+`AppRouter` ile bağlı (Adım 11–16). `DesignSystem`, `Localization`, `AuthFeature` ve
+`App/Navigation` dışındaki modüller boş.
+
+---
+
+## Adım 17 — Telefon ekranında özel simge
+**Tarih:** 2026-10-13
+
+**Ne yapıldı**
+- Rozetteki SF Symbol (`phone.fill`) yerine proje sahibinin SVG simgesi
+  (`phone-entry-icon`, 24×24, iki renkli) kullanılıyor. Gri daire korundu.
+- Proje sahibinin eklediği iki ayrı görsel seti (`phone-entry-icon`,
+  `phone-entry-icon-dark`) tek sette birleştirildi: koyu sürüm `Dark` görünümünde,
+  `Original` çizim, vektör verisi korunuyor, tek ölçek.
+- `IconBadge` artık `Image` alıyor: özel görsel kendi renk ve doğal boyutuyla, SF Symbol
+  verilirse `Typography.titleSmall` + `Theme.textSecondary` ile çiziliyor.
+
+**Dosyalar**
+- Değişti: `Packages/Features/Sources/AuthFeature/Components/IconBadge.swift`,
+  `Packages/Features/Sources/AuthFeature/PhoneEntryView.swift`,
+  `Packages/Features/Sources/AuthFeature/Resources/Media.xcassets/phone-entry-icon.imageset/`
+- Silindi: `.../Media.xcassets/phone-entry-icon-dark.imageset/`
+
+**Kararlar**
+- Simge yalnızca bu ekrana ait; `DesignSystem`'e değil `AuthFeature` kaynaklarına konuldu.
+- Simge 24pt sabit (doğal boyut), yazı boyutuyla ölçeklenmiyor; daire ölçekleniyor.
+
+**Doğrulama**
+- `swift build` (Features) ve `verify-ios.sh --app`: geçti. Lint: ajanın dosyalarında ihlal yok.
+
+**Bilinen eksikler**
+- **Açık ve koyu SVG dosyaları birebir aynı.** Koyu tema sürümü proje sahibi tarafından
+  `Dark` kutusuna yeniden eklenmeli.
+
+**Sıradaki adım:** Telefon numarası biçiminin düzenlenmesi.
+
+---
+
+## Adım 16 — İlk yönlendirme: AppRouter ve Route
+**Tarih:** 2026-10-13
+
+**Ne yapıldı**
+- `AppRouter` (`@Observable`): gezinme yığını (`path`), `push` ve `pop`. Özellikler arası
+  tek geçiş noktası (CLAUDE.md 5.3 kural 1).
+- `Route`: ilk hedef `phoneEntry`. Karşılama ekranı yığının tabanı, `Route`'ta yer almaz.
+- `RootView`: `NavigationStack(path:)`; karşılamadaki "Telefon ile Devam Et" →
+  `PhoneEntryView`, geri oku → `pop`.
+- Karşılama ekranında gezinme çubuğu gizlendi; boş çubuk logoyu aşağı itiyordu.
+
+**Dosyalar**
+- Eklendi: `App/Navigation/{AppRouter,Route}.swift`
+- Değişti: `App/RootView.swift` (dosya sonundaki eksik satır sonu da giderildi)
+
+**Kararlar**
+- Proje sahibi ekranı cihazda test edebilmek için bağlantıyı istedi. CLAUDE.md'deki yapıya
+  uygun olarak `App/Navigation/` altında kuruldu. `App/` senkronize klasör olduğu için
+  `project.pbxproj` değişmedi.
+- Bağlanmamış istekler boş kapanış: "Giriş yap" ve telefon ekranındaki "Devam"
+  (SMS kodu ekranı henüz yok). İlgili ekranlar yazıldığında bağlanacak.
+- `DeepLinkHandler` ve ekran görüntüleme telemetrisi (K-19) kapsam dışı.
+
+**Doğrulama**
+- `verify-ios.sh --app`: geçti. `swiftlint` ve `swift format lint`: `App/` temiz.
+
+**Bilinen eksikler**
+- `PhoneEntryView` sistem geri düğmesini gizlediği için kenardan kaydırarak geri dönme
+  hareketi çalışmayabilir (aşağıda, Adım 15).
+
+**Sıradaki adım:** Proje sahibinin cihaz testi; ardından SMS kodu ekranı.
+
+---
+
+## Adım 15 — Telefon numarası giriş ekranı ve ortak birincil buton
+**Tarih:** 2026-10-13
+
+**Ne yapıldı**
+- `PrimaryButton` (`DesignSystem/Components`): `WelcomeView`'daki gizli stil ortak bileşene
+  taşındı, ölçüler birebir korundu (en az 58pt yükseklik, `Typography.button`, `Radius.button`).
+  Devre dışı durumu standart `.disabled(_:)` ile; arka plan `Theme.actionPrimaryDisabled`.
+- `PhoneEntryView`: gezinme çubuğu (geri oku + başlık), simge rozeti, başlık, açıklama,
+  ülke kodu + numara alanı, klavyenin üstünde kalan "Devam" butonu (`safeAreaInset`).
+  Açılışta numara alanı odaklanır. İçerik `ScrollView` içinde (SE + xxxLarge).
+- `PhoneEntryModel`: numara yalnızca rakam olarak tutulur, `(5XX) XXX XX XX` biçiminde
+  gösterilir. Geçerlilik: 10 hane, ilk hane 5. Yapıştırma/otomatik doldurmada baştaki
+  `+90` ve `0` atılır. `onContinue` ülke kodu dahil yalnızca rakam verir (`905537359394`).
+- `PhoneCountry`: ülke kodu, bayrak, basamak sayısı, gruplama kalıbı, ilk hane kuralı.
+  Bileşene dışarıdan verilir; ülke seçimi eklendiğinde liste bu tipten oluşur.
+- `PhoneNumberField`, `IconBadge` bileşenleri; 7 `signup.phone.*` metni (en + tr).
+
+**Dosyalar**
+- Eklendi: `Packages/Core/Sources/DesignSystem/Components/PrimaryButton.swift`,
+  `Packages/Features/Sources/AuthFeature/{PhoneEntryView,PhoneEntryModel,PhoneCountry}.swift`,
+  `Packages/Features/Sources/AuthFeature/Components/{PhoneNumberField,IconBadge}.swift`
+- Değişti: `Packages/Features/Sources/AuthFeature/WelcomeView.swift` (gizli stil silindi,
+  `PrimaryButton` kullanıyor), `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`
+
+**Kararlar**
+- `PhoneCountry` görevde listelenmeyen ayrı bir dosya: "dosya adı = tip adı" kuralı.
+  `OnsarjDomain`'e konmadı; şimdilik yalnızca giriş akışının bilgisi.
+- Gezinme çubuğu `toolbar` ile (sistem çubuğu); ekran bir `NavigationStack` içinde
+  gösterilmeli. Sistem geri düğmesi gizlendi ki geri dönüş `onBack` ile App katmanından geçsin.
+- `IconBadge` çapı 56pt, `@ScaledMetric` ile yazı boyutuyla ölçekleniyor (simge
+  `Typography.titleSmall`); büyük yazıda simge daireden taşmasın diye.
+- Klavye tipi ve `textContentType` macOS'ta yok; tek bir `#if os(iOS)` koruması
+  (`phoneNumberInputTraits()`) ile `swift build` döngüsü korundu.
+- Numara alanı ve ülke kodu `Typography.numeric` (sabit genişlikli rakam) kullanıyor.
+
+**Doğrulama**
+- `swift build` (Core, Features): geçti. `verify-ios.sh`: tüm şemalar geçti.
+- `swiftlint --strict` ve `swift format lint --strict`: ajanın dosyalarında ihlal yok.
+  `SemanticColors.swift` sonunda satır sonu eksik (proje sahibinin kaydedilmemiş değişikliği).
+- Biçimlendirme mantığı geçici bir betikle sınandı (kalıcı test değil): kısmi girişler,
+  11. hane reddi, `+90 …` ve `0 …` yapıştırma, harf ayıklama, ilk hane kuralı — beklendiği gibi.
+- Önizleme matrisi (SE / Pro Max × Large / xxxLarge × boş / dolu) kanvasta gözle kontrol edilmedi.
+
+**Bilinen eksikler**
+- `PhoneEntryModel` ve `WelcomeModel` için birim testi yok (ayrı görev).
+- Sistem geri düğmesi gizli olduğu için kenardan kaydırarak geri dönme hareketi devre dışı
+  kalabilir. Cihazda kontrol edilmeli; gerekirse karar verilecek.
+- Ülke kodu seçimi MVP'de yok (görev gereği).
 
 ---
 
