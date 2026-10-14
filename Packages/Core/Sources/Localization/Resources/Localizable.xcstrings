@@ -181,6 +181,168 @@
         }
       }
     },
+    "verification.accessibility.codeField" : {
+      "comment" : "SMS kodu ekranı, kod alanının VoiceOver etiketi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verification code, 6 digits"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doğrulama kodu, 6 hane"
+          }
+        }
+      }
+    },
+    "verification.action.continue" : {
+      "comment" : "SMS kodu ekranı, birincil buton.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Devam"
+          }
+        }
+      }
+    },
+    "verification.body" : {
+      "comment" : "SMS kodu ekranı, açıklama. Altında numaranın kendisi gösterilir.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We sent a 6-digit code by SMS to"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 haneli kodu SMS ile şu numaraya gönderdik:"
+          }
+        }
+      }
+    },
+    "verification.error.invalidCode" : {
+      "comment" : "SMS kodu ekranı, girilen kod yanlış olduğunda gösterilen hata.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That code isn't right. Check it and try again."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kod doğru değil. Kontrol edip tekrar dene."
+          }
+        }
+      }
+    },
+    "verification.navTitle" : {
+      "comment" : "SMS kodu ekranı, gezinme çubuğu başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create an account"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hesap oluştur"
+          }
+        }
+      }
+    },
+    "verification.resend.action" : {
+      "comment" : "SMS kodu ekranı, geri sayım bitince kodu tekrar gönderme bağlantısı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resend code"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kodu tekrar gönder"
+          }
+        }
+      }
+    },
+    "verification.resend.countdown" : {
+      "comment" : "SMS kodu ekranı, tekrar göndermeye kalan süre. Argüman: kalan saniye.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resend code in %lld s"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kodu tekrar gönder (%lld sn)"
+          }
+        }
+      }
+    },
+    "verification.resend.question" : {
+      "comment" : "SMS kodu ekranı, tekrar gönderme düğmesinin önündeki soru.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Didn't receive the code?"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kod gelmedi mi?"
+          }
+        }
+      }
+    },
+    "verification.title" : {
+      "comment" : "SMS kodu ekranı, başlık.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your code"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kodunu gir"
+          }
+        }
+      }
+    },
     "welcome.action.continue" : {
       "comment" : "Karşılama ekranı, birincil buton.",
       "extractionState" : "manual",

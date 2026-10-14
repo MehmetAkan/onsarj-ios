@@ -13,12 +13,174 @@ Yeni katılan biri yalnızca `CLAUDE.md` ve bu dosyayı okuyarak projenin durumu
 araçları ve CI (GitHub Actions + Xcode Cloud) çalışıyor. Tasarım sisteminin temel
 katmanı yazıldı: renk paleti, tipografi, boşluk ve yarıçap token'ları.
 
-**Sırada:** Uluslararası telefon girişinin cihaz testi (Adım 18), ardından SMS kodu ekranı.
-`WelcomeModel` ve `PhoneEntryModel` birim testleri ayrı görev olarak bekliyor.
+**Sırada:** Telefon girişi ve SMS kodu ekranının cihaz testi (Adım 18–19). Kodun doğrulanması
+ve tekrar gönderilmesi backend sözleşmesini (K-10) bekliyor. `WelcomeModel` ve `PhoneEntryModel`
+birim testleri ayrı görev olarak bekliyor.
 
-**Yazılan ekranlar:** Karşılama (`WelcomeView`) ve telefon girişi (`PhoneEntryView`),
-`AppRouter` ile bağlı (Adım 11–16). `DesignSystem`, `Localization`, `AuthFeature` ve
-`App/Navigation` dışındaki modüller boş.
+**Yazılan ekranlar:** Karşılama (`WelcomeView`), telefon girişi (`PhoneEntryView`) ve SMS kodu
+(`VerificationCodeView`), `AppRouter` ile bağlı (Adım 11–19). `DesignSystem`, `Localization`,
+`PhoneNumbers`, `AuthFeature` ve `App/Navigation` dışındaki modüller boş.
+
+---
+
+## Adım 21 — Ortak üst çubuk (ScreenHeader), SMS ekranı metinleri
+**Tarih:** 2026-10-14
+
+**Ne yapıldı**
+- `ScreenHeader` (`DesignSystem/Components`): ortada başlık, solda geri oku. Telefon ve SMS
+  ekranlarındaki yerel `toolbar` kopyaları silindi; iki ekran da sistem gezinme çubuğunu
+  gizleyip bu bileşeni kullanıyor. Önizleme: SE ve Pro Max × Large ve xxxLarge.
+- Geri oku: iOS 26'nın çizdiği cam çerçeve ve arka plan yok, yalnızca ok. Ok küçüldü
+  (`Typography.buttonSmall`). Dokunma alanı `Spacing.minTapTarget` karesi (`contentShape`).
+- SMS ekranından "Değiştir" kaldırıldı: `onChangeNumber` kapanışı, `RootView` bağlantısı ve
+  `verification.action.changeNumber` anahtarı silindi. Numarayı değiştirmek için geri oku kullanılıyor.
+- Tekrar gönderme satırı: önce soluk "Kod gelmedi mi?", yanında geri sayım ya da altı çizili
+  "Kodu tekrar gönder". Büyük yazıda alt alta geçiyor.
+- Metinler: başlık "Enter your code" / "Kodunu gir". Açıklama "We sent a 6-digit code by SMS to" /
+  "6 haneli kodu SMS ile şu numaraya gönderdik:". Yeni anahtar: `verification.resend.question`.
+
+**Dosyalar**
+- Eklendi: `Packages/Core/Sources/DesignSystem/Components/ScreenHeader.swift`
+- Değişti: `Packages/Features/Sources/AuthFeature/{PhoneEntryView,VerificationCodeView}.swift`,
+  `Packages/Features/Sources/AuthFeature/Components/ResendCodeButton.swift`, `App/RootView.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`
+
+**Kararlar**
+- `ScreenHeader` bir `toolbar` öğesi değil, görünüm olarak yazıldı (`safeAreaInset(edge: .top)`).
+  Böylece görünüm iOS 17'den 26'ya kadar aynı kalıyor; iOS 26'nın cam arka planını
+  sürüm kontrolüyle kapatmak gerekmiyor.
+- DesignSystem `Localization`'a bağlı olmadığı için metinler `PrimaryButton`'daki gibi anahtar +
+  paket olarak veriliyor.
+- Başlık, uygulamadaki diğer başlıklar gibi cümle düzeninde yazıldı: "Enter your code".
+
+**Doğrulama**
+- `swift build` (Core), `verify-ios.sh` (tam: uygulama ve tüm paketler): geçti.
+- `swiftlint --strict`, `swift format lint`: yeni ihlal yok.
+- Simülatörde (iPhone 16 Pro, İngilizce) iki ekranın görüntüsü alınıp kontrol edildi.
+  Geçici UI testi silindi.
+
+**Bilinen eksikler**
+- Sistem gezinme çubuğu gizli olduğu için kenardan kaydırarak geri dönme çalışmıyor
+  (önceden de geri düğmesi gizli olduğu için çalışmıyordu).
+- Simülatörde `-AppleLanguages (tr)` ile başlatılan uygulama İngilizce açıldı. Uygulamanın
+  Türkçe yerelleştirmeyi bildirip bildirmediği (Info.plist / proje bölgeleri) kontrol edilmeli.
+  İncelenmedi, proje dosyasına dokunulmadı.
+- SE ve xxxLarge matrisi cihazda gözle kontrol edilmedi.
+
+**Sıradaki adım:** Türkçe dil sorununun kontrolü; ardından ad-soyad ekranı (tasarım bekleniyor).
+
+---
+
+## Adım 20 — SMS kodu ekranında görsel düzeltmeler
+**Tarih:** 2026-10-14
+
+**Ne yapıldı**
+- Simge: SF Symbol yerine proje sahibinin `sms-entry-icon` SVG'si. Görsel seti
+  `phone-entry-icon` ile aynı yapıya getirildi: tek ölçek, vektör korunuyor, `Original` çizim.
+- Kod alanı 6 ayrı kareye bölündü (`Typography.numericLarge`, `Theme.backgroundSubtle`,
+  `Radius.field`, kareler eşit genişlikte). Sıradaki hanenin karesi kenarlıkla vurgulanıyor,
+  yazıldıkça bir sonrakine geçiyor. Hata varken bütün kareler `Theme.borderError`.
+- Alanın üstünde görünen yer tutucu metin ("Verification code, 6 digits") kaldırıldı.
+  Etiket artık yalnızca VoiceOver'a veriliyor.
+- "Değiştir" ve "Kodu tekrar gönder": yeşil yerine altı çizili `Theme.textPrimary`,
+  `Typography.secondary`. Geri sayım soluk düz metin.
+- Kod alanı ile tekrar gönderme satırı arası daraltıldı: aralık `Spacing.xs`, satırın 44pt
+  dokunma alanı metnin altına doğru uzuyor.
+
+**Dosyalar**
+- Değişti: `Packages/Features/Sources/AuthFeature/VerificationCodeView.swift`,
+  `Packages/Features/Sources/AuthFeature/Components/{CodeInputField,ResendCodeButton}.swift`,
+  `Packages/Features/Sources/AuthFeature/Resources/Media.xcassets/sms-entry-icon.imageset/Contents.json`
+
+**Kararlar**
+- **[Onay]** Etkin karenin kenarlığı `Theme.actionPrimary`. Odak kenarlığı için ayrı bir
+  token yok ve yeni token eklenmedi. İstenirse `borderFocused` token'ı proje sahibince eklenir.
+- Adım 19'daki "Devam açılmıyor" bildirimi kodda tekrar oluşturulamadı. Simülatörde akış
+  çalışıyor; büyük olasılıkla eski derlemeden kaynaklandı.
+
+**Doğrulama**
+- `verify-ios.sh --package Features` ve `--app`: geçti. `swiftlint --strict`,
+  `swift format lint`: yeni ihlal yok.
+- Simülatörde (iPhone 16 Pro, Large) geçici bir UI testiyle ekran görüntüsü alınıp kontrol
+  edildi. Test dosyası sonra silindi, depoda kalmadı.
+
+**Bilinen eksikler**
+- SE ve xxxLarge matrisi gözle kontrol edilmedi.
+- Hata mesajı alanı boşken de bir satır yer kaplıyor (zıplamayı önlemek için).
+- Önceki görevin 1. ve 2. maddeleri (`ScreenHeader` ortak bileşeni, geri butonunun
+  sadeleşmesi) henüz yapılmadı.
+
+**Sıradaki adım:** `ScreenHeader` ve geri butonu.
+
+---
+
+## Adım 19 — SMS doğrulama kodu ekranı
+**Tarih:** 2026-10-14
+
+**Ne yapıldı**
+- `VerificationCodeView`: telefon ekranıyla aynı dikey düzen. Gezinme çubuğu, `IconBadge`
+  (`message.fill`), başlık, açıklama + numara + "Değiştir" bağlantısı, kod alanı, hata
+  mesajı, tekrar gönderme satırı, altta `PrimaryButton`. Numara E.164 olarak gelir,
+  `PhoneNumberFormatter` ile `+90 553 735 93 94` biçiminde gösterilir.
+- `CodeInputField`: tek kutuda 6 hane (`Typography.numeric`), boş haneler
+  `Theme.textPlaceholder` renginde `minus` simgesi. Üzerine metni ve imleci saydam bir
+  SwiftUI `TextField` bindirildi (`.numberPad`, `.oneTimeCode`), ekran açılınca odaklanıyor.
+  Hata varken kenarlık `Theme.borderError`. VoiceOver'a tek alan olarak sunuluyor.
+- `VerificationCodeModel`: rakam dışı karakter ve 6'dan fazla hane süzülüyor. 6 hane
+  dolunca kod kendiliğinden gönderiliyor. Süren gönderim (`submission`) varken ikinci
+  gönderim yapılmıyor. Yeni bir rakam yazılınca hata temizleniyor.
+- `ResendCodeButton`: geri sayım, başlangıç anı + süreden hesaplanıyor (`TimelineView`,
+  1 sn). Arka planda geçen süre de sayılıyor. Süre dışarıdan veriliyor (varsayılan 60 sn).
+- Hata görünümü: `VerificationCodeError` (şimdilik `invalidCode`). Mesaj alanı hata yokken
+  de saydam olarak yerini koruyor, içerik zıplamıyor. Hata çıkınca VoiceOver'a duyuruluyor.
+  Geri sayım `updatesFrequently` ile her saniye seslendirilmiyor.
+- `Route.verificationCode(phoneNumber:)` eklendi. Telefon ekranındaki "Devam" artık bu
+  ekrana geçiyor. "Değiştir" ve geri oku telefon ekranına dönüyor, girilen numara dolu kalıyor.
+
+**Dosyalar**
+- Eklendi: `Packages/Features/Sources/AuthFeature/{VerificationCodeView,VerificationCodeModel,VerificationCodeError}.swift`,
+  `Packages/Features/Sources/AuthFeature/Components/{CodeInputField,ResendCodeButton}.swift`,
+  `Packages/Features/Tests/FeaturesTests/VerificationCodeModelTests.swift`
+- Değişti: `App/Navigation/Route.swift`, `App/RootView.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings` (9 `verification.*` anahtarı)
+
+**Kararlar** (proje sahibinin onayını bekleyenler işaretli)
+- **[Onay]** `onSubmit` imzası `(code) async throws(VerificationCodeError)`. Hata
+  "dışarıdan" bu kapanıştan fırlatılarak veriliyor. Kapanış sürdüğü sürece gönderim kilitli
+  kalıyor; çift gönderim böyle engelleniyor. Ayrı bir hata parametresi, modelin durumuyla
+  çift sahiplik yaratırdı.
+- **[Onay]** Görevdeki dört dosyaya ek olarak `VerificationCodeError.swift` açıldı
+  (CLAUDE.md 6.3, özelliğin kendi hata tipi).
+- **[Onay]** Kod alanı `opacity(0)` yerine saydam metin + saydam `tint` kullanıyor. Saydam
+  görünüm SwiftUI'da dokunuşu ve VoiceOver erişimini kaybediyor. Gizli alan, süzülen değeri
+  kendi metnine geri yazıyor; kabul edilmeyen karakter alanda birikmiyor.
+- Geri sayım metni `%lld` ile yazıldı (görevdeki `%d` yerine). `Int` argümanının doğru
+  biçim belirteci bu.
+- Görev tanımına uygun olarak `Route`'a yeni durum eklendi (CLAUDE.md 2.6, ekranlar arası yeni geçiş).
+- "Değiştir" de `pop()` yapıyor. Telefon ekranı yığında durumunu koruduğu için numara dolu kalıyor.
+  Geri okundan farkı şimdilik yalnızca kapanış düzeyinde.
+- Geri düğmesi etiketi olarak mevcut `signup.phone.accessibility.back` anahtarı kullanıldı.
+- Yazı tipleri: "Değiştir" ve tekrar gönderme `Typography.caption`. Geri sayım rakamları ve
+  numara `.monospacedDigit()`. Rakam haneleri yayılmıyor, `Spacing.lg` aralıkla ortalanıyor.
+
+**Doğrulama**
+- `swift build` + `swift test` (Core): geçti, 11 test.
+- `verify-ios.sh --package Features` ve `verify-ios.sh --app`: geçti.
+- `xcodebuild test -scheme Features-Package` (iPhone 16 Pro simülatörü):
+  `VerificationCodeModel` paketindeki 9 test geçti.
+- `swiftlint --strict`, `swift format lint --strict`: ajanın dosyalarında ihlal yok.
+  `UITypography.swift` ve `SemanticColors.swift` sonunda satır sonu eksik (proje sahibinin dosyaları).
+
+**Bilinen eksikler**
+- Önizleme matrisi derleniyor ama gözle kontrol edilmedi. Cihazda `.oneTimeCode` önerisi,
+  otomatik odak ve VoiceOver davranışı elle denenmeli.
+- `onSubmit` ve `onResend`, `RootView` içinde boş kapanış (backend yok, K-10).
+  Kod doğrulanınca nereye gidileceği belirsiz.
+- Tekrar gönderme başarısız olursa ne gösterileceği tanımlı değil.
+- Hata mesajı alanı tek hata türünün yüksekliğini ayırıyor. Daha uzun mesajlı bir tür
+  eklenirse bu alan yeniden ele alınmalı.
+
+**Sıradaki adım:** Cihaz testi; ardından doğrulama sonrası ekran (K-10 ile).
 
 ---
 

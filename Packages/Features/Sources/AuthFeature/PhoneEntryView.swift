@@ -6,8 +6,8 @@ import SwiftUI
 /// Telefon numarası giriş ekranı: kayıt akışının ilk adımı.
 ///
 /// Ekran kendi geçişini yapmaz (CLAUDE.md 5.3 kural 1). Geri dönüş `onBack`, geçerli
-/// numara `onContinue` ile dışarı bildirilir. Gezinme çubuğu öğeleri `toolbar` ile
-/// verilir; ekran uygulama katmanında bir `NavigationStack` içinde gösterilmelidir.
+/// numara `onContinue` ile dışarı bildirilir. Ekran uygulama katmanında bir `NavigationStack`
+/// içinde gösterilmelidir; sistem gezinme çubuğunu gizler, yerine `ScreenHeader` kullanır.
 public struct PhoneEntryView: View {
     private let onBack: () -> Void
     private let onContinue: (_ phoneNumber: String) -> Void
@@ -44,9 +44,16 @@ public struct PhoneEntryView: View {
         .safeAreaInset(edge: .bottom) {
             continueButton
         }
+        .safeAreaInset(edge: .top) {
+            ScreenHeader(
+                "signup.phone.navTitle",
+                backLabel: "signup.phone.accessibility.back",
+                bundle: .onsarj,
+                onBack: onBack
+            )
+        }
         .background(Theme.backgroundPrimary.ignoresSafeArea())
-        .navigationBarBackButtonHidden(true)
-        .toolbar { toolbarContent }
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $model.isCountryPickerPresented) {
             CountryPicker(countries: model.formatter.countries, selected: model.country) { country in
                 model.select(country)
@@ -93,23 +100,6 @@ public struct PhoneEntryView: View {
         .padding(.horizontal, Spacing.screenMargin)
         .padding(.vertical, Spacing.sm)
         .background(Theme.backgroundPrimary)
-    }
-
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .navigation) {
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(Typography.headline)
-                    .foregroundStyle(Theme.textPrimary)
-            }
-            .accessibilityLabel(Text("signup.phone.accessibility.back", bundle: .onsarj))
-        }
-        ToolbarItem(placement: .principal) {
-            Text("signup.phone.navTitle", bundle: .onsarj)
-                .font(Typography.headline)
-                .foregroundStyle(Theme.textPrimary)
-        }
     }
 }
 

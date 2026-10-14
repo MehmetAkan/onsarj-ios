@@ -32,6 +32,9 @@ public enum Theme {
     /// İnce ayırıcı çizgiler ve kenarlıklar.
     public static let borderSubtle = Color(light: Palette.gray200, dark: Palette.gray800)
 
+    /// Hatalı girdi taşıyan alanın kenarlığı.
+    public static let borderError = Color(light: Palette.red500, dark: Palette.red400)
+
     // MARK: - Metin
 
     /// Başlıklar ve birincil metin.
@@ -42,6 +45,11 @@ public enum Theme {
 
     /// Pasif veya devre dışı metin.
     public static let textDisabled = Color(light: Palette.gray400, dark: Palette.gray600)
+
+    /// Hata mesajları.
+    ///
+    /// Koyu temada bir basamak açılır; koyu zemin üzerinde `red500` okunurluğunu kaybeder.
+    public static let textError = Color(light: Palette.red600, dark: Palette.red400)
 
     /// Boş giriş alanlarındaki yer tutucu metin.
     ///

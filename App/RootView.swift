@@ -5,7 +5,8 @@ import SwiftUI
 /// Uygulamanın kök görünümü: gezinme yığını ve ekranların `Route` karşılıkları.
 ///
 /// Ekranların kapanışları burada `AppRouter` çağrılarına bağlanır. Henüz karşılığı
-/// olmayan istekler (giriş yap, SMS kodu adımı) ilgili ekranlar yazıldığında bağlanır.
+/// olmayan istekler (giriş yap, kodun doğrulanması ve tekrar gönderilmesi) ilgili ekran
+/// ve servisler yazıldığında bağlanır.
 struct RootView: View {
     let dependencies: AppDependencies
 
@@ -31,7 +32,17 @@ struct RootView: View {
             PhoneEntryView(
                 formatter: dependencies.phoneNumberFormatter,
                 onBack: { router.pop() },
-                onContinue: { _ in }
+                onContinue: { router.push(.verificationCode(phoneNumber: $0)) }
+            )
+        case .verificationCode(let phoneNumber):
+            VerificationCodeView(
+                phoneNumber: phoneNumber,
+                formatter: dependencies.phoneNumberFormatter,
+                // Telefon ekranı yığında altta durur ve durumunu korur; geri dönüldüğünde
+                // girilen numara alanda dolu kalır.
+                onBack: { router.pop() },
+                onResend: {},
+                onSubmit: { _ in }
             )
         }
     }
