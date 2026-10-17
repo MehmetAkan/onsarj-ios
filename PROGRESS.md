@@ -13,13 +13,83 @@ Yeni katılan biri yalnızca `CLAUDE.md` ve bu dosyayı okuyarak projenin durumu
 araçları ve CI (GitHub Actions + Xcode Cloud) çalışıyor. Tasarım sisteminin temel
 katmanı yazıldı: renk paleti, tipografi, boşluk ve yarıçap token'ları.
 
-**Sırada:** Telefon girişi ve SMS kodu ekranının cihaz testi (Adım 18–19). Kodun doğrulanması
-ve tekrar gönderilmesi backend sözleşmesini (K-10) bekliyor. `WelcomeModel` ve `PhoneEntryModel`
-birim testleri ayrı görev olarak bekliyor.
+**Sırada:** Kayıt akışının ekranları tamam; ad-soyad sonrası adım henüz tasarlanmadı.
+Kodun doğrulanması, tekrar gönderilmesi, kayıtlı kullanıcının ayrılması ve ad-soyadın kaydı
+backend sözleşmesini (K-10) bekliyor. `WelcomeModel` ve `PhoneEntryModel` birim testleri ayrı
+görev olarak bekliyor.
 
-**Yazılan ekranlar:** Karşılama (`WelcomeView`), telefon girişi (`PhoneEntryView`) ve SMS kodu
-(`VerificationCodeView`), `AppRouter` ile bağlı (Adım 11–19). `DesignSystem`, `Localization`,
-`PhoneNumbers`, `AuthFeature` ve `App/Navigation` dışındaki modüller boş.
+**Yazılan ekranlar:** Karşılama (`WelcomeView`), telefon girişi (`PhoneEntryView`), SMS kodu
+(`VerificationCodeView`) ve ad-soyad (`NameEntryView`), `AppRouter` ile bağlı (Adım 11–22).
+`DesignSystem`, `Localization`, `PhoneNumbers`, `AuthFeature` ve `App/Navigation` dışındaki
+modüller boş.
+
+---
+
+## Adım 22 — Ad ve soyad ekranı, ortak form metin alanı
+**Tarih:** 2026-10-17
+
+**Ne yapıldı**
+- `FormTextField` (`DesignSystem/Components`): tek satırlık form alanı. Görünümü ve yüksekliği
+  telefon ekranındaki numara alanıyla aynı (`Theme.backgroundSubtle`, `Radius.field`, en az
+  `Spacing.minTapTarget` + üstte/altta `Spacing.xs`). Dışarıdan: metin, yer tutucu anahtarı +
+  paket, `textContentType`, büyük harf davranışı, dönüş tuşu, hata durumu (kenarlık
+  `Theme.borderError`). Bağlamanın sahibi değeri keserse alan bunu kendi metnine geri yazar.
+- `NameEntryView` + `NameEntryModel`: diğer iki ekranla aynı düzen. Ekran açılınca ad alanı
+  odaklanıyor. Ad alanında `.next` soyada geçiriyor, soyadda `.done` klavyeyi kapatıyor.
+  `.givenName` / `.familyName`, `.words`, otomatik düzeltme kapalı.
+- Doğrulama: kırpıldıktan sonra en az 2 karakter ve en az bir harf. Karakter süzülmüyor.
+  Her alan en fazla 50 karakter, fazlası kesiliyor. İki alan geçerli olana kadar "Devam"
+  devre dışı. `onContinue` kırpılmış değerleri veriyor.
+- Yönlendirme: `Route.nameEntry` eklendi. SMS ekranının `onSubmit`'i her kodda ad ekranına
+  geçiyor (kayıtlı kullanıcı ayrımı K-10'u bekliyor). Ad ekranından geri dönüş
+  `AppRouter.pop(to: .phoneEntry)` ile telefon ekranına gidiyor; harcanmış kodun ekranına
+  dönülmüyor. `onContinue` bağlı değil, sonraki ekran tasarlanmadı.
+- `user-entry-icon` görsel setinin `Contents.json`'ı diğer iki simgeyle aynı yapıya getirildi
+  (tek ölçek, vektör korunuyor, `Original` çizim). Önceki hali SVG'yi 1x'e rasterleyip
+  bulanık gösterirdi.
+- 6 `signup.name.*` metni eklendi (İngilizce ve Türkçe).
+
+**Dosyalar**
+- Eklendi: `Packages/Core/Sources/DesignSystem/Components/FormTextField.swift`,
+  `Packages/Features/Sources/AuthFeature/{NameEntryView,NameEntryModel}.swift`,
+  `Packages/Features/Tests/FeaturesTests/NameEntryModelTests.swift`
+- Değişti: `App/Navigation/{Route,AppRouter}.swift`, `App/RootView.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`,
+  `Packages/Features/Sources/AuthFeature/Resources/Media.xcassets/user-entry-icon.imageset/Contents.json`
+
+**Kararlar**
+- `FormTextField.swift` dosyasının tamamı `#if canImport(UIKit)` içinde (proje sahibinin
+  kararı, CLAUDE.md 6.8 "üçüncü durum"). Core'da `swift build` ayakta kalıyor.
+  **Ayırma eşiği sayımı:** tüm dosyası korunan dosyalar `UITypography.swift` ve
+  `FormTextField.swift`, yani **2**. `SemanticColors.swift`'te yalnızca import ve bir başlatıcı
+  korunuyor, sayılmadı. Proje sahibi "üçüncüsü" demişti; sayımın teyidi bekleniyor. Eşik: 5.
+- `IconBadge` değiştirilmedi. Görevin 2. maddesi zaten karşılanmıştı: bileşen `Image` alıyor,
+  hem asset hem SF Symbol kabul ediyor. Ayrıca bileşen `DesignSystem`'de değil,
+  `AuthFeature/Components` içinde.
+- 50 karakter sınırı geçersizlik değil, kesme olarak uygulandı: fazlası alana girmez.
+- Soyad alanındaki "Bitti" yalnızca klavyeyi kapatıyor, formu göndermiyor (varsayım).
+- `FormTextField`'in hata durumu bu ekranda kullanılmıyor; tasarımda hata gösterimi yok.
+- Geri oku etiketi `signup.phone.accessibility.back` yeniden kullanıldı (SMS ekranındaki gibi).
+
+**Doğrulama**
+- `verify-ios.sh --package Features`, `--package Core`, `--app`: geçti. `swift build` (Core): geçti.
+- `xcodebuild test -scheme Features-Package` (iPhone 16 Pro simülatörü): 2 suite, 17 test geçti.
+  `NameEntryModel` testleri: kırpma, 2 karakter alt sınırı, harfsiz girdinin reddi, isim içi
+  noktalama, 50 karakter üst sınırı, butonun etkinleşmesi.
+- `swiftlint lint --strict` ve `swift format lint`: yeni ihlal yok. Var olan iki ihlal:
+  `UITypography.swift` ve `SemanticColors.swift` sonunda satır sonu eksik. Görev bu dosyalara
+  dokunmayı yasakladığı için düzeltilmedi.
+- Ekran proje sahibi tarafından simülatörde kontrol edildi, sorun bildirilmedi.
+
+**Bilinen eksikler**
+- Akıllı tırnak: SwiftUI'da kapatan bir değiştirici yok. Otomatik düzeltme kapalıyken
+  sistemin akıllı tırnak uygulamadığı varsayıldı, `O'Brien` girişiyle cihazda denenmedi.
+  Tutmazsa ya `FormTextField` UIKit'e geçer ya da kesme işareti kayıt sırasında normalleştirilir.
+- Kenardan kaydırarak geri dönme çalışmıyor (Adım 21'den beri).
+- `UITypography.swift` ve `SemanticColors.swift` lint ihlalleri.
+
+**Sıradaki adım:** Ad-soyad sonrası ekranın tasarımı; K-10 gelince kod doğrulama ve
+kayıt servislerinin bağlanması.
 
 ---
 

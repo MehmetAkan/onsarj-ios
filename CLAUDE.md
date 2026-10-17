@@ -517,6 +517,20 @@ biriktirir — bölüm 2.3'ün yasakladığı şeydir. Paketin doğrulaması
 
 `Features` ve `MapboxKit` doğası gereği iOS'a özeldir; bu paketlerde koruma yazılmaz.
 
+**Üçüncü durum — tüm dosyanın korunması.** Bir tip baştan sona platforma özelse
+(`UITypography`, `FormTextField` gibi) dosyanın tamamı `#if canImport(UIKit)` içine
+alınabilir. Bu, yasaklanan duruma benzemez: alternatif bir kod yolu üretmez, tip diğer
+platformda yalnızca var olmaz. Yasak olan, paylaşılan kodun **içine** serpiştirilen ve
+hiç çalıştırılmayan dallar üretilmesidir.
+
+**Ayırma eşiği.** `DesignSystem` bir arayüz modülü olduğu halde, platformdan bağımsız
+modüllerle (`Networking`, `PhoneNumbers`, `Storage`) aynı pakette duruyor. Bunun sebebi
+`Core` paketinin `swift build` ile macOS'ta derlenebilir kalması ve günlük geri
+bildirimin hızlı olması. Tüm dosyası korunan dosya sayısı **beşi geçerse** bu denge
+bozulmuş sayılır: `DesignSystem` kendi paketine (`Packages/DesignSystem`) taşınır,
+iOS'a özel ilan edilir ve korumalar kaldırılır. O noktada `MapboxKit` ve `Features`
+bağımlılıklarını yeni pakete çevirir.
+
 ### 6.2 İsimlendirme
 - Protokol: `StationRepository` — uygulaması: `RemoteStationRepository`, `CachedStationRepository`
 - Görünüm: `StationDetailView` — durum nesnesi: `StationDetailModel`

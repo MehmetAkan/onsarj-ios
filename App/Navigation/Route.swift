@@ -6,4 +6,6 @@ enum Route: Hashable {
     case phoneEntry
     /// SMS kodu ekranı. Numara E.164 biçimindedir: `"+905537359394"`.
     case verificationCode(phoneNumber: String)
+    /// Ad ve soyad ekranı, kayıt akışının son adımı.
+    case nameEntry
 }

@@ -37,6 +37,114 @@
         }
       }
     },
+    "signup.name.action.continue" : {
+      "comment" : "Ad ve soyad ekranı, alttaki birincil buton.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Devam"
+          }
+        }
+      }
+    },
+    "signup.name.body" : {
+      "comment" : "Ad ve soyad ekranı, başlığın altındaki açıklama.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We'll use it to address you in the app."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulamada sana bu şekilde hitap edeceğiz."
+          }
+        }
+      }
+    },
+    "signup.name.navTitle" : {
+      "comment" : "Ad ve soyad ekranı, üst çubuk başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create an account"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hesap oluştur"
+          }
+        }
+      }
+    },
+    "signup.name.placeholder.first" : {
+      "comment" : "Ad ve soyad ekranı, ad alanının yer tutucusu ve VoiceOver etiketi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First name"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ad"
+          }
+        }
+      }
+    },
+    "signup.name.placeholder.last" : {
+      "comment" : "Ad ve soyad ekranı, soyad alanının yer tutucusu ve VoiceOver etiketi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last name"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soyad"
+          }
+        }
+      }
+    },
+    "signup.name.title" : {
+      "comment" : "Ad ve soyad ekranı, ana başlık.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's your name?"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adın nedir?"
+          }
+        }
+      }
+    },
     "signup.phone.accessibility.back" : {
       "comment" : "Telefon girişi ekranı, geri butonunun VoiceOver etiketi.",
       "extractionState" : "manual",

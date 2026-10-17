@@ -18,4 +18,11 @@ final class AppRouter {
         guard !path.isEmpty else { return }
         path.removeLast()
     }
+
+    /// Yığında `route`'un üzerindeki bütün ekranları kaldırır. `route` yığında yoksa
+    /// hiçbir şey yapmaz.
+    func pop(to route: Route) {
+        guard let index = path.lastIndex(of: route) else { return }
+        path.removeSubrange(path.index(after: index)...)
+    }
 }
