@@ -70,23 +70,35 @@ public struct ScreenHeader: View {
 }
 
 #if DEBUG
-/// CLAUDE.md 6.7 test matrisi: iPhone SE ve Pro Max × Large ve xxxLarge.
+/// CLAUDE.md 6.7 test matrisi: iPhone SE ve Pro Max × Large ve xxxLarge; ayrıca koyu tema.
 struct ScreenHeaderPreviews: PreviewProvider {
     private static let devices = ["iPhone SE (3rd generation)", "iPhone 17 Pro Max"]
     private static let typeSizes: [DynamicTypeSize] = [.large, .xxxLarge]
 
     static var previews: some View {
-        ForEach(devices, id: \.self) { device in
-            ForEach(typeSizes, id: \.self) { typeSize in
-                VStack {
-                    ScreenHeader("Create an account", backLabel: "Go back", onBack: {})
-                    Spacer()
+        Group {
+            ForEach(devices, id: \.self) { device in
+                ForEach(typeSizes, id: \.self) { typeSize in
+                    header
+                        .dynamicTypeSize(typeSize)
+                        .previewDevice(PreviewDevice(rawValue: device))
+                        .previewDisplayName("\(device) · \(typeSize)")
                 }
-                .dynamicTypeSize(typeSize)
-                .previewDevice(PreviewDevice(rawValue: device))
-                .previewDisplayName("\(device) · \(typeSize)")
             }
+
+            header
+                .preferredColorScheme(.dark)
+                .previewDevice(PreviewDevice(rawValue: devices[1]))
+                .previewDisplayName("\(devices[1]) · koyu")
         }
+    }
+
+    private static var header: some View {
+        VStack {
+            ScreenHeader("Create an account", backLabel: "Go back", onBack: {})
+            Spacer()
+        }
+        .background(Theme.backgroundPrimary)
     }
 }
 #endif

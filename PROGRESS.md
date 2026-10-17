@@ -25,6 +25,59 @@ modüller boş.
 
 ---
 
+## Adım 23 — Koyu tema denetimi
+**Tarih:** 2026-10-17
+
+**Ne yapıldı**
+- Dört ekran (`WelcomeView`, `PhoneEntryView`, `VerificationCodeView`, `NameEntryView`), alt
+  bileşenleri (`AuthFeature/Components`) ve `DesignSystem/Components` altındaki üç bileşen
+  tarandı: `Palette`'e doğrudan başvuru, `.white`/`.black`, `Color(.system…)`, `UIColor`
+  sabiti yok. Tek sabit `CodeInputField`'deki `.clear`; görünmez giriş alanı için bilerek
+  kullanılıyor, renk değil.
+- `PrimaryButton`: devre dışıyken metin `Theme.onActionPrimaryDisabled` (önce her durumda
+  `onActionPrimary` idi; koyu temada devre dışı butonda siyah zemin üzerinde siyah metin olurdu).
+- Önizlemeler: dört ekranın her durumuna ve `ScreenHeader`, `FormTextField` önizlemelerine
+  koyu tema varyantı eklendi (iPhone 17 Pro Max · Large · koyu). Ekran önizlemelerindeki
+  görünüm kurulumu yardımcı fonksiyona alındı, tekrar etmiyor.
+- Logo: `brand-logo` koyu varyantı (`brand-logo-white.svg`) tanımlı ve doğru seçiliyor.
+  Geçici bir testle simülatörde ölçüldü: opak piksellerin ortalama parlaklığı açık temada
+  0,16, koyu temada 0,78. Test sonra silindi.
+- UIKit tarafı: `PhoneNumberTextField`'deki `UIColor(Theme.textPrimary)` ve
+  `UIColor(Theme.textPlaceholder)` dönüşümlerinin dinamik kaldığı (açık/koyu farklı çözülüyor)
+  aynı geçici testle doğrulandı.
+
+**Dosyalar**
+- Değişti: `Packages/Core/Sources/DesignSystem/Components/{PrimaryButton,ScreenHeader,FormTextField}.swift`,
+  `Packages/Features/Sources/AuthFeature/{WelcomeView,PhoneEntryView,VerificationCodeView,NameEntryView}.swift`,
+  `Packages/Core/Sources/DesignSystem/{UITypography,SemanticColors,ColorPalette}.swift` (yalnızca son satır sonu)
+- Değişmedi (denetlendi, sorun yok): `AuthFeature/Components/{IconBadge,PhoneNumberField,
+  PhoneNumberTextField,CodeInputField,ResendCodeButton,OnboardingSlide,PageIndicator,CountryPicker}.swift`
+
+**Kararlar ve açık noktalar**
+- `CountryPicker` (alt sayfa) liste zemini, satır zemini, ayraçlar, arama çubuğu ve boş arama
+  görünümü (`ContentUnavailableView`) sistem renklerini kullanıyor; açıkça yazılmış renk yok.
+  Koyu temada alt sayfanın sistem zemini `#1C1C1E` = `Palette.ink1` = `Theme.backgroundElevated`,
+  yani görünür fark yok. Token'a bağlanması istenirse ayrı iş: `scrollContentBackground` ve
+  `listRowBackground` ile `Theme.backgroundElevated`; ayraç için `Theme.borderSubtle`.
+- Koyu temada yer tutucu (`ink4` `#5A5A5F`) alan zemini (`ink1`) üzerinde düşük kontrastlı
+  (yaklaşık 2,5:1). Yer tutucu için kabul edilebilir; token değeri proje sahibinin kararı.
+
+**Doğrulama**
+- `verify-ios.sh --package Features`, `--package Core`, `--app`: geçti. `swift build` (Core): geçti.
+- `swiftlint lint --strict`, `swift format lint --strict`: ihlal yok. `UITypography.swift`,
+  `SemanticColors.swift`, `ColorPalette.swift` sonunda eksik olan satır sonu, proje sahibinin
+  bu seferlik izniyle eklendi (renk değerlerine dokunulmadı).
+- Ekranlar simülatörde koyu temada gözle kontrol edilmedi; önizlemeler eklendi.
+
+**Bilinen eksikler**
+- Koyu temanın SE ve xxxLarge kombinasyonları ayrı önizlenmiyor (koyu varyant yalnızca
+  Pro Max · Large).
+
+**Sıradaki adım:** Önizlemelerin Xcode'da koyu temada gözden geçirilmesi. `CountryPicker`
+ve yer tutucu kontrastı proje sahibince kontrol edildi, olduğu gibi kalıyor.
+
+---
+
 ## Adım 22 — Ad ve soyad ekranı, ortak form metin alanı
 **Tarih:** 2026-10-17
 

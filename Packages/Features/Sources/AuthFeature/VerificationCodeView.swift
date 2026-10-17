@@ -150,7 +150,7 @@ public struct VerificationCodeView: View {
 
 #if DEBUG
 /// CLAUDE.md 6.7 test matrisi (iPhone SE ve Pro Max × Large ve xxxLarge);
-/// boş, kısmen dolu, dolu ve hatalı durumlar.
+/// boş, kısmen dolu, dolu ve hatalı durumlar; ayrıca her durumun koyu tema görünümü.
 struct VerificationCodeViewPreviews: PreviewProvider {
     private static let devices = ["iPhone SE (3rd generation)", "iPhone 17 Pro Max"]
     private static let typeSizes: [DynamicTypeSize] = [.large, .xxxLarge]
@@ -171,24 +171,34 @@ struct VerificationCodeViewPreviews: PreviewProvider {
         ForEach(states, id: \.name) { state in
             ForEach(devices, id: \.self) { device in
                 ForEach(typeSizes, id: \.self) { typeSize in
-                    NavigationStack {
-                        VerificationCodeView(
-                            model: VerificationCodeModel(
-                                phoneNumber: "+90 553 735 93 94",
-                                resendInterval: 60,
-                                code: state.code,
-                                error: state.error,
-                                onSubmit: { _ in }
-                            ),
-                            onBack: {},
-                            onResend: {}
-                        )
-                    }
-                    .dynamicTypeSize(typeSize)
-                    .previewDevice(PreviewDevice(rawValue: device))
-                    .previewDisplayName("\(device) · \(typeSize) · \(state.name)")
+                    screen(state)
+                        .dynamicTypeSize(typeSize)
+                        .previewDevice(PreviewDevice(rawValue: device))
+                        .previewDisplayName("\(device) · \(typeSize) · \(state.name)")
                 }
             }
+
+            screen(state)
+                .preferredColorScheme(.dark)
+                .previewDevice(PreviewDevice(rawValue: devices[1]))
+                .previewDisplayName("\(devices[1]) · koyu · \(state.name)")
+        }
+    }
+
+    @MainActor
+    private static func screen(_ state: PreviewState) -> some View {
+        NavigationStack {
+            VerificationCodeView(
+                model: VerificationCodeModel(
+                    phoneNumber: "+90 553 735 93 94",
+                    resendInterval: 60,
+                    code: state.code,
+                    error: state.error,
+                    onSubmit: { _ in }
+                ),
+                onBack: {},
+                onResend: {}
+            )
         }
     }
 }

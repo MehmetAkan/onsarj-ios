@@ -109,25 +109,39 @@ public struct FormTextField: View {
 }
 
 #if DEBUG
-/// CLAUDE.md 6.7 test matrisi: iPhone SE ve Pro Max × Large ve xxxLarge; boş, dolu ve hatalı.
+/// CLAUDE.md 6.7 test matrisi: iPhone SE ve Pro Max × Large ve xxxLarge; boş, dolu ve hatalı;
+/// ayrıca koyu tema.
 struct FormTextFieldPreviews: PreviewProvider {
     private static let devices = ["iPhone SE (3rd generation)", "iPhone 17 Pro Max"]
     private static let typeSizes: [DynamicTypeSize] = [.large, .xxxLarge]
 
     static var previews: some View {
-        ForEach(devices, id: \.self) { device in
-            ForEach(typeSizes, id: \.self) { typeSize in
-                VStack(spacing: Spacing.md) {
-                    FormTextField("First name", text: .constant(""))
-                    FormTextField("Last name", text: .constant("Yılmaz"))
-                    FormTextField("Last name", text: .constant("Y"), hasError: true)
+        Group {
+            ForEach(devices, id: \.self) { device in
+                ForEach(typeSizes, id: \.self) { typeSize in
+                    fields
+                        .dynamicTypeSize(typeSize)
+                        .previewDevice(PreviewDevice(rawValue: device))
+                        .previewDisplayName("\(device) · \(typeSize)")
                 }
-                .padding(.horizontal, Spacing.screenMargin)
-                .dynamicTypeSize(typeSize)
-                .previewDevice(PreviewDevice(rawValue: device))
-                .previewDisplayName("\(device) · \(typeSize)")
             }
+
+            fields
+                .preferredColorScheme(.dark)
+                .previewDevice(PreviewDevice(rawValue: devices[1]))
+                .previewDisplayName("\(devices[1]) · koyu")
         }
+    }
+
+    private static var fields: some View {
+        VStack(spacing: Spacing.md) {
+            FormTextField("First name", text: .constant(""))
+            FormTextField("Last name", text: .constant("Yılmaz"))
+            FormTextField("Last name", text: .constant("Y"), hasError: true)
+        }
+        .padding(.horizontal, Spacing.screenMargin)
+        .frame(maxHeight: .infinity)
+        .background(Theme.backgroundPrimary)
     }
 }
 #endif

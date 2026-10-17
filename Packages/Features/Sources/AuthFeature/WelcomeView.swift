@@ -109,19 +109,26 @@ public struct WelcomeView: View {
 }
 
 #if DEBUG
-/// CLAUDE.md 6.7 test matrisi: iPhone SE ve Pro Max × Large ve xxxLarge.
+/// CLAUDE.md 6.7 test matrisi: iPhone SE ve Pro Max × Large ve xxxLarge; ayrıca koyu tema.
 struct WelcomeViewPreviews: PreviewProvider {
     private static let devices = ["iPhone SE (3rd generation)", "iPhone 17 Pro Max"]
     private static let typeSizes: [DynamicTypeSize] = [.large, .xxxLarge]
 
     static var previews: some View {
-        ForEach(devices, id: \.self) { device in
-            ForEach(typeSizes, id: \.self) { typeSize in
-                WelcomeView(onContinue: {}, onLogin: {})
-                    .dynamicTypeSize(typeSize)
-                    .previewDevice(PreviewDevice(rawValue: device))
-                    .previewDisplayName("\(device) · \(typeSize)")
+        Group {
+            ForEach(devices, id: \.self) { device in
+                ForEach(typeSizes, id: \.self) { typeSize in
+                    WelcomeView(onContinue: {}, onLogin: {})
+                        .dynamicTypeSize(typeSize)
+                        .previewDevice(PreviewDevice(rawValue: device))
+                        .previewDisplayName("\(device) · \(typeSize)")
+                }
             }
+
+            WelcomeView(onContinue: {}, onLogin: {})
+                .preferredColorScheme(.dark)
+                .previewDevice(PreviewDevice(rawValue: devices[1]))
+                .previewDisplayName("\(devices[1]) · koyu")
         }
     }
 }

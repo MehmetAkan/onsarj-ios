@@ -104,7 +104,8 @@ public struct PhoneEntryView: View {
 }
 
 #if DEBUG
-/// CLAUDE.md 6.7 test matrisi (iPhone SE ve Pro Max × Large ve xxxLarge), boş ve dolu alanla.
+/// CLAUDE.md 6.7 test matrisi (iPhone SE ve Pro Max × Large ve xxxLarge), boş ve dolu alanla;
+/// ayrıca her durumun koyu tema görünümü.
 struct PhoneEntryViewPreviews: PreviewProvider {
     private static let devices = ["iPhone SE (3rd generation)", "iPhone 17 Pro Max"]
     private static let typeSizes: [DynamicTypeSize] = [.large, .xxxLarge]
@@ -116,23 +117,37 @@ struct PhoneEntryViewPreviews: PreviewProvider {
         ForEach(numbers, id: \.self) { number in
             ForEach(devices, id: \.self) { device in
                 ForEach(typeSizes, id: \.self) { typeSize in
-                    NavigationStack {
-                        PhoneEntryView(
-                            model: PhoneEntryModel(
-                                formatter: formatter,
-                                country: formatter.country(forRegionCode: "TR"),
-                                input: number
-                            ),
-                            onBack: {},
-                            onContinue: { _ in }
-                        )
-                    }
-                    .dynamicTypeSize(typeSize)
-                    .previewDevice(PreviewDevice(rawValue: device))
-                    .previewDisplayName("\(device) · \(typeSize) · \(number.isEmpty ? "boş" : "dolu")")
+                    screen(number: number)
+                        .dynamicTypeSize(typeSize)
+                        .previewDevice(PreviewDevice(rawValue: device))
+                        .previewDisplayName("\(device) · \(typeSize) · \(stateName(number))")
                 }
             }
+
+            screen(number: number)
+                .preferredColorScheme(.dark)
+                .previewDevice(PreviewDevice(rawValue: devices[1]))
+                .previewDisplayName("\(devices[1]) · koyu · \(stateName(number))")
         }
+    }
+
+    @MainActor
+    private static func screen(number: String) -> some View {
+        NavigationStack {
+            PhoneEntryView(
+                model: PhoneEntryModel(
+                    formatter: formatter,
+                    country: formatter.country(forRegionCode: "TR"),
+                    input: number
+                ),
+                onBack: {},
+                onContinue: { _ in }
+            )
+        }
+    }
+
+    private static func stateName(_ number: String) -> String {
+        number.isEmpty ? "boş" : "dolu"
     }
 }
 #endif

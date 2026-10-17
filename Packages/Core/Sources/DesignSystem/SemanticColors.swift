@@ -12,25 +12,24 @@ import UIKit
 /// Her token'ın açık ve koyu tema karşılığı birlikte tanımlanır. Tek temalı token
 /// eklenmez — sonradan ikinci temayı eklemek tüm ekranları gezmek demektir.
 ///
-/// Koyu tema değerleri gri merdiveninin tersi alınarak türetilmiştir: açık temada 950
-/// olan koyuda 50 olur. Bu yer tutucu değil, çalışan bir eşlemedir — kontrast oranları
-/// korunur ve her ekran koyu temada doğru görünür. Tasarım ekibi koyu tema paletini
-/// ayrıca kurguladığında yalnızca bu dosya güncellenir, hiçbir ekrana dokunulmaz.
+/// Koyu tema değerleri `Palette.ink` merdiveninden gelir: saf siyahtan (`ink0`)
+/// yukarı doğru, her katman bir basamak açılır. Mantık yükselmedir — bir öğe
+/// kullanıcıya ne kadar yakınsa o kadar açıktır.
 public enum Theme {
 
     // MARK: - Yüzeyler
 
     /// Ekranın ana arka planı.
-    public static let backgroundPrimary = Color(light: .white, dark: Palette.gray950)
+    public static let backgroundPrimary = Color(light: .white, dark: Palette.ink0)
 
     /// Ana arka planın üzerinde yükselen yüzey: kartlar, alt sayfalar.
-    public static let backgroundElevated = Color(light: .white, dark: Palette.gray900)
+    public static let backgroundElevated = Color(light: .white, dark: Palette.ink1)
 
     /// Hafif vurgulu yüzey: giriş alanları, pasif çipler, gruplanmış liste blokları.
-    public static let backgroundSubtle = Color(light: Palette.gray100, dark: Palette.gray800)
+    public static let backgroundSubtle = Color(light: Palette.gray100, dark: Palette.ink1)
 
     /// İnce ayırıcı çizgiler ve kenarlıklar.
-    public static let borderSubtle = Color(light: Palette.gray200, dark: Palette.gray800)
+    public static let borderSubtle = Color(light: Palette.gray200, dark: Palette.ink3)
 
     /// Hatalı girdi taşıyan alanın kenarlığı.
     public static let borderError = Color(light: Palette.red500, dark: Palette.red400)
@@ -38,13 +37,13 @@ public enum Theme {
     // MARK: - Metin
 
     /// Başlıklar ve birincil metin.
-    public static let textPrimary = Color(light: Palette.gray950, dark: Palette.gray50)
+    public static let textPrimary = Color(light: Palette.gray950, dark: .white)
 
     /// Açıklama satırları, ikincil bilgi.
-    public static let textSecondary = Color(light: Palette.gray500, dark: Palette.gray400)
+    public static let textSecondary = Color(light: Palette.gray500, dark: Palette.ink5)
 
     /// Pasif veya devre dışı metin.
-    public static let textDisabled = Color(light: Palette.gray400, dark: Palette.gray600)
+    public static let textDisabled = Color(light: Palette.gray400, dark: Palette.ink4)
 
     /// Hata mesajları.
     ///
@@ -55,27 +54,34 @@ public enum Theme {
     ///
     /// `textSecondary`'den açıktır: yer tutucu gerçek içerik değil, doldurulacak
     /// alanın ipucudur ve okunduğunda girilmiş veriyle karışmamalıdır.
-    public static let textPlaceholder = Color(light: Palette.gray400, dark: Palette.gray600)
+    public static let textPlaceholder = Color(light: Palette.gray400, dark: Palette.ink4)
 
     // MARK: - Eylem
 
     /// Birincil buton arka planı.
     ///
     /// Koyu temada açık renge döner: koyu zemin üzerinde koyu buton görünmez olurdu.
-    public static let actionPrimary = Color(light: Palette.gray950, dark: Palette.gray50)
+    public static let actionPrimary = Color(light: Palette.gray950, dark: .white)
 
     /// Birincil buton üzerindeki metin ve simgeler.
-    public static let onActionPrimary = Color(light: Palette.gray50, dark: Palette.gray950)
+    public static let onActionPrimary = Color(light: Palette.gray50, dark: Palette.ink0)
 
     /// Basılı durumdaki birincil buton.
     public static let actionPrimaryPressed = Color(light: Palette.gray800, dark: Palette.gray200)
+
+    /// Devre dışı birincil butonun üzerindeki metin.
+    ///
+    /// Ayrı bir token gerekiyor: koyu temada etkin buton beyaz zemin üzerine siyah
+    /// metin taşır, devre dışı buton ise koyu zemine döner ve aynı siyah metin
+    /// okunamaz hale gelir.
+    public static let onActionPrimaryDisabled = Color(light: Palette.gray300, dark: Palette.ink5)
 
     /// Devre dışı birincil buton.
     ///
     /// Butonu gizlemez, yalnızca vurgusunu düşürür. Kullanıcı butonun orada olduğunu
     /// ve neyi tamamlayınca etkinleşeceğini görebilmelidir. Üzerindeki metin
-    /// `onActionPrimary` olarak kalır.
-    public static let actionPrimaryDisabled = Color(light: Palette.gray700, dark: Palette.gray300)
+    /// `onActionPrimaryDisabled` kullanır.
+    public static let actionPrimaryDisabled = Color(light: Palette.gray700, dark: Palette.ink2)
 
     /// Marka vurgusu: seçili durumlar, aktif simgeler, logo eşliği.
     ///
@@ -86,10 +92,10 @@ public enum Theme {
     // MARK: - Sayfa göstergesi
 
     /// Aktif sayfa noktası.
-    public static let indicatorActive = Color(light: Palette.gray950, dark: Palette.gray50)
+    public static let indicatorActive = Color(light: Palette.gray950, dark: .white)
 
     /// Pasif sayfa noktaları.
-    public static let indicatorInactive = Color(light: Palette.gray300, dark: Palette.gray700)
+    public static let indicatorInactive = Color(light: Palette.gray300, dark: Palette.ink3)
 }
 
 extension Color {

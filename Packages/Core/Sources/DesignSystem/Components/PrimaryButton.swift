@@ -3,7 +3,8 @@ import SwiftUI
 /// Birincil buton: tam genişlik, dolgulu, basılıyken koyulaşan.
 ///
 /// Etkin/devre dışı durumu SwiftUI'ın standart `.disabled(_:)` değiştiricisiyle verilir.
-/// Devre dışıyken buton gizlenmez, yalnızca vurgusu düşer (`Theme.actionPrimaryDisabled`).
+/// Devre dışıyken buton gizlenmez, yalnızca vurgusu düşer (`Theme.actionPrimaryDisabled`
+/// zemin, `Theme.onActionPrimaryDisabled` metin).
 ///
 /// ```swift
 /// PrimaryButton("signup.phone.action.continue", bundle: .onsarj, action: submit)
@@ -42,7 +43,7 @@ private struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(Typography.button)
-            .foregroundStyle(Theme.onActionPrimary)
+            .foregroundStyle(isEnabled ? Theme.onActionPrimary : Theme.onActionPrimaryDisabled)
             .multilineTextAlignment(.center)
             .padding(.vertical, Spacing.md)
             .padding(.horizontal, Spacing.lg)

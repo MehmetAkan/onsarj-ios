@@ -128,7 +128,8 @@ public struct NameEntryView: View {
 }
 
 #if DEBUG
-/// CLAUDE.md 6.7 test matrisi (iPhone SE ve Pro Max × Large ve xxxLarge), boş ve dolu alanlarla.
+/// CLAUDE.md 6.7 test matrisi (iPhone SE ve Pro Max × Large ve xxxLarge), boş ve dolu alanlarla;
+/// ayrıca her durumun koyu tema görünümü.
 struct NameEntryViewPreviews: PreviewProvider {
     private static let devices = ["iPhone SE (3rd generation)", "iPhone 17 Pro Max"]
     private static let typeSizes: [DynamicTypeSize] = [.large, .xxxLarge]
@@ -147,18 +148,28 @@ struct NameEntryViewPreviews: PreviewProvider {
         ForEach(states, id: \.name) { state in
             ForEach(devices, id: \.self) { device in
                 ForEach(typeSizes, id: \.self) { typeSize in
-                    NavigationStack {
-                        NameEntryView(
-                            model: NameEntryModel(firstName: state.firstName, lastName: state.lastName),
-                            onBack: {},
-                            onContinue: { _, _ in }
-                        )
-                    }
-                    .dynamicTypeSize(typeSize)
-                    .previewDevice(PreviewDevice(rawValue: device))
-                    .previewDisplayName("\(device) · \(typeSize) · \(state.name)")
+                    screen(state)
+                        .dynamicTypeSize(typeSize)
+                        .previewDevice(PreviewDevice(rawValue: device))
+                        .previewDisplayName("\(device) · \(typeSize) · \(state.name)")
                 }
             }
+
+            screen(state)
+                .preferredColorScheme(.dark)
+                .previewDevice(PreviewDevice(rawValue: devices[1]))
+                .previewDisplayName("\(devices[1]) · koyu · \(state.name)")
+        }
+    }
+
+    @MainActor
+    private static func screen(_ state: PreviewState) -> some View {
+        NavigationStack {
+            NameEntryView(
+                model: NameEntryModel(firstName: state.firstName, lastName: state.lastName),
+                onBack: {},
+                onContinue: { _, _ in }
+            )
         }
     }
 }
