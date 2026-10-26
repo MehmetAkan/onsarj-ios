@@ -11,9 +11,9 @@ final class SwipeBackProbeTests: XCTestCase {
     }
 
     @MainActor private func swipeFromEdge() {
-        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.35))
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.35))
         let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.35))
-        start.press(forDuration: 0.05, thenDragTo: end)
+        start.press(forDuration: 0.1, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.1)
         sleep(1)
     }
 

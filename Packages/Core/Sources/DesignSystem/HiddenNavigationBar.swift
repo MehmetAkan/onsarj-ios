@@ -44,12 +44,6 @@ private struct PopGestureEnabler: UIViewControllerRepresentable {
         override func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
             navigationController?.interactivePopGestureRecognizer?.delegate = PopGestureDelegate.shared
-            NSLog("PROBE willAppear nav=%@ gr=%@ enabled=%d", String(describing: navigationController), String(describing: navigationController?.interactivePopGestureRecognizer), navigationController?.interactivePopGestureRecognizer?.isEnabled == true ? 1 : 0)
-        }
-        override func viewDidAppear(_ animated: Bool) {
-            super.viewDidAppear(animated)
-            let gr = navigationController?.interactivePopGestureRecognizer
-            NSLog("PROBE didAppear same=%d delegate=%@ enabled=%d", gr?.delegate === PopGestureDelegate.shared ? 1 : 0, String(describing: gr?.delegate), gr?.isEnabled == true ? 1 : 0)
         }
     }
 }
@@ -63,7 +57,6 @@ private final class PopGestureDelegate: NSObject, UIGestureRecognizerDelegate {
     func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         // Hareket, gezinme denetleyicisinin kök görünümüne bağlıdır; görünümün bir sonraki
         // yanıtlayıcısı denetleyicinin kendisidir.
-        NSLog("PROBE shouldBegin view=%@ next=%@", String(describing: gestureRecognizer.view), String(describing: gestureRecognizer.view?.next))
         guard let navigationController = gestureRecognizer.view?.next as? UINavigationController else {
             return false
         }
