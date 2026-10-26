@@ -19,10 +19,14 @@ final class AppRouter {
         path.removeLast()
     }
 
-    /// Yığında `route`'un üzerindeki bütün ekranları kaldırır. `route` yığında yoksa
-    /// hiçbir şey yapmaz.
-    func pop(to route: Route) {
-        guard let index = path.lastIndex(of: route) else { return }
-        path.removeSubrange(path.index(after: index)...)
+    /// En üstteki ekranı `route` ile değiştirir; geri dönüldüğünde değiştirilen ekrana
+    /// değil, onun altındakine gidilir. Yığın boşsa `route` eklenir.
+    ///
+    /// Bir daha açılmaması gereken ekranlar için kullanılır (ör. harcanmış SMS kodu ekranı).
+    func replaceTop(with route: Route) {
+        if !path.isEmpty {
+            path.removeLast()
+        }
+        path.append(route)
     }
 }

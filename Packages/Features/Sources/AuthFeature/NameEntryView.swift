@@ -7,6 +7,12 @@ import SwiftUI
 /// Ekran kendi geçişini yapmaz (CLAUDE.md 5.3 kural 1). Geri dönüş `onBack`, geçerli ad ve
 /// soyad `onContinue` ile dışarı bildirilir. Ekran uygulama katmanında bir `NavigationStack`
 /// içinde gösterilmelidir; sistem gezinme çubuğunu gizler, yerine `ScreenHeader` kullanır.
+///
+/// **Bu ekrandan SMS kodu ekranına hiçbir yoldan dönülemez.** Kod tek kullanımlıktır;
+/// harcanmış kodun ekranına dönen kullanıcı çalışmayan bir kodla baş başa kalır. Bu yüzden
+/// uygulama katmanı kod doğrulanınca SMS ekranını yığından çıkarır ve bu ekranın altında
+/// telefon ekranı durur. Geri oku da kenardan kaydırma da oraya gider. Yığına SMS ekranını
+/// geri koyan ya da bu ekranın altında bırakan bir değişiklik bu kuralı bozar.
 public struct NameEntryView: View {
     private enum Field {
         case first
@@ -56,7 +62,7 @@ public struct NameEntryView: View {
             )
         }
         .background(Theme.backgroundPrimary.ignoresSafeArea())
-        .toolbar(.hidden, for: .navigationBar)
+        .hidesNavigationBar()
         .onAppear {
             focusedField = .first
         }

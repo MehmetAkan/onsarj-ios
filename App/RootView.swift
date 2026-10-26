@@ -44,13 +44,16 @@ struct RootView: View {
                 onResend: {},
                 // Kayıtlı kullanıcıyı ayırmak backend'e bağlı (K-10); şimdilik her kod ad
                 // ekranına geçer.
-                onSubmit: { _ in router.push(.nameEntry) }
+                // SMS kodu tek kullanımlıktır: kod doğrulanınca bu ekran yığından çıkarılır ve
+                // hiçbir yoldan (geri oku, kenardan kaydırma) geri açılamaz. Harcanmış kodun
+                // ekranına dönen kullanıcı çalışmayan bir kodla kalırdı. Yığın:
+                // telefon → ad-soyad.
+                onSubmit: { _ in router.replaceTop(with: .nameEntry) }
             )
         case .nameEntry:
             NameEntryView(
-                // SMS kodu tek kullanımlıktır; harcanmış kodun ekranına değil, telefon ekranına
-                // dönülür. Girilen numara alanda dolu kalır.
-                onBack: { router.pop(to: .phoneEntry) },
+                // Altta telefon ekranı durur; girilen numara alanda dolu kalır.
+                onBack: { router.pop() },
                 onContinue: { _, _ in }
             )
         }

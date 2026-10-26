@@ -67,7 +67,7 @@ public struct VerificationCodeView: View {
             )
         }
         .background(Theme.backgroundPrimary.ignoresSafeArea())
-        .toolbar(.hidden, for: .navigationBar)
+        .hidesNavigationBar()
         .onChange(of: model.error) { _, error in
             if let error {
                 AccessibilityNotification.Announcement(error.message).post()

@@ -53,7 +53,7 @@ public struct PhoneEntryView: View {
             )
         }
         .background(Theme.backgroundPrimary.ignoresSafeArea())
-        .toolbar(.hidden, for: .navigationBar)
+        .hidesNavigationBar()
         .sheet(isPresented: $model.isCountryPickerPresented) {
             CountryPicker(countries: model.formatter.countries, selected: model.country) { country in
                 model.select(country)

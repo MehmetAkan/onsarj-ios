@@ -2,9 +2,12 @@ import SwiftUI
 
 /// Ekran üst çubuğu: solda geri oku, ortada başlık.
 ///
-/// Sistem gezinme çubuğu yerine kullanılır; ekran `.toolbar(.hidden, for: .navigationBar)`
-/// ile çubuğu gizler ve bu bileşeni üst kenara yerleştirir. Böylece geri oku iOS sürümünden
-/// bağımsız olarak aynı görünür: çerçevesiz, arka plansız, yalnızca ok.
+/// Sistem gezinme çubuğu yerine kullanılır; ekran `.hidesNavigationBar()` ile çubuğu gizler
+/// ve bu bileşeni üst kenara yerleştirir. Böylece geri oku iOS sürümünden bağımsız olarak
+/// aynı görünür: çerçevesiz, arka plansız, yalnızca ok.
+///
+/// Çubuğu `.toolbar(.hidden, for: .navigationBar)` ile gizlemek kenardan kaydırarak geri
+/// dönmeyi de kapatır; `.hidesNavigationBar()` hareketi açık tutar (bkz. `HiddenNavigationBar`).
 ///
 /// ```swift
 /// content
@@ -12,7 +15,7 @@ import SwiftUI
 ///         ScreenHeader("signup.phone.navTitle", backLabel: "signup.phone.accessibility.back",
 ///                      bundle: .onsarj, onBack: onBack)
 ///     }
-///     .toolbar(.hidden, for: .navigationBar)
+///     .hidesNavigationBar()
 /// ```
 public struct ScreenHeader: View {
     private let titleKey: LocalizedStringKey

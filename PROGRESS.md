@@ -13,8 +13,8 @@ Yeni katılan biri yalnızca `CLAUDE.md` ve bu dosyayı okuyarak projenin durumu
 araçları ve CI (GitHub Actions + Xcode Cloud) çalışıyor. Tasarım sisteminin temel
 katmanı yazıldı: renk paleti, tipografi, boşluk ve yarıçap token'ları.
 
-**Sırada:** Kayıt akışının ekranları tamam; ad-soyad sonrası adım henüz tasarlanmadı.
-Kodun doğrulanması, tekrar gönderilmesi, kayıtlı kullanıcının ayrılması ve ad-soyadın kaydı
+**Sırada:** Kenardan kaydırarak geri dönmenin düzeltilmesi (Adım 21'den beri açık).
+Kayıt akışının ekranları tamam; ad-soyad sonrası adım henüz tasarlanmadı. Kodun doğrulanması, tekrar gönderilmesi, kayıtlı kullanıcının ayrılması ve ad-soyadın kaydı
 backend sözleşmesini (K-10) bekliyor. `WelcomeModel` ve `PhoneEntryModel` birim testleri ayrı
 görev olarak bekliyor.
 
@@ -22,6 +22,50 @@ görev olarak bekliyor.
 (`VerificationCodeView`) ve ad-soyad (`NameEntryView`), `AppRouter` ile bağlı (Adım 11–22).
 `DesignSystem`, `Localization`, `PhoneNumbers`, `AuthFeature` ve `App/Navigation` dışındaki
 modüller boş.
+
+---
+
+## Adım 24 — Uygulamanın Türkçe açılması
+**Tarih:** 2026-10-25
+
+**Ne yapıldı**
+- Neden bulundu: Telefon dili Türkçeyken uygulama İngilizce açılıyordu. iOS uygulamanın dilini,
+  ana paketin (`Onsarj.app`) bildirdiği dillere göre seçer. Türkçe metinler yalnızca
+  `Core_Localization.bundle/tr.lproj` içindeydi; ana pakette hiç `.lproj` klasörü ve
+  `CFBundleLocalizations` yoktu. Bu yüzden iOS geliştirme diline (`en`) düşüyordu.
+- Neden doğrulandı: Aynı derlemenin Info.plist'ine yalnızca `CFBundleLocalizations = [en, tr]`
+  eklenince uygulama Türkçe açıldı. Deneme geçici bir derleme kopyasında yapıldı, depoya girmedi.
+- Proje sahibi Xcode'dan Turkish yerelleştirmesini ekledi (`knownRegions` listesine `tr`).
+- `App/Resources/InfoPlist.xcstrings` oluşturuldu. İlk anahtar `CFBundleDisplayName`:
+  en ve tr karşılığı `onsarj`. Derleme artık ana pakette `en.lproj` ve `tr.lproj` üretiyor.
+- Dört ekran (karşılama, telefon, SMS kodu, ad-soyad) simülatörde Türkçe açılıp gezildi.
+
+**Dosyalar**
+- Eklendi: `App/Resources/InfoPlist.xcstrings`
+- Değişti (proje sahibi, Xcode arayüzünden): `Onsarj.xcodeproj/project.pbxproj`, yalnızca
+  `knownRegions` listesine `tr` satırı.
+
+**Kararlar ve açık noktalar**
+- Uygulamanın desteklediği dilleri bildirme yolu olarak `InfoPlist.xcstrings` seçildi
+  (Apple'ın standart yolu). Alternatifi `CFBundleLocalizations` anahtarıydı; bunun için ayrı
+  bir Info.plist, `xcconfig` ayarı ve senkronize klasörde üyelik istisnası gerekiyordu.
+- İzin metinleri (`NSLocation*`, `NSUserNotifications*`) şimdi eklenmedi; harita ekranına
+  gelindiğinde aynı dosyaya girecek. Ana paketten çevrilmeleri gerektiği için yerleri burası.
+- Dil bildirimi artık uygulama hedefinde duruyor. Yeni bir dil eklenirse hem paketteki
+  `Localizable.xcstrings`'e hem `InfoPlist.xcstrings`'e o dilin karşılıkları girilmeli;
+  aksi halde iOS o dili uygulamada görmez.
+
+**Doğrulama**
+- Geçici UI testi (iPhone 17 Pro simülatörü, `-AppleLanguages (tr)`): dört ekranın Türkçe
+  başlığı ve butonları bulunup ekran görüntüleri alındı, test geçti. Test sonra silindi.
+- Simülatörün sistem dili `tr-TR` iken uygulama argümansız başlatıldı: karşılama ekranı Türkçe.
+- `verify-ios.sh --app`: geçti. `swiftlint lint --strict`: ihlal yok.
+
+**Bilinen eksikler**
+- Ad-soyad ekranında simülatörün kendi klavye tanıtım sayfası İngilizce çıktı. Bu sistem
+  klavyesinin dili, uygulamayla ilgisi yok.
+
+**Sıradaki adım:** Kenardan kaydırarak geri dönmenin düzeltilmesi.
 
 ---
 
