@@ -1,5 +1,6 @@
 import AuthFeature
 import DesignSystem
+import HomeMapFeature
 import SwiftUI
 
 /// Uygulamanın kök görünümü: gezinme yığını ve ekranların `Route` karşılıkları.
@@ -10,9 +11,27 @@ import SwiftUI
 struct RootView: View {
     let dependencies: AppDependencies
 
+    /// Açılışın kayıt akışını atlayıp doğrudan haritaya gitmesi.
+    ///
+    /// Proje sahibinin kararıyla **geçicidir**: harita cihazda denenebilsin diye açıldı
+    /// (PROGRESS.md Adım 25, "Bilinen eksikler"). Kayıt akışına dönmek için `false` yapılır.
+    /// Kalıcı akış (kayıt → giriş → harita) kurulduğunda bu sabit kaldırılır.
+    private static let opensMapOnLaunch = true
+
     @State private var router = AppRouter()
 
     var body: some View {
+        Group {
+            if Self.opensMapOnLaunch {
+                HomeMapView(locationSource: dependencies.locationSource)
+            } else {
+                signUpFlow
+            }
+        }
+        .onsarjDynamicTypeRange()
+    }
+
+    private var signUpFlow: some View {
         NavigationStack(path: $router.path) {
             WelcomeView(
                 onContinue: { router.push(.phoneEntry) },
@@ -22,7 +41,6 @@ struct RootView: View {
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: Route.self, destination: destination)
         }
-        .onsarjDynamicTypeRange()
     }
 
     @ViewBuilder

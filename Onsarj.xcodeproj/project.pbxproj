@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		01224337307D649C00C5DF77 /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 01224336307D649C00C5DF77 /* DesignSystem */; };
 		01224339307D649C00C5DF77 /* AuthFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 01224338307D649C00C5DF77 /* AuthFeature */; };
+		0127FF81309882D300879EF9 /* HomeMapFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0127FF80309882D300879EF9 /* HomeMapFeature */; };
+		0127FF83309882DE00879EF9 /* LocationKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0127FF82309882DE00879EF9 /* LocationKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,7 +75,9 @@
 		018CDE97306EE71D0021EF7D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				0127FF83309882DE00879EF9 /* LocationKit in Frameworks */,
 				01224337307D649C00C5DF77 /* DesignSystem in Frameworks */,
+				0127FF81309882D300879EF9 /* HomeMapFeature in Frameworks */,
 				01224339307D649C00C5DF77 /* AuthFeature in Frameworks */,
 			);
 		};
@@ -150,6 +154,8 @@
 			packageProductDependencies = (
 				01224336307D649C00C5DF77 /* DesignSystem */,
 				01224338307D649C00C5DF77 /* AuthFeature */,
+				0127FF80309882D300879EF9 /* HomeMapFeature */,
+				0127FF82309882DE00879EF9 /* LocationKit */,
 			);
 			productName = Onsarj;
 			productReference = 018CDE9A306EE71D0021EF7D /* Onsarj.app */;
@@ -634,6 +640,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0150A4DD3072504B00D86AAB /* XCLocalSwiftPackageReference "Packages/Features" */;
 			productName = AuthFeature;
+		};
+		0127FF80309882D300879EF9 /* HomeMapFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0150A4DD3072504B00D86AAB /* XCLocalSwiftPackageReference "Packages/Features" */;
+			productName = HomeMapFeature;
+		};
+		0127FF82309882DE00879EF9 /* LocationKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0150A4DC3072503100D86AAB /* XCLocalSwiftPackageReference "Packages/Core" */;
+			productName = LocationKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

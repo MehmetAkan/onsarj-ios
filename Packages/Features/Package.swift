@@ -54,6 +54,7 @@ let package = Package(
                 .product(name: "DesignSystem", package: "Core"),
                 .product(name: "Localization", package: "Core"),
                 .product(name: "MapEngine", package: "MapboxKit"),
+                .product(name: "LocationKit", package: "Core"),
             ]
         ),
         .target(

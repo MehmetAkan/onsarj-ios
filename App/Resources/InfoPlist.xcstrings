@@ -30,6 +30,24 @@
           }
         }
       }
+    },
+    "NSLocationWhenInUseUsageDescription" : {
+      "comment" : "Konum izni penceresinde sistemin gösterdiği gerekçe. Yalnızca \"uygulamayı kullanırken\" izni istenir (CLAUDE.md bölüm 7).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "onsarj uses your location to show nearby charging stations and guide you on your route."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "onsarj, yakındaki şarj istasyonlarını göstermek ve rota boyunca sana yol göstermek için konumunu kullanır."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

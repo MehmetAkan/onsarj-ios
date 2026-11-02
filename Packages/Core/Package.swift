@@ -28,7 +28,7 @@ let package = Package(
         .target(name: "DesignSystem", dependencies: ["OnsarjCore"], resources: [.process("Resources")]),
         .target(name: "Networking", dependencies: ["OnsarjCore", "Telemetry"]),
         .target(name: "Storage", dependencies: ["OnsarjCore"]),
-        .target(name: "LocationKit", dependencies: ["OnsarjCore"]),
+        .target(name: "LocationKit", dependencies: ["OnsarjCore"], resources: [.process("Resources")]),
         .target(name: "Telemetry", dependencies: ["OnsarjCore"]),
         .target(name: "PushNotifications", dependencies: ["OnsarjCore"]),
         .target(

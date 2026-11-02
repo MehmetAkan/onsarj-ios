@@ -1,6 +1,96 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "home.map.accessibility.recenter" : {
+      "comment" : "Ana harita, sağ alttaki konum butonunun VoiceOver etiketi. Kamerayı kullanıcının konumuna götürür.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show my location"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konumuma dön"
+          }
+        }
+      }
+    },
+    "home.map.locationDenied.cancel" : {
+      "comment" : "Ana harita, konum izni uyarısını kapatan buton.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not Now"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şimdi Değil"
+          }
+        }
+      }
+    },
+    "home.map.locationDenied.message" : {
+      "comment" : "Ana harita, konum izni uyarısının açıklaması. İzni yalnızca Ayarlar açabilir.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To show where you are on the map, allow onsarj to use your location in Settings."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haritada nerede olduğunu gösterebilmek için Ayarlar'dan onsarj'ın konumunu kullanmasına izin ver."
+          }
+        }
+      }
+    },
+    "home.map.locationDenied.openSettings" : {
+      "comment" : "Ana harita, konum izni uyarısında uygulamanın Ayarlar sayfasını açan buton.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayarlar'ı Aç"
+          }
+        }
+      }
+    },
+    "home.map.locationDenied.title" : {
+      "comment" : "Ana harita, konum izni reddedilmişken konum butonuna dokunulunca açılan uyarının başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location access is off"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konum izni kapalı"
+          }
+        }
+      }
+    },
     "signup.country.search" : {
       "comment" : "Ülke seçici, arama alanının yer tutucusu.",
       "extractionState" : "manual",

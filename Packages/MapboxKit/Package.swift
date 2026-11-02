@@ -14,6 +14,9 @@ let package = Package(
     dependencies: [
         .package(path: "../Core"),
         .package(path: "../Domain"),
+        // CLAUDE.md 5.3 kural 4: Mapbox sürümleri yalnızca burada tanımlanır. Navigation SDK
+        // eklendiğinde Maps onun sabitlediği sürüme birlikte yükseltilir.
+        .package(url: "https://github.com/mapbox/mapbox-maps-ios.git", exact: "11.33.1"),
     ],
     targets: [
         .target(
@@ -22,6 +25,7 @@ let package = Package(
                 .product(name: "OnsarjCore", package: "Core"),
                 .product(name: "OnsarjDomain", package: "Domain"),
                 .product(name: "DesignSystem", package: "Core"),
+                .product(name: "MapboxMaps", package: "mapbox-maps-ios"),
             ]
         ),
         .target(

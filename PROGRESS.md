@@ -11,17 +11,151 @@ Yeni katılan biri yalnızca `CLAUDE.md` ve bu dosyayı okuyarak projenin durumu
 
 **Durum:** Altyapı tamamlandı. Proje iskeleti, 30 modüllük paket mimarisi, kod kalitesi
 araçları ve CI (GitHub Actions + Xcode Cloud) çalışıyor. Tasarım sisteminin temel
-katmanı yazıldı: renk paleti, tipografi, boşluk ve yarıçap token'ları.
+katmanı yazıldı: renk paleti, tipografi, boşluk ve yarıçap token'ları. Mapbox Maps SDK
+(11.33.1) eklendi; ana harita ekranı tam ekran harita ve "konumuma dön" butonuyla cihazda
+çalışıyor.
 
-**Sırada:** Kenardan kaydırarak geri dönmenin düzeltilmesi (Adım 21'den beri açık).
-Kayıt akışının ekranları tamam; ad-soyad sonrası adım henüz tasarlanmadı. Kodun doğrulanması, tekrar gönderilmesi, kayıtlı kullanıcının ayrılması ve ad-soyadın kaydı
-backend sözleşmesini (K-10) bekliyor. `WelcomeModel` ve `PhoneEntryModel` birim testleri ayrı
-görev olarak bekliyor.
+**Geçici durum:** Uygulama açılışta kayıt akışını atlayıp doğrudan haritaya gidiyor
+(`RootView.opensMapOnLaunch`, Adım 25). Kalıcı akış kurulunca kaldırılacak.
+
+**Sırada:** İstasyon katmanı (GeoJSON kaynağı + symbol layer + kaynak düzeyinde kümeleme, CLAUDE.md 5.4).
+Kayıt akışının ekranları tamam; ad-soyad sonrası adım henüz tasarlanmadı. Kodun doğrulanması,
+tekrar gönderilmesi, kayıtlı kullanıcının ayrılması ve ad-soyadın kaydı backend sözleşmesini
+(K-10) bekliyor. `WelcomeModel` ve `PhoneEntryModel` birim testleri ayrı görev olarak bekliyor.
 
 **Yazılan ekranlar:** Karşılama (`WelcomeView`), telefon girişi (`PhoneEntryView`), SMS kodu
 (`VerificationCodeView`) ve ad-soyad (`NameEntryView`), `AppRouter` ile bağlı (Adım 11–22).
-`DesignSystem`, `Localization`, `PhoneNumbers`, `AuthFeature` ve `App/Navigation` dışındaki
-modüller boş.
+Ana harita (`HomeMapView`, Adım 25). Dolu modüller: `DesignSystem`, `Localization`,
+`PhoneNumbers`, `LocationKit`, `MapEngine`, `AuthFeature`, `HomeMapFeature`, `App/Navigation`;
+diğerleri boş.
+
+**Tüm dosyası `#if canImport(UIKit)` ile korunan dosyalar (CLAUDE.md 6.8, eşik 5):** 3 —
+`UITypography.swift`, `FormTextField.swift`, `HiddenNavigationBar.swift`.
+
+---
+
+## Adım 25 — Mapbox Maps SDK, MapEngine, konum izni ve ana harita ekranı
+**Tarih:** 2026-11-02
+
+**Ne yapıldı**
+- Token yönetimi: `Config/Secrets.xcconfig.template`, `Base.xcconfig`'te `#include?` ile
+  isteğe bağlı `Secrets.xcconfig`. Token uygulamaya kısmi Info.plist (`App/Support/Info.plist`,
+  `MBXAccessToken = $(MAPBOX_PUBLIC_TOKEN)`) ve yalnızca uygulama hedefine bağlı
+  `Config/App.xcconfig` (`INFOPLIST_FILE`) üzerinden ulaşıyor; SDK token'ı kendisi okuyor.
+- `ci_scripts/ci_post_clone.sh`: `MAPBOX_DOWNLOAD_TOKEN` → `~/.netrc`, `MAPBOX_PUBLIC_TOKEN` →
+  `Config/Secrets.xcconfig` (ikisi de izin 600). Değişken eksikse, indirme token'ı `sk.` ya da
+  genel token `pk.` ile başlamıyorsa açık mesajla duruyor.
+- `MapboxKit`: Maps SDK `exact: "11.33.1"`, yalnızca `MapEngine` hedefinde. `MapEngine`:
+  `MapView` (UIViewRepresentable; dışarıya sade `UIView` döner, Mapbox tipi sızmaz), `MapStyle`
+  (açık: Standard + `day`, koyu: Standard + `night`; tema değişince kendiliğinden geçer),
+  `MapCamera` (başlangıç bölgesi, `followUser()`, `isFollowingUser`).
+- Başlangıç görünümü cihazın bölge ayarındaki ülke: `LocationKit/CountryBounds` paket içi
+  tablodan (237 ülke, Natural Earth v5.1.2, kamu malı) ülkenin sınır kutusunu verir; harita
+  açılınca kutu ekrana sığdırılır. Bölge belirlenemezse `CountryBounds.fallbackRegionCode`
+  (`"TR"`). İnternet gerekmez (K-03).
+- `LocationKit`: `LocationAuthorization` (3 durum), `LocationSource` protokolü, `CountryBounds`,
+  `DeviceLocationSource` (`CLLocationManager`; izin ve konum `AsyncStream` olarak, konum
+  güncellemeleri yalnızca abone varken ve izin verilmişken çalışır).
+- `HomeMapFeature`: `HomeMapView` + `HomeMapModel` + `Components/RecenterButton`. Tam ekran
+  harita, konum göstergesi, sağ altta "konumuma dön". İzin yalnızca butona ilk dokunuşta
+  isteniyor; reddedilmişse Ayarlar'a yönlendiren uyarı açılıyor.
+- `NSLocationWhenInUseUsageDescription` (en/tr) ve 5 `home.map.*` metni eklendi.
+
+**Dosyalar**
+- Eklendi: `Config/Secrets.xcconfig.template`, `Config/App.xcconfig`, `App/Support/Info.plist`,
+  `ci_scripts/ci_post_clone.sh`,
+  `Packages/MapboxKit/Sources/MapEngine/{MapView,MapStyle,MapCamera}.swift`,
+  `Packages/MapboxKit/Tests/MapboxKitTests/MapStyleTests.swift`,
+  `Packages/Core/Sources/LocationKit/{LocationAuthorization,LocationSource,DeviceLocationSource,CountryBounds}.swift`,
+  `Packages/Core/Sources/LocationKit/Resources/CountryBounds.json`,
+  `Packages/Core/Tests/CoreTests/CountryBoundsTests.swift`,
+  `Packages/Features/Sources/HomeMapFeature/{HomeMapView,HomeMapModel}.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/RecenterButton.swift`,
+  `Packages/Features/Tests/FeaturesTests/HomeMapModelTests.swift`
+- Değişti: `Config/Base.xcconfig`, `Packages/MapboxKit/Package.swift`, `Packages/Core/Package.swift`
+  (yalnızca `LocationKit`'e `resources: [.process("Resources")]`, proje sahibinin izniyle),
+  `Packages/Features/Package.swift`, `App/Composition/AppDependencies.swift`, `App/RootView.swift`,
+  `App/Resources/InfoPlist.xcstrings`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`
+- Değişti (otomatik, paket çözümlemesi): `Packages/{MapboxKit,Features,Services}/Package.resolved`,
+  `Onsarj.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`
+- Değişti (proje sahibi, Xcode arayüzünden): `Onsarj.xcodeproj/project.pbxproj` — Info.plist
+  üyelik istisnası, `App.xcconfig` referansı ve uygulama hedefinin iki yapılandırmasına bağlanması;
+  `HomeMapFeature` ve `LocationKit` ürünlerinin uygulama hedefine bağlanması
+- Silindi: `Packages/MapboxKit/Sources/MapEngine/MapEngine.swift`,
+  `Packages/Core/Sources/LocationKit/LocationKit.swift` (yer tutucular)
+
+**Kararlar ve açık noktalar**
+- Sürüm `exact: "11.33.1"` (proje sahibi). 11.34.1 bir günlüktü; fark yalnızca çevrimdışı
+  yöneticideki bir düzeltme. Navigation SDK eklenince ikisi birlikte güncel sürüme çıkar.
+- `INFOPLIST_KEY_MBXAccessToken` çalışmadı: Xcode yalnızca tanıdığı `INFOPLIST_KEY_*`
+  anahtarlarını aktarıyor. Kısmi Info.plist + `App.xcconfig` seçildi (proje sahibi, seçenek a).
+- `MAPBOX_DOWNLOAD_TOKEN` zorunlu (proje sahibi). Maps 11.33.1 ikilileri şu an token'sız iniyor;
+  Navigation SDK için kesin gerekecek. `MAPBOX_PUBLIC_TOKEN` Xcode Cloud'da Secret değil
+  (uygulamaya gömülüyor, gizli değil); yalnızca indirme token'ı Secret.
+- Standard'ın ayrı bir `standardNight` adresi yok; koyu tema aynı stilin `night` ışık ön
+  ayarıyla veriliyor. Adres iki temada aynı olduğu için tema değişimi stili yeniden yüklemiyor.
+- Mapbox'a konum verisi `LocationKit`'ten veriliyor (`LocationDataModel`). Mapbox kendi
+  `AppleLocationProvider`'ını oluşturmuyor; aksi halde gösterge ilk çizildiğinde izni kendisi
+  isterdi. Uygulamada tek konum kaynağı var.
+- **Platform koruması yazılmadı** (CLAUDE.md 6.8: MapboxKit'te koruma yazılmaz; Mapbox'ın
+  macOS sürümü de yok). Proje sahibi onayladı; sayaç **3**.
+- Kamera davranışları (proje sahibi onayladı): izin daha önce verilmişse açılışta kamera
+  kullanıcıya gider; izlerken zoom 15, kuzey yukarı, eğim yok (yön ve eğim navigasyonun işi);
+  izin reddedilmişse butona dokununca Ayarlar uyarısı açılır.
+- Başlangıç görünümü (proje sahibi): sabit Türkiye görünümü yerine cihazın bölgesindeki ülke.
+  Veri kaynağı olarak paket içi sınır kutuları seçildi; CLGeocoder ağ gerektirdiği için (K-03),
+  elle yazılmış liste her yeni pazarda kod değişikliği gerektirdiği için elendi.
+  Kutu yöntemi: ülkenin en büyük poligonu + ona en fazla 3° uzaklıkta, alanı ana karanın en az
+  %0,5'i olan parçalar; uzak denizaşırı topraklar (Fransız Guyanası, Alaska, Hawaii) dışarıda.
+  Kaynak, sürüm, lisans, alınma tarihi ve yöntem JSON dosyasının başında yazılı. Yalnızca dört
+  sayılık kutular var, poligon yok (10 KB). Kutular 180. boylamı geçmiyor.
+- `"TR"` yedeği iki yerde duruyor: `CountryBounds.fallbackRegionCode` ve
+  `PhoneNumberFormatter.fallbackRegionCode`. İki modül birbirine bağımlı değil; ortak bir yere
+  almak bağımlılık değişikliği gerektirir. Ana pazar değişirse ikisi birlikte değişir.
+- `MapEngine` `LocationKit`'e bağımlı olmadığı için iki benzer tip var: `CountryBounds`
+  (LocationKit) ve `MapCamera.Region` (MapEngine); `HomeMapModel` birini diğerine çevirir.
+- **Geçici açılış** (proje sahibinin açık kararı, CLAUDE.md 2.3'e bilinçli istisna):
+  `RootView.opensMapOnLaunch = true`. Kayıt akışı silinmedi, dokunulmadı.
+- Kenardan kaydırarak geri dönme düzeltmesi (commit `37e212c`, `6aa85df`) proje sahibi
+  tarafından cihazda denendi, çalışıyor; ayrı bir adım olarak kaydedilmedi.
+  `OnsarjUITests/SwipeBackProbeTests.swift`'in kalıcı mı olacağı karar bekliyor.
+
+**Doğrulama**
+- Swift 6 katı eşzamanlılık: `MapEngine` ve `HomeMapFeature` `-swift-version 6` ile,
+  Mapbox modülleri (`MapboxMaps`, `MapboxCommonWrapper`, `MapboxCoreMapsWrapper`) kendi
+  paketlerinin bildirdiği `-swift-version 5` ile derlendi. Derleme günlüklerinde **sıfır uyarı,
+  sıfır hata.** Mapbox protokolü `ViewportStatusObserver` için `@preconcurrency` uyumu kullanıldı.
+- `cd Packages/Core && swift build`: geçti.
+- `verify-ios.sh`: tüm paketler ve uygulama şeması geçti. Bölge sığdırmada önce kullanılan
+  `camera(for:padding:bearing:pitch:maxZoom:offset:)` kullanımdan kaldırılmış çıktı; yerine
+  `camera(for:camera:coordinatesPadding:maxZoom:offset:)` kullanıldı, uyarı yok.
+- `xcodebuild test` (iPhone 16 Pro simülatörü): `HomeMapModelTests` 8/8, `MapStyleTests` 3/3,
+  `CountryBoundsTests` 6/6 geçti (son ikisi kaynak dosyasının iOS paketine girdiğini de sınar).
+  `swift test --filter CountryBoundsTests` (macOS): 6/6.
+- `swiftlint lint --strict`: 0 ihlal. `swift format lint`: 0 ihlal.
+- Açık/koyu stil seçimi birim testiyle doğrulandı (Mapbox'ın `standard(lightPreset:)` tanımına
+  eşit). Harita proje sahibi tarafından cihazda çalıştırıldı.
+- Token yolu: üretilen `Onsarj.app/Info.plist`'te `MBXAccessToken` dolu; test hedeflerinde yok.
+
+**Bilinen eksikler**
+- **Geçici:** Açılış doğrudan haritaya gidiyor, kayıt akışı atlanıyor
+  (`App/RootView.swift`, `opensMapOnLaunch`). Geri almak tek satır: `false`.
+- Ülke kutusuyla açılış cihazda henüz denenmedi (önceki sabit Türkiye görünümü denendi).
+- Takımada ülkelerinde (ör. Endonezya) kutu yalnızca ana kümeyi kapsar; ilk görünüm ülkenin
+  bir kısmını gösterir.
+- `HomeMapView` önizlemesinde harita çizilmeyebilir (token ve ağ gerekir); beklenen durum.
+- Konum göstergesi yönü `course`'tan (hareket yönü) geliyor; pusula yönü (heading) yok.
+- CLAUDE.md bölüm 10 maddeleri kapanmadı, bkz. aşağı.
+
+**CLAUDE.md bölüm 10**
+- "Mapbox SDK'larının Swift 6 strict concurrency ile uyumu": **Maps SDK için sıfır uyarı, sıfır
+  hata.** Madde işaretlenmedi (proje sahibi): Maps ve Navigation'ı birlikte kapsar,
+  Navigation SDK eklendiğinde kapanır.
+- Özel Mapbox stilinin telefonda görünmesi: hazır Standard stil kullanılıyor, özel stil yok;
+  açık kalıyor.
+
+**Sıradaki adım:** Ülke kutusuyla açılışın cihazda denenmesi; ardından istasyon katmanı.
 
 ---
 
