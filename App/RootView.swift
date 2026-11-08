@@ -11,21 +11,30 @@ import SwiftUI
 struct RootView: View {
     let dependencies: AppDependencies
 
-    /// Açılışın kayıt akışını atlayıp doğrudan haritaya gitmesi.
+    /// Açılışın kayıt akışını atlayıp doğrudan ana haritaya gitmesi.
     ///
-    /// Proje sahibinin kararıyla **geçicidir**: harita cihazda denenebilsin diye açıldı
-    /// (PROGRESS.md Adım 25, "Bilinen eksikler"). Kayıt akışına dönmek için `false` yapılır.
-    /// Kalıcı akış (kayıt → giriş → harita) kurulduğunda bu sabit kaldırılır.
+    /// Proje sahibinin kararıyla **geçicidir**: ana sayfa tasarlanırken her açılışta kayıt
+    /// akışından geçilmesin diye açıldı (PROGRESS.md Adım 27). Kayıt akışına dönmek için
+    /// `false` yapılır. Oturum (`AuthService`, K-10) kurulduğunda bu sabit kaldırılır.
     private static let opensMapOnLaunch = true
 
-    @State private var router = AppRouter()
+    @State private var router = AppRouter(flow: Self.opensMapOnLaunch ? .home : .signUp)
 
     var body: some View {
         Group {
-            if Self.opensMapOnLaunch {
-                HomeMapView(locationSource: dependencies.locationSource)
-            } else {
+            switch router.flow {
+            case .signUp:
                 signUpFlow
+            case .home:
+                // Butonların ve aramanın açacağı ekranlar henüz yazılmadı; istekler o ekranlar
+                // yazıldığında `AppRouter`'a bağlanır.
+                HomeMapView(
+                    locationSource: dependencies.locationSource,
+                    onMenu: {},
+                    onSearch: {},
+                    onNearbyChargers: {},
+                    onSavedPlaces: {}
+                )
             }
         }
         .onsarjDynamicTypeRange()
@@ -72,7 +81,9 @@ struct RootView: View {
             NameEntryView(
                 // Altta telefon ekranı durur; girilen numara alanda dolu kalır.
                 onBack: { router.pop() },
-                onContinue: { _, _ in }
+                // Ad ve soyadın kaydı backend'e bağlı (K-10); değerler henüz bir yere
+                // gönderilmiyor. Kayıt akışı burada biter ve ana haritaya geçilir.
+                onContinue: { _, _ in router.completeSignUp() }
             )
         }
     }

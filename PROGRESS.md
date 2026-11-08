@@ -15,22 +15,297 @@ katmanı yazıldı: renk paleti, tipografi, boşluk ve yarıçap token'ları. Ma
 (11.33.1) eklendi; ana harita ekranı tam ekran harita ve "konumuma dön" butonuyla cihazda
 çalışıyor.
 
-**Geçici durum:** Uygulama açılışta kayıt akışını atlayıp doğrudan haritaya gidiyor
-(`RootView.opensMapOnLaunch`, Adım 25). Kalıcı akış kurulunca kaldırılacak.
+**Uygulama akışı:** Kayıt akışı (karşılama → telefon → SMS kodu → ad-soyad) ana haritaya
+bağlı (Adım 26). **Geçici:** ana sayfa tasarlanırken açılış doğrudan haritaya gidiyor
+(`RootView.opensMapOnLaunch = true`, Adım 27). Oturum backend'le birlikte gelecek.
+
+**Ana sayfa:** Dört parçada yazılıyor. A parçası (yüzen butonlar + üç kademeli alt sayfa +
+arama çubuğu) tamam (Adım 27). Alt sayfa kendi bileşenimiz `DetentSheet` (K-22, Adım 28);
+iOS'un `presentationDetents` yapısı kullanılmıyor. Alt butonlar sayfayı izliyor, büyük kademe
+yalnızca aramayla açılıyor (Adım 29). Sırada B–D: kategori çipleri, araç kartı,
+alt butonlar.
 
 **Sırada:** İstasyon katmanı (GeoJSON kaynağı + symbol layer + kaynak düzeyinde kümeleme, CLAUDE.md 5.4).
-Kayıt akışının ekranları tamam; ad-soyad sonrası adım henüz tasarlanmadı. Kodun doğrulanması,
+Kayıt akışının ekranları tamam ve ana haritaya bağlı. Kodun doğrulanması,
 tekrar gönderilmesi, kayıtlı kullanıcının ayrılması ve ad-soyadın kaydı backend sözleşmesini
 (K-10) bekliyor. `WelcomeModel` ve `PhoneEntryModel` birim testleri ayrı görev olarak bekliyor.
 
 **Yazılan ekranlar:** Karşılama (`WelcomeView`), telefon girişi (`PhoneEntryView`), SMS kodu
 (`VerificationCodeView`) ve ad-soyad (`NameEntryView`), `AppRouter` ile bağlı (Adım 11–22).
-Ana harita (`HomeMapView`, Adım 25). Dolu modüller: `DesignSystem`, `Localization`,
+Ana harita (`HomeMapView`, Adım 25; yüzen butonlar ve alt sayfa Adım 27). Dolu modüller: `DesignSystem`, `Localization`,
 `PhoneNumbers`, `LocationKit`, `MapEngine`, `AuthFeature`, `HomeMapFeature`, `App/Navigation`;
 diğerleri boş.
 
 **Tüm dosyası `#if canImport(UIKit)` ile korunan dosyalar (CLAUDE.md 6.8, eşik 5):** 3 —
 `UITypography.swift`, `FormTextField.swift`, `HiddenNavigationBar.swift`.
+
+---
+
+## Adım 29 — Butonlar sayfayı izliyor, büyük kademe yalnızca aramayla
+**Tarih:** 2026-11-08
+
+**Ne yapıldı**
+- Alt sıradaki üç buton (şimşek, konumuma dön, yer imi) artık `DetentSheet`'in **eşlikçisi**
+  (`accessory`): sayfanın üst kenarının `Spacing.md` üstünde durur ve sürüklerken parmakla
+  birlikte hareket eder. Orta kademenin üstüne çıkmaz; sayfa büyürken üzerlerinden geçer.
+  Sayfayla aynı zaman çizelgesinden çizildikleri için oturma yayında da birlikte hareket ederler.
+- Sol üstteki menü butonu ayrı ve hiç hareket etmiyor. Önceki düzende `.animation(value:)`
+  tüm buton katmanına uygulanıyordu; o katman kaldırıldı.
+- `DetentSheet`'e `draggableDetents` eklendi. Ana sayfada sürüklenebilir kademeler küçük ve
+  orta; büyük kademeye yalnızca aramaya dokunarak gidiliyor. Ortadan yukarı çekişte lastik
+  direnci var, bırakınca ortaya dönüyor. Büyük kademedeyken sayfa aşağı sürüklenebiliyor.
+  VoiceOver artır/azalt da yalnızca ulaşılabilen kademeler arasında geçiyor.
+- Kullanılmayan API'ler kaldırıldı: `onHeightsChange`, `SheetDetent.settleAnimation`,
+  `larger`/`smaller`, `SheetDetentHeights.zero`/`ascending`. `SheetDetentHeights` modül içine
+  kapandı.
+
+**Dosyalar**
+- Değişti: `Packages/Core/Sources/DesignSystem/Components/{DetentSheet,DetentSheetTracker,SheetDetent,SheetDetentHeights,SheetMotion}.swift`,
+  `Packages/Core/Tests/CoreTests/DetentSheetTrackerTests.swift`,
+  `Packages/Features/Sources/HomeMapFeature/HomeMapView.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/HomeBottomSheet.swift`, `PROGRESS.md`
+
+**Kararlar ve açık noktalar**
+- Proje sahibinin isteği: butonlar sayfayı sürüklerken izler (Adım 28'deki "izlemesin"
+  kararı geri alındı; kendi bileşenimiz anlık konumu verdiği için artık mümkün).
+- **Varsayım:** "Yukarıda hareket eden buton" orta kademenin üstündeki hareket olarak
+  yorumlandı; butonlar ortanın üstünde artık sabit. Menü butonu hiç hareket etmiyor.
+- İçerik, ulaşılabilen en büyük kademede kayıyor (ana sayfada orta kademe). İçerik şimdilik boş.
+
+**Doğrulama**
+- `swift test --filter "DetentResolver|DetentSheetTracker"`: 16/16 geçti (2 yeni: sürüklenemeyen
+  kademeye çıkılamaması, büyük kademeden aşağı sürükleme).
+- `./Tooling/Scripts/verify-ios.sh`: tüm paketler ve uygulama geçti.
+- `swiftlint lint --strict` / `swift format lint`: yeni kodda 0 ihlal (tek ihlal yine
+  `SemanticColors.swift:132`).
+- Simülatör (iOS 26.3 Pro Max, orta kademe): butonlar sayfanın üstünde. Sürükleme sırasındaki
+  takip simülatörde elle denenmedi; cihazda denenmeli.
+
+**Bilinen eksikler**
+- Mapbox kaynak gösterimi hâlâ sayfanın altında (Adım 27).
+- Arama odağı arama görevine kaldı.
+
+**Sıradaki adım**
+- Cihazda sürükleme ve takip hissinin denenmesi; ardından B parçası (kategori çipleri).
+
+---
+
+## Adım 28 — Kendi alt sayfamız (`DetentSheet`, K-22) ve kademeye göre yüzen butonlar
+**Tarih:** 2026-11-08
+
+**Ne yapıldı**
+- iOS 26+ sistem alt sayfasının küçük/orta kademede kenarlardan içeride ("yüzen") çizildiği
+  simülatörde (iOS 26.3) ve SDK başlığında doğrulandı; kapatan API yok (iOS 27 SDK dahil).
+  Proje sahibi kendi bileşenimizi seçti (K-22).
+- `DesignSystem/Components/DetentSheet`: saf SwiftUI, tam genişlik, alt güvenli alanı dolduran
+  arka plan, üst köşeler `Radius.sheet`, `Theme.backgroundElevated`, `Theme.shadowFloating`.
+  Yalnızca kendi alanındaki dokunuşları alır; ekranı kaplayan görünmez katman yok.
+- Sürükleme: başlık (gösterge + arama çubuğu) her zaman sayfayı sürükler. İçerikte yukarı
+  çekiş önce sayfayı büyük kademeye kadar büyütür, artanı içeriği kaydırır; aşağı çekiş önce
+  içeriği en üste döndürür, artanı sayfayı küçültür. Bölme her harekette yapıldığı için
+  parmak kalkmadan modlar arası geçişte sıçrama yok (`DetentSheetTracker`). Sınır ötesinde
+  lastik direnci; yatay başlayan sürükleme yok sayılıyor.
+- Bırakma: yansıtılan bitiş konumuna göre kademe seçimi (`DetentResolver`, saf fonksiyon);
+  yavaşta en yakın, hızlı fırlatmada (≥ 500 nk/sn) fırlatma yönündeki kademe. Oturma kritik
+  sönümlü yayla, içerik ataleti üstel yavaşlamayla; ikisi de zamana bağlı kapalı formül
+  (`SheetMotion`) ve `TimelineView` ile çiziliyor, hareket sürerken yakalanan sayfa sıçramıyor.
+- Erişilebilirlik: sürükleme göstergesi ayarlanabilir öğe (artır/azalt = kademe, değer
+  seslendiriliyor); içerik VoiceOver kaydırmasına açık; "Hareketi Azalt"ta yay yerine 0,2 sn
+  sade geçiş. Klavye: sayfa küçülmüyor, içeriğin altına klavye kadar boşluk ekleniyor.
+- Yüzen butonlar: küçük kademede alt sıradaki üç buton sayfanın hemen üstüne iniyor, orta ve
+  büyükte orta kademenin üstünde; menü butonu sabit. Geçiş, sayfanın bırakıldığı anda seçilen
+  kademeyle, sayfanın oturma yayıyla aynı eğride (`SheetDetent.settleAnimation`); sürüklerken
+  parmağı izlemiyor. Önceki `presentationDetents` kodu kaldırıldı.
+
+**Kademe yükseklikleri** (ekranın alt kenarından, alt güvenli alan dahil)
+- Küçük = sürükleme göstergesi + başlığın (arama çubuğu) ölçülen yüksekliği + `Spacing.md` +
+  alt güvenli alan. Yazı boyutu büyüdükçe ölçüm, dolayısıyla kademe büyüyor.
+- Orta = güvenli alanlar dışındaki yüksekliğin yarısı + alt güvenli alan (küçük ile büyük
+  arasına sıkıştırılır).
+- Büyük = ekran yüksekliği − üst güvenli alan − `Spacing.sm`.
+- Ölçüm görünmez, dokunuş almayan üç katmanla: ekran, klavye hariç güvenli alan, klavye
+  dahil görünür alan.
+
+**Dosyalar**
+- Eklendi: `Packages/Core/Sources/DesignSystem/Components/{DetentSheet,DetentSheetTracker,DetentResolver,SheetMotion,SheetDetent,SheetDetentHeights}.swift`,
+  `Packages/Core/Tests/CoreTests/{DetentResolverTests,DetentSheetTrackerTests}.swift`
+- Değişti: `Packages/Features/Sources/HomeMapFeature/{HomeMapView,HomeMapModel}.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/HomeBottomSheet.swift` (artık
+  `DetentSheet` üzerine ince sarmalayıcı), `Localizable.xcstrings` (4 metin:
+  `home.sheet.accessibility.{label,collapsed,medium,expanded}`), `PROGRESS.md`
+
+**Kararlar ve açık noktalar**
+- K-22 (proje sahibi): alt sayfa kendi bileşenimiz.
+- İçerik kaydırması yerel `ScrollView` ile değil, sayfanın kendi sürüklemesiyle yapılıyor:
+  iOS 17'de SwiftUI `ScrollView`'un sürüklemesi dıştaki `DragGesture`'a pürüzsüz devredilemiyor.
+  Bedeli: kaydırma göstergesi yok; içerikte yerel `ScrollView`/`List` kullanılmamalı (yatay
+  listeler sorun değil, dikey sürüklemeyi sayfa alıyor).
+- Butonların geçişi sayfa *bırakıldığında* (hedef kademe belli olunca) başlıyor ve sayfayla
+  aynı eğride bitiyor; tam durduktan sonra başlatmak gecikmeli hissettiriyordu.
+- `DesignSystem` `Localization`'a bağımlı değil; VoiceOver metinleri bileşene dışarıdan veriliyor.
+- **Çatışma:** "Aramaya dokununca odağı ver" ile "arama çubuğuna dokunma" bir arada
+  yapılamadı; çubukta metin alanı yok. Dokununca sayfa büyük kademeye geçiyor, odak arama
+  çubuğu görevinde gelecek. Klavye desteği bileşende hazır.
+- Gösterge rengi `Theme.indicatorInactive`, boyutu `Spacing.xxl` × `Spacing.xs`; ayrı token yok.
+- Fizik sabitleri (`SheetMotion`, `DetentResolver`) adlandırılmış ve belgelenmiş; tasarım
+  token'ı değil.
+
+**Doğrulama**
+- `swift test --filter "DetentResolver|DetentSheetTracker"` (macOS): 14/14 geçti (yavaş bırakma,
+  hızlı fırlatma, kademe atlama, sınır dışı, tek kademe, boş liste, kademenin tam üstü; içerik ↔
+  sayfa devri iki yönde, başlık sürüklemesi, lastik direnci, yatay sürükleme).
+- `./Tooling/Scripts/verify-ios.sh` (tüm paketler + uygulama): geçti, Swift uyarısı yok.
+  `cd Packages/Core && swift build`: geçti.
+- `swiftlint lint --strict` ve `swift format lint`: yeni kodda 0 ihlal; tek ihlal yine
+  `SemanticColors.swift:132` (proje sahibinin açık düzenlemesi, dokunulmadı).
+- Simülatör: iOS 26.3 Pro Max orta kademe — sayfa tam genişlik, alt kenara kadar, butonlar orta
+  kademenin üstünde. iOS 18.3 SE `xxxLarge` küçük kademe — arama çubuğu tam görünüyor, üç buton
+  sayfanın hemen üstüne inmiş. Küçük kademe görüntüsü için açılış kademesi derleme süresince
+  geçici değiştirildi, hemen geri alındı.
+- **Doğrulanmadı:** sürükleme, fırlatma, içerik devri, VoiceOver ve "Hareketi Azalt"
+  simülatörde elle denenmedi (komut satırından sürükleme yapılamıyor). Cihazda denenmesi gerekiyor.
+
+**Bilinen eksikler**
+- Mapbox kaynak gösterimi hâlâ sayfanın altında (Adım 27 açık noktası).
+- Sayfa içeriği şimdilik boş; içerik kaydırması yalnızca önizlemedeki örnekle denenebilir.
+- Arama odağı ve klavye akışı arama görevine kaldı.
+
+**Sıradaki adım**
+- Proje sahibinin cihazda sürükleme hissini denemesi; ardından B parçası (kategori çipleri).
+
+---
+
+## Adım 27 — Ana sayfa A parçası: yüzen butonlar ve alt sayfa iskeleti
+**Tarih:** 2026-11-08
+
+**Ne yapıldı**
+- Açılış yeniden doğrudan ana haritaya sabitlendi (proje sahibinin isteği):
+  `RootView.opensMapOnLaunch = true`, `AppRouter.init(flow:)`. Kayıt → harita bağlantısı
+  (Adım 26) duruyor; anahtar `false` yapılınca geri gelir.
+- `DesignSystem/Components/FloatingMapButton`: dairesel, `Theme.backgroundElevated` zemin,
+  `Theme.shadowFloating` gölge, `Theme.textPrimary` simge, `Spacing.minTapTarget` boyut,
+  zorunlu VoiceOver etiketi. `RecenterButton` bu bileşene taşındı; izin akışı ve dolu/boş
+  simge değişimi aynı (eski ince kenarlık tasarıma uymadığı için kalktı).
+- `HomeMapView` iki katmana ayrıldı. Arka plan: harita + dört sabit buton (sol üst menü,
+  sol alt şimşek ve konumuma dön, sağ alt yer imi). Ön katman: `.sheet` ile sunulan
+  `HomeBottomSheet`. Ekran dışarıya `onMenu`, `onSearch`, `onNearbyChargers`, `onSavedPlaces`
+  kapanışlarını veriyor; `RootView` henüz boş kapanış veriyor (hedef ekranlar yok).
+- `HomeBottomSheet`: `presentationDetents` ile üç kademe (küçük / orta / büyük), sürükleme
+  göstergesi, `Theme.backgroundElevated` zemin, `Radius.sheet` köşe, kapatılamaz
+  (`interactiveDismissDisabled`), orta kademeye kadar harita etkileşime açık
+  (`presentationBackgroundInteraction(.enabled(upThrough:))`). Açılış orta kademede.
+- `MapSearchBar`: görsel arama çubuğu (büyüteç + yer tutucu, `Theme.backgroundSubtle`,
+  `Radius.field`). Dokununca model sayfayı büyük kademeye alıyor ve `onSearch` çağrılıyor.
+- `HomeMapModel`: `SheetDetent` (`collapsed`, `medium`, `expanded`), `sheetDetent` (varsayılan
+  `.medium`), `beginSearch()`. Konum izni reddedildi uyarısı sayfanın üzerine taşındı (sayfa
+  açıkken arkadaki görünüm ikinci bir sunum açamaz).
+- 4 metin eklendi: `home.search.placeholder`, `home.accessibility.{menu,nearbyChargers,savedPlaces}`.
+
+**Kademe yükseklikleri**
+- **Küçük:** `Spacing.xl` (üst; sürükleme göstergesine yer) + arama çubuğunun ölçülen
+  yüksekliği (`onGeometryChange`) + `Spacing.lg` (alt). Yazı boyutu büyüyünce çubuk uzar,
+  ölçüm değişir, kademe de büyür.
+- **Orta:** haritanın güvenli alan içindeki yüksekliği × 0,5
+  (`HomeBottomSheet.mediumHeight(forContainerHeight:)`, sistemin `.medium` mantığı). Sistem
+  `.medium` kullanılmadı; yüksekliği dışarıdan okunamıyor, butonların ise tam üstünde durması
+  gerekiyor. Aynı fonksiyon hem kademeyi hem butonların alt boşluğunu (`orta + Spacing.md`)
+  veriyor; iki taraf tek kaynaktan besleniyor.
+- **Büyük:** sistemin `.large` kademesi.
+- Yükseklikler ölçümle değiştiği için seçim modelde kademe adıyla (`SheetDetent`) tutuluyor;
+  sistemin `PresentationDetent` değeri her çizimde güncel yükseklikten üretiliyor.
+
+**Dosyalar**
+- Eklendi: `Packages/Core/Sources/DesignSystem/Components/FloatingMapButton.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/{HomeBottomSheet,MapSearchBar}.swift`
+- Değişti: `Packages/Features/Sources/HomeMapFeature/{HomeMapView,HomeMapModel}.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/RecenterButton.swift`,
+  `Packages/Features/Tests/FeaturesTests/HomeMapModelTests.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`,
+  `App/RootView.swift`, `App/Navigation/AppRouter.swift`, `PROGRESS.md`
+
+**Kararlar ve açık noktalar**
+- **Mapbox kaynak gösterimi alt sayfanın altında kalıyor** (CLAUDE.md 7 ile çatışma). Logo ve
+  bilgi butonu haritanın sol/sağ alt köşesinde; sayfa en küçük kademede bile onları örtüyor.
+  Çözüm `MapEngine.MapView`'a süs öğelerinin alt boşluğunu alan bir parametre eklemek; görev
+  dosya listesi dışında olduğu için yapılmadı, proje sahibinin onayı bekleniyor.
+- Mapbox ölçek çubuğu sol üstte menü butonuyla üst üste biniyor (simülatörde görüldü). Aynı
+  `MapEngine` değişikliğiyle ele alınabilir (gizlemek ya da taşımak).
+- Gölgenin yayılımı ve kayması `Spacing.sm` / `Spacing.xs`'ten alındı; gölge geometrisi
+  token'ı yok. Ayrı bir token istenirse eklenir (Theme dosyasına dokunulmadı).
+- Tasarım dosyası bu oturumda erişilebilir değildi; arama çubuğu ve butonların görsel
+  ayrıntıları (simge seçimi, çubuk zemini, köşe yarıçapı) token'larla makul varsayımla yazıldı.
+- Orta kademe oranı (0,5) B–D parçalarının içeriğine göre yeniden ayarlanabilir; tek nokta
+  `HomeBottomSheet.mediumHeightRatio`.
+- `HomeMapFeature/HomeMapFeature.swift` yer tutucusu modülde gerçek tipler olduğu halde duruyor
+  (5.6 kural 6); bu görevin kapsamında olmadığı için silinmedi.
+
+**Doğrulama**
+- `./Tooling/Scripts/verify-ios.sh --package Features`: geçti, uyarı yok.
+- `./Tooling/Scripts/verify-ios.sh --app`: geçti.
+- `cd Packages/Core && swift build`: geçti (`FloatingMapButton` macOS'ta da derleniyor).
+- `swiftlint lint --strict`: yeni/değişen dosyalarda 0 ihlal. Tek ihlal
+  `SemanticColors.swift:132` (dosya sonu satır sonu eksik); bu proje sahibinin açık
+  düzenlemesi (`shadowFloating` eklenmesi), dokunulmadı. `swift format lint`: aynı tek uyarı.
+- Simülatör (iPhone SE 3, `xxxLarge`, açık tema): orta kademede butonlar sayfanın üst kenarının
+  bir boşluk üstünde; **küçük kademede arama çubuğu kırpılmadan tam görünüyor**, butonlar
+  yerinde. Küçük kademe, açılış kademesi derleme süresince geçici olarak değiştirilip görüntü
+  alınarak doğrulandı; değişiklik hemen geri alındı.
+- Önizlemeler: SE / Pro Max × `Large` / `xxxLarge` × açık / koyu (orta kademe) + SE `xxxLarge`
+  üzerinde üç kademe. Önizlemeler Xcode kanvasında açılmadı.
+- `HomeMapModelTests`'e 2 test eklendi (açılış kademesi, aramanın sayfayı büyütmesi);
+  çalıştırılmadı, proje sahibi koşuyor.
+
+**Bilinen eksikler**
+- Mapbox kaynak gösterimi sayfanın altında kalıyor (yukarıda).
+- Butonlar ve arama hiçbir ekran açmıyor; hedef ekranlar yazılınca `AppRouter`'a bağlanır.
+- Pro Max ve koyu tema simülatörde denenmedi, yalnızca önizlemeleri yazıldı.
+
+**Sıradaki adım**
+- Kaynak gösterimi için `MapEngine` kararı; ardından ana sayfa B parçası (kategori çipleri).
+
+---
+
+## Adım 26 — Uygulama akışı: kayıt → ana harita
+**Tarih:** 2026-11-07
+
+**Ne yapıldı**
+- Geçici `RootView.opensMapOnLaunch` sabiti kaldırıldı; açılış yeniden kayıt akışıyla başlıyor.
+- `AppRouter`'a akış durumu eklendi: `AppRouter.Flow` (`signUp`, `home`) ve salt okunur `flow`.
+- `AppRouter.completeSignUp()`: gezinme yığınını boşaltır ve `flow`'u `.home` yapar; ana
+  haritadan geri dönerek kayıt ekranlarına ulaşılamaz.
+- Ad-soyad ekranının `onContinue`'su `completeSignUp()`'a bağlandı. `RootView` `flow`'a göre
+  kayıt akışını ya da `HomeMapView`'ı gösteriyor.
+- `AppRouterTests`'e iki test eklendi: açılışın kayıt akışıyla başlaması, kayıt bitince
+  haritaya geçilip yığının boşalması.
+
+**Dosyalar**
+- Değişti: `App/Navigation/AppRouter.swift`, `App/RootView.swift`,
+  `OnsarjTests/AppRouterTests.swift`, `PROGRESS.md`
+
+**Kararlar ve açık noktalar**
+- Akış değişikliği proje sahibinin açık isteğiyle yapıldı ("kayıttan sonra ana sayfaya
+  yönlendir"). `Route`'a yeni durum eklenmedi; harita yığına itilen bir ekran değil, ayrı bir
+  akışın kökü.
+- Ad ve soyad henüz hiçbir yere gönderilmiyor (K-10 bekleniyor).
+- **Açık nokta:** Oturum kalıcı değil. Kayıt tamamlandı bilgisi saklanmadığı için uygulama her
+  açılışta kayıt akışıyla başlıyor. Saklanacak şey gerçek oturum token'ı olmalı (Keychain,
+  CLAUDE.md 7) ve `AuthService` + backend sözleşmesine (K-10) bağlı. Sahte bir "kayıtlı"
+  bayrağı yazılmadı (CLAUDE.md 2.3).
+- Uygulama hedefine ürün bağlama veya `project.pbxproj` değişikliği gerekmedi.
+
+**Doğrulama**
+- `./Tooling/Scripts/verify-ios.sh --app`: geçti. Bağlayıcıdan (`ld`) iki
+  "address ... points before section(33) start" uyarısı geldi; Swift kodundan değil,
+  bağlama aşamasından.
+- `swiftlint lint --strict`: 0 ihlal. `swift format lint` (değişen dosyalar): 0 ihlal.
+- `AppRouterTests` çalıştırılmadı; proje sahibi testleri kendisi koşuyor.
+
+**Bilinen eksikler**
+- Oturum saklanmıyor (yukarıda). Giriş yap (`WelcomeView.onLogin`) hâlâ bağlı değil.
+- Haritadan çıkış / oturumu kapatma yok; profil ekranı yazılınca ele alınır.
+
+**Sıradaki adım**
+- Proje sahibinin cihazda kayıt → harita akışını denemesi; ardından istasyon katmanı.
 
 ---
 

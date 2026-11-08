@@ -1,6 +1,60 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "home.accessibility.menu" : {
+      "comment" : "Ana sayfa, sol üstteki menü butonunun (kişi simgesi) VoiceOver etiketi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menu"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menü"
+          }
+        }
+      }
+    },
+    "home.accessibility.nearbyChargers" : {
+      "comment" : "Ana sayfa, sol alttaki şimşek butonunun VoiceOver etiketi. Yakındaki şarj istasyonlarını gösterir.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nearby chargers"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yakındaki şarj istasyonları"
+          }
+        }
+      }
+    },
+    "home.accessibility.savedPlaces" : {
+      "comment" : "Ana sayfa, sağ alttaki yer imi butonunun VoiceOver etiketi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved places"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kayıtlı yerler"
+          }
+        }
+      }
+    },
     "home.map.accessibility.recenter" : {
       "comment" : "Ana harita, sağ alttaki konum butonunun VoiceOver etiketi. Kamerayı kullanıcının konumuna götürür.",
       "extractionState" : "manual",
@@ -87,6 +141,96 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Konum izni kapalı"
+          }
+        }
+      }
+    },
+    "home.search.placeholder" : {
+      "comment" : "Ana sayfa, alt sayfadaki arama çubuğunun yer tutucu metni. Dokununca arama açılır.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Where do you want to go?"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nereye gitmek istiyorsun?"
+          }
+        }
+      }
+    },
+    "home.sheet.accessibility.collapsed" : {
+      "comment" : "Ana sayfa alt sayfası, VoiceOver değeri: en küçük kademe, yalnızca arama çubuğu görünür.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minimized"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Küçük"
+          }
+        }
+      }
+    },
+    "home.sheet.accessibility.expanded" : {
+      "comment" : "Ana sayfa alt sayfası, VoiceOver değeri: büyük kademe, ekranın üstüne kadar açık.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full screen"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tam ekran"
+          }
+        }
+      }
+    },
+    "home.sheet.accessibility.label" : {
+      "comment" : "Ana sayfa, alt sayfanın sürükleme göstergesinin VoiceOver etiketi. Artır/azalt ile sayfa büyür ve küçülür.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search panel"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arama paneli"
+          }
+        }
+      }
+    },
+    "home.sheet.accessibility.medium" : {
+      "comment" : "Ana sayfa alt sayfası, VoiceOver değeri: orta kademe, varsayılan hal.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Half screen"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yarım ekran"
           }
         }
       }

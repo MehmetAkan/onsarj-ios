@@ -34,6 +34,15 @@ public enum Theme {
     /// Hatalı girdi taşıyan alanın kenarlığı.
     public static let borderError = Color(light: Palette.red500, dark: Palette.red400)
 
+    /// Harita üzerinde yüzen öğelerin gölgesi.
+    ///
+    /// Koyu temada daha koyu ve daha belirgin: siyaha yakın bir zeminde hafif gölge
+    /// görünmez olur, oysa butonun haritadan ayrıldığının anlaşılması gerekir.
+    public static let shadowFloating = Color(
+        light: .black.opacity(0.16),
+        dark: .black.opacity(0.48)
+    )
+
     // MARK: - Metin
 
     /// Başlıklar ve birincil metin.

@@ -4,7 +4,5 @@
 <dict>
 	<key>MBXAccessToken</key>
 	<string>$(MAPBOX_PUBLIC_TOKEN)</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>onsarj uses your location to show nearby charging stations and guide you on your route.</string>
 </dict>
 </plist>

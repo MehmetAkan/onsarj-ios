@@ -46,6 +46,26 @@ struct HomeMapModelTests {
         #expect(!model.camera.isFollowingUser)
     }
 
+    @Test("Alt sayfa orta kademede açılır")
+    func sheetStartsAtMedium() {
+        let model = HomeMapModel(locationSource: FakeLocationSource(authorization: .notDetermined))
+
+        #expect(model.sheetDetent == .medium)
+    }
+
+    @Test(
+        "Aramaya dokununca alt sayfa büyük kademeye geçer",
+        arguments: [HomeMapModel.SheetDetent.collapsed, .medium, .expanded]
+    )
+    func searchExpandsSheet(from detent: HomeMapModel.SheetDetent) {
+        let model = HomeMapModel(locationSource: FakeLocationSource(authorization: .notDetermined))
+        model.sheetDetent = detent
+
+        model.beginSearch()
+
+        #expect(model.sheetDetent == .expanded)
+    }
+
     @Test("Harita cihazın bölgesindeki ülkenin üzerinde açılır")
     func initialRegionFollowsLocale() {
         let model = HomeMapModel(

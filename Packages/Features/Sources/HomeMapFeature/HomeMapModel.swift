@@ -1,4 +1,5 @@
 import CoreLocation
+import DesignSystem
 import Foundation
 import LocationKit
 import MapEngine
@@ -13,9 +14,15 @@ import Observation
 @MainActor
 @Observable
 final class HomeMapModel {
+    /// Alt sayfanın kademesi (`DetentSheet`, K-22).
+    typealias SheetDetent = DesignSystem.SheetDetent
+
     let camera: MapCamera
     private(set) var authorization: LocationAuthorization
     private(set) var userLocation: CLLocation?
+
+    /// Alt sayfanın kademesi. Ekran orta kademede açılır.
+    var sheetDetent: SheetDetent = .medium
 
     /// İzin reddedilmişken butona dokunulunca Ayarlar'a yönlendiren uyarı.
     var isLocationDeniedAlertPresented = false
@@ -45,6 +52,11 @@ final class HomeMapModel {
         case .denied:
             isLocationDeniedAlertPresented = true
         }
+    }
+
+    /// Arama çubuğuna dokunuldu: alt sayfa büyük kademeye geçer.
+    func beginSearch() {
+        sheetDetent = .expanded
     }
 
     /// İzin değişikliklerini dinler. Ekran görünür kaldıkça çalışır.
