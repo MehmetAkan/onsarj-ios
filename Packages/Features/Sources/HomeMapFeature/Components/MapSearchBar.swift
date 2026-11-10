@@ -24,7 +24,7 @@ struct MapSearchBar: View {
             .padding(.vertical, Spacing.md)
             .padding(.horizontal, Spacing.lg)
             .frame(minHeight: Spacing.minTapTarget)
-            .background(Theme.backgroundSubtle, in: shape)
+            .background(Theme.backgroundSubtleElevated, in: shape)
             .contentShape(shape)
         }
         .buttonStyle(.plain)

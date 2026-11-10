@@ -41,6 +41,47 @@ diğerleri boş.
 
 ---
 
+## Adım 30 — Arama çubuğu koyu tema rengi, sürüklemede aramanın tetiklenmesi
+
+**Tarih:** 2026-11-08
+
+**Ne yapıldı**
+- Arama çubuğundan başlayan sürükleme bırakılınca arama butonu da tetikleniyor ve sayfa büyük
+  kademeye açılıyordu. Kullanıcı ortaya dönmekte zorlanıyordu. Sebep: başlığın sürükleme
+  hareketi `simultaneousGesture` ile bağlıydı, parmak butonun üstünde kalkınca buton da
+  çalışıyordu. `highPriorityGesture` yapıldı. Sürükleme eşiği geçilince butonun dokunuşu iptal
+  oluyor, kısa dokunuş yine aramayı açıyor.
+- Koyu temada arama çubuğunun zemini (`backgroundSubtle`, ink1) alt sayfa zeminiyle
+  (`backgroundElevated`, ink1) aynıydı ve görünmüyordu. Yeni token eklendi:
+  `Theme.backgroundSubtleElevated` (açık gray100, koyu ink2). Yalnızca `MapSearchBar` kullanıyor.
+- `SemanticColors.swift` dosyasının sonundaki eksik satır sonu eklendi (lint hatası).
+
+**Dosyalar**
+- Değişen: `Packages/Core/Sources/DesignSystem/Components/DetentSheet.swift`,
+  `Packages/Core/Sources/DesignSystem/SemanticColors.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/MapSearchBar.swift`
+
+**Kararlar**
+- Yeni token proje sahibinin onayıyla eklendi. `backgroundSubtle` değiştirilmedi, giriş
+  ekranlarındaki alanlar etkilenmez.
+
+**Doğrulama**
+- `verify-ios.sh --package Core` ve `--package Features`: geçti.
+- `swift test` (Core): 23/23 geçti.
+- `swiftlint lint --strict` ve `swift format lint`: değişen dosyalarda ihlal yok.
+- Sürükleme davranışı komut satırından sınanamıyor; cihazda denenecek.
+
+**Bilinen eksikler**
+- İçerik bölgesinin hareketi hâlâ `simultaneousGesture`. İçeriğe buton eklendiğinde aynı sorun
+  orada da çıkabilir. Yatay listeleri bozmamak için şimdilik değiştirilmedi; B–D parçalarında
+  içerik gelince ele alınacak.
+- Mapbox kaynak gösteriminin alt sayfa altında kalması (Adım 29) açık.
+
+**Sıradaki adım**
+- Ana sayfa B parçası (kategori çipleri), proje sahibinin onayıyla.
+
+---
+
 ## Adım 29 — Butonlar sayfayı izliyor, büyük kademe yalnızca aramayla
 **Tarih:** 2026-11-08
 

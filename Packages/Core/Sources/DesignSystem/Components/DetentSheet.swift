@@ -139,7 +139,10 @@ public struct DetentSheet<Header: View, Content: View, Accessory: View>: View {
             metrics.headerHeight = height
         }
         .contentShape(Rectangle())
-        .simultaneousGesture(dragGesture(.header, state: $isDraggingHeader))
+        // Öncelikli: sürükleme başlayınca başlıktaki butonun dokunuşu iptal olur. Eşzamanlı
+        // olsaydı parmak butonun üstünde kalkınca buton da tetiklenirdi (ör. arama, sayfayı
+        // büyük kademeye açardı). Kısa dokunuş sürükleme eşiğini geçmediği için butona gider.
+        .highPriorityGesture(dragGesture(.header, state: $isDraggingHeader))
     }
 
     private var grabber: some View {

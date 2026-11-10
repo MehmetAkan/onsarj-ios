@@ -28,6 +28,13 @@ public enum Theme {
     /// Hafif vurgulu yüzey: giriş alanları, pasif çipler, gruplanmış liste blokları.
     public static let backgroundSubtle = Color(light: Palette.gray100, dark: Palette.ink1)
 
+    /// Yükseltilmiş yüzeyin (`backgroundElevated`) üstündeki hafif vurgulu yüzey: alt
+    /// sayfadaki arama çubuğu gibi.
+    ///
+    /// Koyu temada `backgroundSubtle` ile `backgroundElevated` aynı basamaktadır (`ink1`);
+    /// alan zeminine karışmasın diye bir basamak yukarı çıkar.
+    public static let backgroundSubtleElevated = Color(light: Palette.gray100, dark: Palette.ink2)
+
     /// İnce ayırıcı çizgiler ve kenarlıklar.
     public static let borderSubtle = Color(light: Palette.gray200, dark: Palette.ink3)
 
