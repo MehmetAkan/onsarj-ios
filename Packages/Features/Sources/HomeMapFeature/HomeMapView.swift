@@ -3,6 +3,7 @@ import DesignSystem
 import Localization
 import LocationKit
 import MapEngine
+import OnsarjDomain
 import SwiftUI
 import UIKit
 
@@ -23,19 +24,31 @@ public struct HomeMapView: View {
 
     private let onMenu: () -> Void
     private let onSearch: () -> Void
+    private let onAssistant: () -> Void
+    private let onCategory: (PlaceCategory) -> Void
+    private let onOptions: () -> Void
+    private let onSavedPlans: () -> Void
     private let onNearbyChargers: () -> Void
     private let onSavedPlaces: () -> Void
 
     /// - Parameters:
     ///   - locationSource: Uygulama boyunca paylaşılan konum kaynağı.
     ///   - onMenu: Sol üstteki menü butonuna dokunulduğunda çağrılır.
-    ///   - onSearch: Arama çubuğuna dokunulduğunda, sayfa büyük kademeye geçerken çağrılır.
+    ///   - onSearch: Arama alanına dokunulduğunda, sayfa büyük kademeye geçerken çağrılır.
+    ///   - onAssistant: Arama alanının yanındaki yapay zekâ asistanı butonuna dokunulduğunda çağrılır.
+    ///   - onCategory: Kategori şeridindeki bir çipe dokunulduğunda, o kategoriyle çağrılır.
+    ///   - onOptions: Alt sayfadaki "Seçenekler" butonuna dokunulduğunda çağrılır.
+    ///   - onSavedPlans: Alt sayfadaki "Kayıtlı planlar" butonuna dokunulduğunda çağrılır.
     ///   - onNearbyChargers: Şimşek butonuna dokunulduğunda çağrılır.
     ///   - onSavedPlaces: Yer imi butonuna dokunulduğunda çağrılır.
     public init(
         locationSource: any LocationSource,
         onMenu: @escaping () -> Void,
         onSearch: @escaping () -> Void,
+        onAssistant: @escaping () -> Void,
+        onCategory: @escaping (PlaceCategory) -> Void,
+        onOptions: @escaping () -> Void,
+        onSavedPlans: @escaping () -> Void,
         onNearbyChargers: @escaping () -> Void,
         onSavedPlaces: @escaping () -> Void
     ) {
@@ -43,6 +56,10 @@ public struct HomeMapView: View {
             model: HomeMapModel(locationSource: locationSource),
             onMenu: onMenu,
             onSearch: onSearch,
+            onAssistant: onAssistant,
+            onCategory: onCategory,
+            onOptions: onOptions,
+            onSavedPlans: onSavedPlans,
             onNearbyChargers: onNearbyChargers,
             onSavedPlaces: onSavedPlaces
         )
@@ -52,12 +69,20 @@ public struct HomeMapView: View {
         model: HomeMapModel,
         onMenu: @escaping () -> Void = {},
         onSearch: @escaping () -> Void = {},
+        onAssistant: @escaping () -> Void = {},
+        onCategory: @escaping (PlaceCategory) -> Void = { _ in },
+        onOptions: @escaping () -> Void = {},
+        onSavedPlans: @escaping () -> Void = {},
         onNearbyChargers: @escaping () -> Void = {},
         onSavedPlaces: @escaping () -> Void = {}
     ) {
         _model = State(initialValue: model)
         self.onMenu = onMenu
         self.onSearch = onSearch
+        self.onAssistant = onAssistant
+        self.onCategory = onCategory
+        self.onOptions = onOptions
+        self.onSavedPlans = onSavedPlans
         self.onNearbyChargers = onNearbyChargers
         self.onSavedPlaces = onSavedPlaces
     }
@@ -69,7 +94,7 @@ public struct HomeMapView: View {
 
             menuButton
 
-            HomeBottomSheet(detent: $model.sheetDetent, onSearch: beginSearch) {
+            HomeBottomSheet(detent: $model.sheetDetent, actions: sheetActions) {
                 bottomButtons
             }
         }
@@ -124,6 +149,16 @@ public struct HomeMapView: View {
             )
         }
         .padding(.horizontal, Spacing.screenMargin)
+    }
+
+    private var sheetActions: HomeSheetActions {
+        HomeSheetActions(
+            search: beginSearch,
+            assistant: onAssistant,
+            category: onCategory,
+            options: onOptions,
+            savedPlans: onSavedPlans
+        )
     }
 
     private func beginSearch() {

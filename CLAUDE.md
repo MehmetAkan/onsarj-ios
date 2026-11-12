@@ -58,8 +58,8 @@ Varsayımda bulunulmaz. Varsayım gerekiyorsa açıkça yazılır: "Şunu varsay
 - `TODO`, `FIXME`, "şimdilik böyle olsun", sabit kodlanmış (hardcoded) değer, yorum satırına
   alınmış kod bırakılmaz.
 - Bir şey eksikse ya tam yapılır ya hiç yapılmaz ve karar defterine yazılır.
-- Sahte (mock) veri yalnızca test hedeflerinde ve SwiftUI önizlemelerinde bulunur, üretim
-  kodunda asla.
+- Sahte (mock) veri yalnızca test hedeflerinde, SwiftUI önizlemelerinde ve **K-23'te
+  tanımlanan DEBUG fixture'larında** bulunur. Release derlemesinde asla bulunmaz.
 - "Sonra düzeltiriz" diye yazılan kod yazılmaz. Sonra hiç gelmez.
 
 ### 2.4 Modüler ve sağlam yaz
@@ -507,6 +507,22 @@ Sistem yazı tipi kullanılır, özel yazı tipi yoktur.
 - SE + xxxLarge en zor durumdur; orada bozulmayan ekran sahada da bozulmaz.
 - Bir ekran bu matriste doğrulanmadan tamamlanmış sayılmaz.
 
+### 6.9 Simgeler
+
+Simgeler `DesignSystem` içindeki `AppIcon` anlamsal adlarından gelir (`.search`, `.settings`,
+`.savedPlans`), kaynağından değil. Kaynak, `AppIcon`'un içinde gizlidir:
+
+- **Varsayılan kaynak SF Symbols'tur.** Bağımlılık gerektirmez, yazı boyutuyla ve ağırlıkla
+  ölçeklenir.
+- **Marka açısından kritik simgeler ve SF Symbols'ta karşılığı olmayanlar** (yapay zekâ
+  simgesi, cami gibi) tasarımcının verdiği SVG'den gelir. Bunlar `DesignSystem` asset
+  kataloğuna girer; tek renkli olanlar şablon (template) olarak işlenir ve rengi `Theme`
+  token'ından alır.
+- Ekranlar `Image(systemName:)` veya doğrudan asset adı **yazmaz**; yalnızca `AppIcon`.
+  Kaynak ileride değişirse (SF Symbols → özel set) tek dosya değişir.
+- **Her SF Symbol'ün iOS 17'de var olduğu doğrulanır.** Daha yeni sürüm gerektiren simge
+  kullanılmaz; yerine SVG kullanılır (2.9).
+
 ### 6.8 Platform koruması ve paket doğrulaması
 
 `swift build` ana makine (macOS) için derler. UIKit orada yoktur, bu yüzden UIKit'e
@@ -610,6 +626,7 @@ Kural: Bir adım, `PROGRESS.md` güncellenmeden tamamlanmış sayılmaz.
 | K-09 | Bildirim: iOS'ta **doğrudan APNs** (.p8, token tabanlı). Firebase SDK projeye girmez. Android FCM kullanır; hedefleme mantığı her iki platform için de backend'dedir. Bildirim yükü yapısal hedef taşır (`tip`, `hedef: {ekran, id}`, benzersiz id) ve ekran isimleri iki platformda aynıdır. Sessiz bildirime kritik iş yüklenmez. **Bağlı not:** K-12/K-13/K-14 için Firebase ailesi seçilirse bu karar yeniden açılır; geçiş `PushNotifications` modülüyle sınırlı kalacak şekilde yazılır. | 2026-09 |
 | K-21 | **PhoneNumberKit bağımlılığı onaylandı.** Depo: `github.com/PhoneNumberKit/PhoneNumberKit` — eski `marmelroy/PhoneNumberKit` deposu terk edilmiştir, kullanılmaz. Sürüm `.upToNextMinor(from: "5.0.0")`. **Gerekçe:** uygulama çok ülkede yayınlanacak ve Türkiye'de yabancı numaralı kullanıcılar var; her ülkenin numara uzunluğu, cep ön ekleri, gruplama biçimi ve ulusal ön ek kurallarını elle yönetmek sürdürülemez. Kütüphane Google'ın libphonenumber'ının Swift'e taşınmış hali; Android ekibi de aynı kural kaynağını kullanacağı için üç tarafta aynı numara aynı sonucu verir. **Alternatifler:** (a) kendi kural tablomuz — yalnızca 2-3 ülke hedeflenseydi makuldü, hata riski ve Android'le tutarsızlık yüksek; (b) libphonenumber metadata'sından betikle üretim — bağımlılık yok ama betiğin bakımı bize kalırdı. **Bakım durumu:** 5.0.0 Mayıs 2026'da çıktı, son yayın 5.0.12 (Ekim 2026); iki ayda beş sürüm, aktif. Eski depo 4.3.0'da donduruldu ve metadata güncellemesi almıyor. 5.x ayrıca Swift 6 için `Sendable` uyumları içeriyor — strict concurrency hedefimizle uyumlu. **Not:** `PhoneNumberTextField` ve ülke seçici 5.0'da ayrı bir `PhoneNumberKitUI` paketine taşındı; giriş alanını kendimiz yazdığımız için o paket çekilmez. **Maliyet:** ~1 MB metadata. **İzolasyon:** kütüphane yalnızca `Packages/Core` içindeki `PhoneNumbers` hedefinde import edilir; başka hiçbir modül onun tiplerini görmez (bkz. 5.3 kural 11). | 2026-10 |
 | K-22 | **Alt sayfa kendi bileşenimizdir** (`DesignSystem/Components/DetentSheet`), iOS'un `presentationDetents` yapısı kullanılmaz. **Gerekçe:** iOS 26 ve sonrasında sistem alt sayfası küçük ve orta kademede kenarlardan içeride "yüzen" çiziliyor ve bunu kapatan bir API yok; iOS 17–18'de ise tam genişlik. Tasarım tüm sürümlerde tam genişlik ve birebir aynı görünmek zorunda. **Kapsam:** 3 kademe (küçük: yalnızca arama; orta: varsayılan; büyük: arama açık), hiçbir zaman tamamen kapanmaz, arkadaki harita etkileşime açık kalır, yüzen butonlar yalnızca küçük kademede aşağı iner. **Bilinen riskler** (hepsi görev metninde şartlandı): içerik kaydırması ile sayfa sürüklemesi arasındaki devir, klavye, VoiceOver, Dynamic Type. Önceki öneri (`presentationDetents`) bu kararla geri alındı; gerekçesi iOS 26 davranışının doğrulanmamış olmasıydı (bkz. 2.9). | 2026-11 |
+| K-23 | **Backend hazır olana kadar veri JSON fixture'larından gelir; bu uygulamanın her yeri için geçerlidir.** Her servis protokolünün (`OnsarjDomain`) iki uygulaması olur: gerçek (uzak) ve fixture. Fixture uygulaması servis paketindeki `Fixtures/` klasöründeki JSON'u okur ve **yalnızca `#if DEBUG`** altında derlenir; Release'e girmez. JSON'un şekli gelecekteki API yanıtıyla aynı olur: OpenAPI sözleşmesi (K-10) gelince JSON ona göre güncellenir. Fixture da gerçek uygulama gibi önce DTO'ya çözümler, sonra Domain modeline eşler; böylece eşleme kodu baştan çalışır ve API bağlanınca yalnızca depo uygulaması değişir. Fixture/gerçek seçimi `App/Composition` içinde tek yerde yapılır. **Uyarı:** TestFlight dağıtımları Release derlemesidir; ilk dağıtımdan önce backend hazır olmalı ya da fixture'lı bir dağıtım yapılandırması için ayrı karar alınmalı. | 2026-11 |
 | K-17 | `.xcodeproj` **depoda tutulur**, proje üretici araç (Tuist/XcodeGen) kullanılmaz. Gerekçe: Xcode projesinde yalnızca 4 hedef var (uygulama, widget, 2 test); kodun tamamı SPM paketlerinde olduğu için dosya ekleme proje dosyasına dokunmaz; tüm derleme ayarları xcconfig'te durur. **Geçiş eşiği:** şu üçünden biri olursa XcodeGen'e geçilir — proje dosyasında 3 kez git çakışması yaşanması, Xcode hedef sayısının 6'yı geçmesi, ekibin 4 kişiyi aşması. | 2026-09 |
 | K-18 | Geliştirme ortamı: **kod yazımı VS Code**, geri kalan her şey **Xcode**. Xcode'da kalanlar: simülatör, gerçek cihaz ve CarPlay testi, kod imzalama ve yetkiler, proje/şema ayarları, Instruments ile performans ölçümü, String Catalog düzenleme. **Doğrulama komutu ayrımı:** `swift build` ana makine (macOS) için derler, `.iOS(.v17)` bildirimi orada sınanmaz. Bu yüzden `swift build` yalnızca platformdan bağımsız modüllerde (`Domain`, `Services`, `Core`'un UIKit kullanmayan kısımları) hızlı geri bildirim aracıdır. UIKit, CarPlay, ActivityKit veya Mapbox kullanan her modülün doğrulaması `xcodebuild -destination 'generic/platform=iOS Simulator'` ile yapılır; komut `Tooling/Scripts/verify-ios.sh` içine sarılır ve elle yazılmaz. **Günlük akış:** kod VS Code'da yazılır, Xcode açık kalır ve ikinci ekranda SwiftUI önizleme kanvası durur; VS Code'da kaydedilen dosyayı Xcode diskten yeniden yükler ve önizleme yenilenir. Hot reload aracı (InjectionNext, HotSwiftUI vb.) **kullanılmaz**: her SwiftUI görünümüne yalnızca geliştirme aracı için satır eklemeyi gerektirir ve bu, bölüm 2.3'teki "üretim kodunda geliştirme artığı bulunmaz" kuralıyla çatışır. | 2026-09 |
 

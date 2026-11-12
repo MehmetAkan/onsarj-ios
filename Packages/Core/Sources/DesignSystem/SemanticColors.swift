@@ -25,15 +25,20 @@ public enum Theme {
     /// Ana arka planın üzerinde yükselen yüzey: kartlar, alt sayfalar.
     public static let backgroundElevated = Color(light: .white, dark: Palette.ink1)
 
+    /// Alt sayfanın zemini.
+    ///
+    /// Açık temada hafif gri, içindeki kartlar beyaz: kartlar zeminden ayrılır.
+    public static let backgroundSheet = Color(light: Palette.gray100, dark: Palette.ink1)
+
+    /// Alt sayfanın üzerindeki kartlar, arama alanı, çipler ve butonlar.
+    ///
+    /// `backgroundSheet`'ten bir basamak öndedir. Koyu temada zeminden bir basamak
+    /// açıktır; aksi halde (`backgroundElevated` gibi) ikisi aynı tona düşer ve
+    /// kartlar görünmez olur.
+    public static let backgroundCard = Color(light: .white, dark: Palette.ink2)
+
     /// Hafif vurgulu yüzey: giriş alanları, pasif çipler, gruplanmış liste blokları.
     public static let backgroundSubtle = Color(light: Palette.gray100, dark: Palette.ink1)
-
-    /// Yükseltilmiş yüzeyin (`backgroundElevated`) üstündeki hafif vurgulu yüzey: alt
-    /// sayfadaki arama çubuğu gibi.
-    ///
-    /// Koyu temada `backgroundSubtle` ile `backgroundElevated` aynı basamaktadır (`ink1`);
-    /// alan zeminine karışmasın diye bir basamak yukarı çıkar.
-    public static let backgroundSubtleElevated = Color(light: Palette.gray100, dark: Palette.ink2)
 
     /// İnce ayırıcı çizgiler ve kenarlıklar.
     public static let borderSubtle = Color(light: Palette.gray200, dark: Palette.ink3)

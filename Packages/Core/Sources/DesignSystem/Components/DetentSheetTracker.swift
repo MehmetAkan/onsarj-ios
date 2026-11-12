@@ -58,6 +58,10 @@ struct DetentSheetTracker {
     }
 
     var isDragging: Bool { drag != nil }
+
+    /// Süren sürükleme sayfayı ya da içeriği hareket ettiriyor mu? Yatay başlayıp yok sayılan
+    /// sürüklemede `false`; içerikteki butonlar bu sırada dokunuşu tetiklemez.
+    var isMovingSheet: Bool { drag.map { !$0.isIgnored } ?? false }
     var isAnimating: Bool { !sheet.isResting || !content.isResting }
 
     func height(at date: Date) -> CGFloat { sheet.value(at: date) }

@@ -21,6 +21,11 @@ import SwiftUI
 /// - **Eşlikçi:** `accessory` (ör. harita üzerindeki yüzen butonlar) sayfanın üst kenarının hemen
 ///   üstünde durur ve sayfayı orta kademeye kadar parmakla birlikte izler; ortanın üstünde
 ///   yerinde kalır, sayfa onun üzerinden geçer.
+/// - **İçerikteki butonlar:** İçerik bölgesinin sürüklemesi eşzamanlıdır (yatay listeler kayabilsin
+///   diye), bu yüzden sayfayı sürükleyen parmak bir butonun üstünde kalkarsa buton da tetiklenebilir.
+///   Sayfa sürüklenirken `isSheetDragInProgress` ortam değeri `true` olur; `CategoryChip` ve
+///   `ActionTileButton` bu sırada dokunuşu yok sayar.
+/// - **Zemin:** `Theme.backgroundSheet`; içindeki öğeler `Theme.backgroundCard` kullanır.
 /// - **Klavye:** Sayfa klavyeyle küçülmez; içeriğin altına klavye kadar boşluk eklenir.
 /// - **Erişilebilirlik:** Sürükleme göstergesi VoiceOver'da ayarlanabilir öğedir; artır/azalt
 ///   ile kademe değişir, mevcut kademe seslendirilir. "Hareketi Azalt" açıkken yay yerine
@@ -118,9 +123,10 @@ public struct DetentSheet<Header: View, Content: View, Accessory: View>: View {
         .frame(maxWidth: .infinity)
         .frame(height: max(0, height), alignment: .top)
         .clipShape(shape)
+        .environment(\.isSheetDragInProgress, tracker.isMovingSheet)
         .background {
             shape
-                .fill(Theme.backgroundElevated)
+                .fill(Theme.backgroundSheet)
                 .shadow(color: Theme.shadowFloating, radius: Spacing.sm)
         }
     }

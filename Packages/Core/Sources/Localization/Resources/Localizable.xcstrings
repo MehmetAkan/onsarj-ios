@@ -1,6 +1,150 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "category.atm" : {
+      "comment" : "Ana sayfa kategori şeridi: ATM'ler.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ATMs"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ATM'ler"
+          }
+        }
+      }
+    },
+    "category.cafe" : {
+      "comment" : "Ana sayfa kategori şeridi: kafeler.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cafes"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kafeler"
+          }
+        }
+      }
+    },
+    "category.hotel" : {
+      "comment" : "Ana sayfa kategori şeridi: oteller.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hotels"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oteller"
+          }
+        }
+      }
+    },
+    "category.market" : {
+      "comment" : "Ana sayfa kategori şeridi: marketler.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Markets"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marketler"
+          }
+        }
+      }
+    },
+    "category.mosque" : {
+      "comment" : "Ana sayfa kategori şeridi: camiler.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mosques"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camiler"
+          }
+        }
+      }
+    },
+    "category.pharmacy" : {
+      "comment" : "Ana sayfa kategori şeridi: eczaneler.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pharmacies"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eczaneler"
+          }
+        }
+      }
+    },
+    "category.restaurant" : {
+      "comment" : "Ana sayfa kategori şeridi: restoranlar.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurants"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restoranlar"
+          }
+        }
+      }
+    },
+    "home.accessibility.assistant" : {
+      "comment" : "Ana sayfa, arama alanının yanındaki yapay zekâ asistanı butonunun VoiceOver etiketi. Butonda metin yok, yalnızca simge var.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assistant"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asistan"
+          }
+        }
+      }
+    },
     "home.accessibility.menu" : {
       "comment" : "Ana sayfa, sol üstteki menü butonunun (kişi simgesi) VoiceOver etiketi.",
       "extractionState" : "manual",
@@ -51,6 +195,42 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kayıtlı yerler"
+          }
+        }
+      }
+    },
+    "home.action.options" : {
+      "comment" : "Ana sayfa, alt sayfanın altındaki seçenekler butonu (kaydırıcı simgesi).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Options"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seçenekler"
+          }
+        }
+      }
+    },
+    "home.action.savedPlans" : {
+      "comment" : "Ana sayfa, alt sayfanın altındaki kayıtlı rota planları butonu (kalp simgesi).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved plans"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kayıtlı planlar"
           }
         }
       }

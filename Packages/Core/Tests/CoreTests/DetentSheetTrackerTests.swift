@@ -35,6 +35,28 @@ struct DetentSheetTrackerTests {
         }
     }
 
+    @Test("Dikey sürükleme sayfayı hareket ettirir; içerikteki butonlar dokunuşu yok sayar")
+    func verticalDragMovesSheet() {
+        var tracker = tracker(at: .medium)
+        tracker.dragChanged(region: .content, translation: CGSize(width: 2, height: -12), limits: limits, at: start)
+
+        #expect(tracker.isMovingSheet)
+
+        _ = tracker.dragEnded(velocity: 0, limits: limits, at: start, reduceMotion: false)
+        #expect(!tracker.isMovingSheet)
+    }
+
+    @Test("Yatay başlayan sürükleme (kategori şeridi) sayfayı hareket ettirmez, butonları engellemez")
+    func horizontalDragDoesNotMoveSheet() {
+        var tracker = tracker(at: .medium)
+        tracker.dragChanged(region: .content, translation: CGSize(width: -12, height: 2), limits: limits, at: start)
+        tracker.dragChanged(region: .content, translation: CGSize(width: -80, height: -40), limits: limits, at: start)
+
+        #expect(tracker.isDragging)
+        #expect(!tracker.isMovingSheet)
+        #expect(tracker.height(at: start) == 400)
+    }
+
     @Test("İçerikte yukarı çekiş önce sayfayı büyütür, büyük kademeden sonra içeriği kaydırır")
     func contentDragUpExpandsThenScrolls() {
         var tracker = tracker(at: .medium)

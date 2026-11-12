@@ -32,6 +32,10 @@ struct RootView: View {
                     locationSource: dependencies.locationSource,
                     onMenu: {},
                     onSearch: {},
+                    onAssistant: {},
+                    onCategory: { _ in },
+                    onOptions: {},
+                    onSavedPlans: {},
                     onNearbyChargers: {},
                     onSavedPlaces: {}
                 )
