@@ -11,6 +11,11 @@
 # KULLANIM:
 #   ./Tooling/Scripts/verify-ios.sh            # her şeyi doğrula
 #   ./Tooling/Scripts/verify-ios.sh --app      # yalnızca uygulama şeması (hızlı)
+#   ./Tooling/Scripts/verify-ios.sh --package Features
+#                                              # yalnızca bir paket (uygulama derlenmez)
+#
+# --package NEDEN VAR: iOS'a özel API (UIKit, UIViewRepresentable) kullanan paketler
+# macOS'ta `swift build` ile derlenmez. Bu paketlerin hızlı geri bildirimi buradan alınır.
 #
 # Yavaştır. Her kaydetmede değil, inceleme isteği göndermeden önce çalıştırın.
 
@@ -24,24 +29,38 @@ PACKAGES=(Domain Core MapboxKit Services Features)
 APP_ONLY=false
 FAILED=()
 
-[[ "${1:-}" == "--app" ]] && APP_ONLY=true
+PACKAGE_ONLY=""
+
+case "${1:-}" in
+    --app) APP_ONLY=true ;;
+    --package)
+        PACKAGE_ONLY="${2:-}"
+        if [[ -z "$PACKAGE_ONLY" || ! -f "Packages/$PACKAGE_ONLY/Package.swift" ]]; then
+            printf 'Paket bulunamadı: "%s". Seçenekler: %s\n' "$PACKAGE_ONLY" "${PACKAGES[*]}" >&2
+            exit 2
+        fi
+        PACKAGES=("$PACKAGE_ONLY")
+        ;;
+esac
 
 say() { printf '\n\033[1m%s\033[0m\n' "$1"; }
 ok()  { printf '  \033[32m✓\033[0m %s\n' "$1"; }
 bad() { printf '  \033[31m✗\033[0m %s\n' "$1"; }
 
 # ─── 1. Uygulama şeması ───
-# Uygulama hedefine bağlı tüm paket ürünlerini de derler.
-say "Uygulama şeması derleniyor (Onsarj)"
-if xcodebuild build \
-    -project Onsarj.xcodeproj \
-    -scheme Onsarj \
-    -destination "$DESTINATION" \
-    -quiet; then
-    ok "Onsarj"
-else
-    bad "Onsarj"
-    FAILED+=("Onsarj uygulama şeması")
+# Uygulama hedefine bağlı tüm paket ürünlerini de derler. --package ile atlanır.
+if [[ -z "$PACKAGE_ONLY" ]]; then
+    say "Uygulama şeması derleniyor (Onsarj)"
+    if xcodebuild build \
+        -project Onsarj.xcodeproj \
+        -scheme Onsarj \
+        -destination "$DESTINATION" \
+        -quiet; then
+        ok "Onsarj"
+    else
+        bad "Onsarj"
+        FAILED+=("Onsarj uygulama şeması")
+    fi
 fi
 
 # ─── 2. Paketler ───

@@ -1,0 +1,18 @@
+// App.xcconfig
+// onsarj — yalnızca uygulama hedefine (Onsarj) özel derleme ayarları.
+//
+// Xcode'da Onsarj hedefinin Debug ve Release yapılandırmalarına "Based on Configuration
+// File" olarak bağlıdır. Proje düzeyindeki Debug/Release.xcconfig (ve onların aldığı
+// Base.xcconfig) zaten uygulanır; bu dosya onları include ETMEZ, üzerine yalnızca hedefe
+// özel ayarları ekler. Test ve widget hedefleri bu dosyayı görmez.
+
+// ─── Info.plist ─────────────────────────────────────────────
+// Info.plist Xcode tarafından üretilir (GENERATE_INFOPLIST_FILE). Xcode'un tanımadığı
+// anahtarlar `INFOPLIST_KEY_*` ile eklenemez; bu yüzden üretilen plist, yalnızca bu tür
+// anahtarları taşıyan kısmi bir dosyayla birleştirilir.
+//   MBXAccessToken = $(MAPBOX_PUBLIC_TOKEN)  → Mapbox SDK token'ı buradan kendisi okur.
+// Değer Secrets.xcconfig'ten gelir (Base.xcconfig, `#include?`).
+//
+// Dosya `App/` senkronize klasöründedir; Onsarj hedefine ÜYE DEĞİLDİR. Üye olursa
+// kaynak olarak da kopyalanır ve derleme "Multiple commands produce Info.plist" verir.
+INFOPLIST_FILE = App/Support/Info.plist

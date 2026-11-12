@@ -25,6 +25,12 @@ CURRENT_PROJECT_VERSION = 1
 GCC_WARN_UNDECLARED_SELECTOR = YES
 CLANG_WARN_DOCUMENTATION_COMMENTS = YES
 
+// ─── Gizli ayarlar ──────────────────────────────────────────
+// Secrets.xcconfig depoda yoktur (.gitignore). `#include?` dosya yoksa sessizce geçer;
+// yeni klonlayan biri önce derleyip sonra token'ı ekleyebilir.
+// Şablon: Config/Secrets.xcconfig.template
+#include? "Secrets.xcconfig"
+
 // NOT: Bundle identifier bilerek burada tanımlanmadı.
 // Uygulama, widget eklentisi ve test hedefleri farklı kimlikler taşır;
 // bu yüzden hedef düzeyinde kalır. Widget hedefini eklediğimizde

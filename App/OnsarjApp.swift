@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct OnsarjApp: App {
+    @State private var dependencies = AppDependencies()
+
     var body: some Scene {
         WindowGroup {
-            RootView()
+            RootView(dependencies: dependencies)
         }
     }
 }

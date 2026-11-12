@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "MapboxKit",
-    platforms: [.iOS(.v17)],
+    platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
         .library(name: "MapEngine", targets: ["MapEngine"]),
         .library(name: "NavigationEngine", targets: ["NavigationEngine"]),
@@ -14,6 +14,9 @@ let package = Package(
     dependencies: [
         .package(path: "../Core"),
         .package(path: "../Domain"),
+        // CLAUDE.md 5.3 kural 4: Mapbox sürümleri yalnızca burada tanımlanır. Navigation SDK
+        // eklendiğinde Maps onun sabitlediği sürüme birlikte yükseltilir.
+        .package(url: "https://github.com/mapbox/mapbox-maps-ios.git", exact: "11.33.1"),
     ],
     targets: [
         .target(
@@ -22,6 +25,7 @@ let package = Package(
                 .product(name: "OnsarjCore", package: "Core"),
                 .product(name: "OnsarjDomain", package: "Domain"),
                 .product(name: "DesignSystem", package: "Core"),
+                .product(name: "MapboxMaps", package: "mapbox-maps-ios"),
             ]
         ),
         .target(

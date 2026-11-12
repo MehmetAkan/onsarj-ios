@@ -30,6 +30,28 @@ public enum Palette {
     public static let gray900 = Color(hex: 0x141726)
     public static let gray950 = Color(hex: 0x050715)
 
+    // MARK: - Ink
+
+    /// Koyu tema yüzey merdiveni — siyahtan yukarı doğru.
+    ///
+    /// Gri ailesinden ayrıdır çünkü koyu tema saf siyahla (`#000000`) başlar ve
+    /// bu, gri ölçeğinin en koyu basamağının (`gray950`) altında kalır. Ayrıca
+    /// marka koyusu `gray950` hafif mor tonludur; koyu temanın geniş yüzeylerinde
+    /// bu ton istenmez.
+    ///
+    /// Mantık yükselme (elevation) üzerinedir: bir öğe kullanıcıya ne kadar
+    /// yakınsa o kadar açıktır. Arka plan en koyu, üzerine gelen her katman bir
+    /// basamak açılır.
+    ///
+    /// Renk tonu açık temadaki gri ailesiyle aynıdır (H≈286), bu yüzden iki tema
+    /// arasında geçiş yaparken renk sıcaklığı kaymaz.
+    public static let ink0 = Color(hex: 0x000000)
+    public static let ink1 = Color(hex: 0x1C1C1E)
+    public static let ink2 = Color(hex: 0x2A2A2D)
+    public static let ink3 = Color(hex: 0x3A3A3E)
+    public static let ink4 = Color(hex: 0x5A5A5F)
+    public static let ink5 = Color(hex: 0x8D8D95)
+
     // MARK: - Green
 
     /// Green — marka rengi. 500 basamağı logo yeşilidir (#4BBC17).

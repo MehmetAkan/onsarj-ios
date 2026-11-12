@@ -111,6 +111,13 @@ custom_rules:
     message: "CLAUDE.md 5.3 kural 3: Mapbox yalnızca MapboxKit paketinde import edilir."
     severity: error
 
+  no_phonenumberkit_outside_adapter:
+    name: "PhoneNumberKit yalnızca PhoneNumbers hedefinde"
+    regex: '^\s*import\s+PhoneNumberKit'
+    included: '.*/(App|Widgets|Packages/(Domain|MapboxKit|Services|Features))/.*\.swift'
+    message: "CLAUDE.md 5.3 kural 11: PhoneNumberKit yalnızca Core/PhoneNumbers hedefinde import edilir."
+    severity: error
+
   no_hardcoded_hex_color:
     name: "Sabit renk kodu yazılmaz"
     regex: '#[0-9A-Fa-f]{6}\b'
