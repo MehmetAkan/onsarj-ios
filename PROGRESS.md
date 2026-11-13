@@ -41,6 +41,54 @@ diğerleri boş.
 
 ---
 
+## Adım 31 — Mapbox bilgi butonu ve ölçek çubuğunun yeri, alt buton köşesi
+
+**Tarih:** 2026-11-14
+
+**Ne yapıldı**
+- Mapbox bilgi (attribution) butonu sağ üste taşındı; sol üstteki menü butonuyla aynı hizada
+  (üstten `Spacing.sm`, kenardan `Spacing.screenMargin`). Mapbox'ın kendi butonu kullanılıyor.
+- Pusula bilgi butonunun altına alındı (varsayılan yeri sağ üstteydi, bilgi butonuyla çakışırdı).
+  Ölçek çubuğu menü butonunun sağına alındı; artık menünün arkasında kalmıyor.
+- Yerleşim `MapEngine`'in yeni tipi `MapControlsLayout` ile veriliyor; dışarıya Mapbox tipi
+  açılmıyor. `HomeMapView` değerleri `Spacing` token'larından veriyor.
+- `ActionTileButton` köşesi `Radius.button` (20) → `Radius.field` (12): aynı yükseklikteki arama
+  alanıyla aynı. Bu bileşen yalnızca ana sayfada kullanılıyor.
+
+**Dosyalar**
+- Eklenen: `Packages/MapboxKit/Sources/MapEngine/MapControlsLayout.swift`
+- Değişen: `Packages/MapboxKit/Sources/MapEngine/MapView.swift`,
+  `Packages/Features/Sources/HomeMapFeature/HomeMapView.swift`,
+  `Packages/Core/Sources/DesignSystem/Components/ActionTileButton.swift`, `PROGRESS.md`
+
+**Kararlar ve açık noktalar**
+- **Logo opaklığı değiştirilmedi.** Mapbox: *"You may not style the Mapbox logo."* Bilgi butonunun
+  opaklığı için iOS'ta kural yok; belirsiz olduğu için tam opaklıkta.
+- **Logo varsayılan yerinde (sol alt) kaldı; proje sahibinin kararı.** Orta ve büyük kademede sayfanın
+  arkasında kalıyor. Mapbox'ın *"must stay visible on the map"* şartıyla çelişebilir; proje sahibi
+  ABRP'nin de böyle yaptığını, sorun çıkarsa düzeltileceğini belirtti. Açık risk.
+- **`Theme.backgroundSubtleElevated` — karar bekliyor.** Token depoda yok (`a0d8d7f`'de silinmiş);
+  `MapSearchBar` zaten `Theme.backgroundCard` kullanıyor. Alternatif değer `45f0288`'de: açık
+  `Palette.gray100`, koyu `Palette.ink2`. Seçilirse token geri eklenir ve `MapSearchBar`'da tek satır değişir.
+- Sayfa öğelerinin hepsi `Theme.backgroundCard`: arama alanı, asistan butonu, çipler, alt butonlar.
+- **Varsayım:** Yapay zekâ butonu daire kaldı (yükseklik/yarıçap oranı 2). Proje sahibi şekli
+  değiştirmeyi istemedi; istenirse `Radius.field` olur.
+
+**Doğrulama**
+- `verify-ios.sh --package MapboxKit`, `--package Features`, `--package Core`: geçti.
+- `swift test` (Core): 25/25 geçti.
+- `swiftlint lint --strict` ve `swift format lint --strict`: 0 ihlal.
+- Ornament yerleşimi cihazda denenecek; önizlemede harita (ve Mapbox öğeleri) çizilmeyebilir.
+
+**Bilinen eksikler**
+- `icon-assistant.imageset` `actool` ile derlenince hata veriyor: tek ölçekli ("Any") ve 1x girişleri
+  bir arada. Xcode'da "Single Scale" + "Preserve Vector Data" seçilmeli. `icon-category-mosque` henüz yok.
+
+**Sıradaki adım**
+- SVG'ler düzeltilince önizlemede görünmelerinin doğrulanması; ardından ana sayfa B parçası.
+
+---
+
 ## Adım 30 — Arama çubuğu koyu tema rengi, sürüklemede aramanın tetiklenmesi
 
 **Tarih:** 2026-11-08

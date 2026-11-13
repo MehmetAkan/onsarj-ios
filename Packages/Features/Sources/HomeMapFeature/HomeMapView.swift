@@ -89,7 +89,7 @@ public struct HomeMapView: View {
 
     public var body: some View {
         ZStack {
-            MapView(camera: model.camera, userLocation: model.userLocation)
+            MapView(camera: model.camera, userLocation: model.userLocation, controlsLayout: Self.mapControlsLayout)
                 .ignoresSafeArea()
 
             menuButton
@@ -117,6 +117,15 @@ public struct HomeMapView: View {
     }
 
     // MARK: - Yüzen butonlar
+
+    /// Menü butonunun bulunduğu üst sıra. Mapbox'ın bilgi butonu bu sıranın sağ ucunda, menü
+    /// butonuyla aynı hizada; ölçek çubuğu menü butonunun sağında durur.
+    private static let mapControlsLayout = MapControlsLayout(
+        top: Spacing.sm,
+        horizontalMargin: Spacing.screenMargin,
+        rowHeight: Spacing.minTapTarget,
+        spacing: Spacing.sm
+    )
 
     private var menuButton: some View {
         FloatingMapButton(

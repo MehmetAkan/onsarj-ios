@@ -13,21 +13,30 @@ import SwiftUI
 /// - **Stil:** Ortamın renk temasına göre seçilir ve tema değişince kendiliğinden değişir.
 /// - **Konum göstergesi:** `userLocation` verildikçe çizilir; `nil` iken gizlenir. Harita kendi
 ///   konum yöneticisini çalıştırmaz ve konum izni istemez; izin akışı uygulamanın işidir.
-/// - **Kaynak gösterimi:** Mapbox logosu ve bilgi butonu varsayılan yerlerinde görünür kalır
-///   (CLAUDE.md bölüm 7); üstüne öğe yerleştiren ekran onlara yer bırakır.
+/// - **Kaynak gösterimi:** Mapbox logosu ve bilgi butonu görünür kalır (CLAUDE.md bölüm 7).
+///   `controlsLayout` verilirse bilgi butonu, pusula ve ölçek çubuğu ekranın üst buton
+///   sırasına göre dizilir (`MapControlsLayout`); verilmezse Mapbox'ın varsayılan yerlerindedir.
 public struct MapView: UIViewRepresentable {
     private let style: MapStyle
     private let camera: MapCamera
     private let userLocation: CLLocation?
+    private let controlsLayout: MapControlsLayout?
 
     /// - Parameters:
     ///   - style: Haritanın stili.
     ///   - camera: Başlangıç konumu ve kamera istekleri.
     ///   - userLocation: Kullanıcının son konumu; bilinmiyorsa veya izin yoksa `nil`.
-    public init(style: MapStyle = .standard, camera: MapCamera, userLocation: CLLocation?) {
+    ///   - controlsLayout: Ekranın üst buton sırası; Mapbox öğeleri ona göre dizilir.
+    public init(
+        style: MapStyle = .standard,
+        camera: MapCamera,
+        userLocation: CLLocation?,
+        controlsLayout: MapControlsLayout? = nil
+    ) {
         self.style = style
         self.camera = camera
         self.userLocation = userLocation
+        self.controlsLayout = controlsLayout
     }
 
     public func makeCoordinator() -> Coordinator {
@@ -47,12 +56,14 @@ public struct MapView: UIViewRepresentable {
         let coordinator = context.coordinator
         container.onLayout = { coordinator.applyInitialCameraIfNeeded() }
         coordinator.attach(to: mapView)
+        coordinator.apply(controlsLayout)
         return container
     }
 
     public func updateUIView(_ container: UIView, context: Context) {
         context.coordinator.apply(style.mapboxStyle(for: context.environment.colorScheme))
         context.coordinator.show(userLocation)
+        context.coordinator.apply(controlsLayout)
     }
 
     /// `MapView` ile harita arasındaki köprü. Dışarıdan kullanılmaz.
@@ -65,6 +76,7 @@ public struct MapView: UIViewRepresentable {
         private let camera: MapCamera
         private weak var mapView: MapboxMaps.MapView?
         private var appliedStyle: MapboxMaps.MapStyle?
+        private var appliedControlsLayout: MapControlsLayout?
 
         /// İlk kamera, harita boyutu belli olunca bir kez uygulanır. Bölgeyi ekrana sığdırmak
         /// için boyut gerekir; o ana kadar gelen kamera istekleri bekler.
@@ -122,6 +134,27 @@ public struct MapView: UIViewRepresentable {
             guard style != appliedStyle else { return }
             appliedStyle = style
             mapView?.mapboxMap.mapStyle = style
+        }
+
+        /// Bilgi butonu, pusula ve ölçek çubuğunu üst buton sırasına göre dizer; yalnızca
+        /// yerleşim değiştiğinde. Logo varsayılan yerinde kalır.
+        func apply(_ layout: MapControlsLayout?) {
+            guard let mapView, let layout, layout != appliedControlsLayout else { return }
+            appliedControlsLayout = layout
+            var options = mapView.ornaments.options
+            options.attributionButton.position = .topTrailing
+            options.attributionButton.margins = CGPoint(x: layout.horizontalMargin, y: layout.top)
+            options.compass.position = .topTrailing
+            options.compass.margins = CGPoint(
+                x: layout.horizontalMargin,
+                y: layout.top + layout.rowHeight + layout.spacing
+            )
+            options.scaleBar.position = .topLeading
+            options.scaleBar.margins = CGPoint(
+                x: layout.horizontalMargin + layout.rowHeight + layout.spacing,
+                y: layout.top
+            )
+            mapView.ornaments.options = options
         }
 
         func show(_ location: CLLocation?) {
