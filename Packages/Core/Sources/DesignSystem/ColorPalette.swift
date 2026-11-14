@@ -82,6 +82,21 @@ public enum Palette {
     public static let red900 = Color(hex: 0x82181A)
     public static let red950 = Color(hex: 0x460809)
 
+    // MARK: - Yellow
+
+    /// Yellow — Tailwind v4.
+    public static let yellow50 = Color(hex: 0xFEFCE8)
+    public static let yellow100 = Color(hex: 0xFEF9C2)
+    public static let yellow200 = Color(hex: 0xFFF085)
+    public static let yellow300 = Color(hex: 0xFFDF20)
+    public static let yellow400 = Color(hex: 0xFDC700)
+    public static let yellow500 = Color(hex: 0xF0B100)
+    public static let yellow600 = Color(hex: 0xD08700)
+    public static let yellow700 = Color(hex: 0xA65F00)
+    public static let yellow800 = Color(hex: 0x894B00)
+    public static let yellow900 = Color(hex: 0x733E0A)
+    public static let yellow950 = Color(hex: 0x432004)
+
     // MARK: - Blue
 
     /// Blue — Tailwind v4.

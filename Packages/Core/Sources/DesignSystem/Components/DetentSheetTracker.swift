@@ -29,8 +29,8 @@ struct DetentSheetTracker {
         var dimension: CGFloat
 
         var lowerHeight: CGFloat { heights[detents.first ?? .collapsed] }
-        var upperHeight: CGFloat { heights[detents.last ?? .expanded] }
-        var upperDetent: SheetDetent { detents.last ?? .expanded }
+        var upperHeight: CGFloat { heights[detents.last ?? .medium] }
+        var upperDetent: SheetDetent { detents.last ?? .medium }
     }
 
     private struct Drag {

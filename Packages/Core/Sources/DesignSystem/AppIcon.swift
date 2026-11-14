@@ -28,6 +28,26 @@ public enum AppIcon: Sendable, Hashable {
     case savedPlans
     /// Yapay zekâ asistanı. Renkli SVG: `icon-assistant`
     case assistant
+    /// Ayarlar (ör. araç ayarları). `gearshape` (iOS 14)
+    case settings
+    /// Açılır seçim (ör. araç değiştirme). `chevron.down` (iOS 13)
+    case dropdown
+    /// Sayfayı kapatma. `xmark` (iOS 13)
+    case close
+    /// Metin alanını temizleme. `xmark.circle.fill` (iOS 13)
+    case clearText
+    /// Ev adresi. `house.fill` (iOS 13)
+    case home
+    /// İş adresi. `briefcase.fill` (iOS 13)
+    case work
+    /// Ekleme. `plus` (iOS 13)
+    case add
+    /// Geçmiş. `clock.arrow.circlepath` (iOS 14)
+    case history
+    /// Yer, konum önerisi. `mappin.and.ellipse` (iOS 14)
+    case place
+    /// Şarj istasyonu. `bolt.fill` (iOS 13)
+    case charger
 
     /// `fork.knife` (iOS 15)
     case categoryRestaurant
@@ -55,6 +75,16 @@ public enum AppIcon: Sendable, Hashable {
         case .options: .symbol("slider.horizontal.3")
         case .savedPlans: .symbol("heart")
         case .assistant: .asset("icon-assistant", .original)
+        case .settings: .symbol("gearshape")
+        case .dropdown: .symbol("chevron.down")
+        case .close: .symbol("xmark")
+        case .clearText: .symbol("xmark.circle.fill")
+        case .home: .symbol("house.fill")
+        case .work: .symbol("briefcase.fill")
+        case .add: .symbol("plus")
+        case .history: .symbol("clock.arrow.circlepath")
+        case .place: .symbol("mappin.and.ellipse")
+        case .charger: .symbol("bolt.fill")
         case .categoryRestaurant: .symbol("fork.knife")
         case .categoryCafe: .symbol("cup.and.saucer")
         case .categoryMosque: .asset("icon-category-mosque", .template)
@@ -107,7 +137,8 @@ private struct AssetIcon: View {
 #if DEBUG
 #Preview("AppIcon") {
     let icons: [AppIcon] = [
-        .search, .options, .savedPlans, .assistant,
+        .search, .options, .savedPlans, .assistant, .settings, .dropdown,
+        .close, .clearText, .home, .work, .add, .history, .place, .charger,
         .categoryRestaurant, .categoryCafe, .categoryMosque, .categoryMarket,
         .categoryPharmacy, .categoryHotel, .categoryATM,
     ]

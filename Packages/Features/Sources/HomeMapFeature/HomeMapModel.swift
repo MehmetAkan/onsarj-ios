@@ -14,7 +14,7 @@ import Observation
 @MainActor
 @Observable
 final class HomeMapModel {
-    /// Alt sayfanın kademesi (`DetentSheet`, K-22).
+    /// Alt sayfanın kademesi (`DetentSheet`, K-22, K-25).
     typealias SheetDetent = DesignSystem.SheetDetent
 
     let camera: MapCamera
@@ -52,11 +52,6 @@ final class HomeMapModel {
         case .denied:
             isLocationDeniedAlertPresented = true
         }
-    }
-
-    /// Arama çubuğuna dokunuldu: alt sayfa büyük kademeye geçer.
-    func beginSearch() {
-        sheetDetent = .expanded
     }
 
     /// İzin değişikliklerini dinler. Ekran görünür kaldıkça çalışır.

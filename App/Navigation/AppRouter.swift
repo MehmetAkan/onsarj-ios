@@ -21,6 +21,9 @@ final class AppRouter {
     /// Kök ekranın üzerindeki ekranlar, alttan üste.
     var path: [Route] = []
 
+    /// Arama sayfası ana haritanın üstünde büyük bir modal olarak açık mı (K-25).
+    var isSearchPresented = false
+
     /// - Parameter flow: Açılıştaki akış.
     init(flow: Flow = .signUp) {
         self.flow = flow

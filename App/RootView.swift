@@ -1,6 +1,7 @@
 import AuthFeature
 import DesignSystem
 import HomeMapFeature
+import SearchFeature
 import SwiftUI
 
 /// Uygulamanın kök görünümü: gezinme yığını ve ekranların `Route` karşılıkları.
@@ -26,21 +27,46 @@ struct RootView: View {
             case .signUp:
                 signUpFlow
             case .home:
-                // Butonların ve aramanın açacağı ekranlar henüz yazılmadı; istekler o ekranlar
-                // yazıldığında `AppRouter`'a bağlanır.
+                // Butonların açacağı ekranlar henüz yazılmadı; istekler o ekranlar yazıldığında
+                // `AppRouter`'a bağlanır. Arama sayfası büyük bir modal olarak açılır (K-25).
                 HomeMapView(
                     locationSource: dependencies.locationSource,
+                    vehicleRepository: dependencies.vehicleRepository,
+                    batteryLevelStore: dependencies.batteryLevelStore,
                     onMenu: {},
-                    onSearch: {},
+                    onSearchTapped: { router.isSearchPresented = true },
                     onAssistant: {},
                     onCategory: { _ in },
                     onOptions: {},
                     onSavedPlans: {},
                     onNearbyChargers: {},
-                    onSavedPlaces: {}
+                    onSavedPlaces: {},
+                    onSwitchVehicle: {},
+                    onVehicleSettings: {},
+                    onAddVehicle: {}
                 )
+                .sheet(isPresented: $router.isSearchPresented) {
+                    searchSheet
+                }
             }
         }
+        .onsarjDynamicTypeRange()
+    }
+
+    /// Arama sayfası. Sonuç listesi ve kayıtlı yer ekranları henüz yazılmadı; o istekler boş.
+    private var searchSheet: some View {
+        SearchView(
+            history: dependencies.searchHistory,
+            suggestions: dependencies.searchSuggestions,
+            onClose: { router.isSearchPresented = false },
+            onSubmit: { _ in },
+            onSelect: { _ in },
+            onSetHome: {},
+            onSetWork: {},
+            onAddSaved: {},
+            onDeleteHistory: { _ in }
+        )
+        .presentationDragIndicator(.visible)
         .onsarjDynamicTypeRange()
     }
 

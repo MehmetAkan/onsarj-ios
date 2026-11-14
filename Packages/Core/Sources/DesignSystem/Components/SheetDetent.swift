@@ -2,10 +2,8 @@
 public enum SheetDetent: Int, CaseIterable, Comparable, Sendable {
     /// En küçük kademe. Sayfa bunun altına inmez.
     case collapsed
-    /// Ara kademe.
+    /// En büyük kademe: içeriğe göre, kullanılabilir yüksekliğin yarısı ile `DetentSheet` sınırı arası.
     case medium
-    /// Ekranın üstüne kadar açılan kademe.
-    case expanded
 
     public static func < (lhs: SheetDetent, rhs: SheetDetent) -> Bool {
         lhs.rawValue < rhs.rawValue

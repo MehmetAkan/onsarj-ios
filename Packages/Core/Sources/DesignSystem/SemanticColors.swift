@@ -110,6 +110,23 @@ public enum Theme {
     /// görünür ve gözü yorar.
     public static let brandPrimary = Color(light: Palette.green500, dark: Palette.green400)
 
+    // MARK: - Batarya
+
+    /// Batarya çubuğunun dolgusu, düşük bant. Bant eşikleri `BatteryLevel`'dadır.
+    public static let batteryLow = Color(light: Palette.red500, dark: Palette.red500)
+
+    /// Batarya çubuğunun dolgusu, orta bant.
+    public static let batteryMedium = Color(light: Palette.yellow500, dark: Palette.yellow500)
+
+    /// Batarya çubuğunun dolgusu, yüksek bant.
+    public static let batteryHigh = Color(light: Palette.green500, dark: Palette.green500)
+
+    /// Batarya çubuğunun dolmamış yolu. `backgroundCard` üzerinde durur.
+    public static let batteryTrack = Color(light: Palette.gray200, dark: Palette.ink3)
+
+    /// Batarya çubuğunun tutamacı: iki temada da beyaz, gölgesiyle yoldan ayrılır.
+    public static let batteryThumb = Color(light: .white, dark: .white)
+
     // MARK: - Sayfa göstergesi
 
     /// Aktif sayfa noktası.
