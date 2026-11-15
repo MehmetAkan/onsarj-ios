@@ -80,6 +80,14 @@ struct PreviewVehicleRepository: VehicleRepository {
     func setActiveProfile(_ id: DrivingProfile.ID, for vehicleID: Vehicle.ID) async throws -> Vehicle {
         throw VehicleRepositoryError.vehicleNotFound
     }
+
+    func addVehicle(variantID: VehicleVariant.ID) async throws -> Vehicle {
+        throw VehicleRepositoryError.variantNotFound
+    }
+
+    func setDefaultVehicle(_ id: Vehicle.ID) async throws -> Vehicle {
+        throw VehicleRepositoryError.vehicleNotFound
+    }
 }
 
 /// Önizleme için batarya deposu: verilen yüzdeyi kayıtlıymış gibi döner, kaydetmez.

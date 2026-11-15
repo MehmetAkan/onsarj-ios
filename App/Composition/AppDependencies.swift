@@ -53,6 +53,18 @@ final class AppDependencies {
         #endif
     }
 
+    /// Eklenebilecek araçların kataloğu. Debug'da fixture (K-23, K-26), Release'de boş: uydurma veri
+    /// dağıtıma girmez.
+    private(set) lazy var vehicleCatalog: any VehicleCatalog = Self.makeVehicleCatalog()
+
+    private static func makeVehicleCatalog() -> any VehicleCatalog {
+        #if DEBUG
+        return FixtureVehicleCatalog()
+        #else
+        return EmptyVehicleCatalog()
+        #endif
+    }
+
     private static func makeVehicleRepository() -> any VehicleRepository {
         #if DEBUG
         let scenario = FixtureScenario(value: UserDefaults.standard.string(forKey: FixtureScenario.userDefaultsKey))
@@ -89,6 +101,22 @@ private struct NoVehiclesRepository: VehicleRepository {
     func setActiveProfile(_ id: DrivingProfile.ID, for vehicleID: Vehicle.ID) async throws -> Vehicle {
         throw VehicleRepositoryError.vehicleNotFound
     }
+
+    /// Katalog Release'de boş olduğu için eklenecek varyant da yoktur.
+    func addVehicle(variantID: VehicleVariant.ID) async throws -> Vehicle {
+        throw VehicleRepositoryError.variantNotFound
+    }
+
+    func setDefaultVehicle(_ id: Vehicle.ID) async throws -> Vehicle {
+        throw VehicleRepositoryError.vehicleNotFound
+    }
+}
+
+/// Release'de, backend bağlanana kadar araç kataloğu boştur.
+private struct EmptyVehicleCatalog: VehicleCatalog {
+    func brands() async throws -> [VehicleBrand] { [] }
+    func models(of brandID: VehicleBrand.ID) async throws -> [VehicleModel] { [] }
+    func variants(of modelID: VehicleModel.ID) async throws -> [VehicleVariant] { [] }
 }
 
 /// Release'de, backend bağlanana kadar şarj ağı kataloğu boştur; seçici "Sonuç bulunamadı" gösterir.

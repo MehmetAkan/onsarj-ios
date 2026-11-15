@@ -41,6 +41,37 @@ enum GarageText {
             .joined(separator: " ")
     }
 
+    /// "BYD Dolphin 2023 60,5 kWh"; takma ad varsa takma ad.
+    static func vehicleListTitle(_ vehicle: Vehicle, locale: Locale) -> String {
+        if let nickname = vehicle.nickname { return nickname }
+        return [
+            vehicle.make, vehicle.model, String(vehicle.modelYear),
+            capacity(vehicle.batteryCapacityKwh, locale: locale),
+        ]
+        .joined(separator: " ")
+    }
+
+    /// "60,5 kWh"
+    static func capacity(_ kwh: Double, locale: Locale) -> String {
+        let number = kwh.formatted(.number.precision(.fractionLength(0...1)).locale(locale))
+        return String.localizedStringWithFormat(localized("garage.capacityValue"), number)
+    }
+
+    /// "2023 · 60,5 kWh · Type 2, CCS2"
+    static func variantSummary(_ variant: VehicleVariant, locale: Locale) -> String {
+        String.localizedStringWithFormat(
+            localized("garage.variantSummary"),
+            String(variant.modelYear),
+            capacity(variant.batteryCapacityKwh, locale: locale),
+            connectors(variant.connectors)
+        )
+    }
+
+    /// "3 model" / "1 model"; çoğul kuralları String Catalog'dan.
+    static func modelCount(_ count: Int) -> String {
+        String(localized: "garage.modelCount \(count)", bundle: .onsarj)
+    }
+
     /// "Type 2, CCS2"
     static func connectors(_ connectors: [ConnectorType]) -> String {
         connectors.map(\.name).joined(separator: ", ")

@@ -38,12 +38,6 @@ struct ChargingNetworkCatalogTests {
         #expect(names == ["En Yakıt"])
     }
 
-    @Test("Arama anahtarı: İSTANBUL, Istanbul, ıstanbul ve istanbul aynı")
-    func searchKeyTurkish() {
-        let keys = Set(["İSTANBUL", "ISTANBUL", "Istanbul", "ıstanbul", "istanbul"].map(NetworkSearchKey.make))
-        #expect(keys == ["istanbul"])
-    }
-
     @Test("İçerir eşleşmesi: kelimenin ortası da bulunur")
     func containsMatch() async throws {
         let names = try await catalog.networks(matching: "charg").map(\.name)

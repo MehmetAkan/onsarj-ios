@@ -27,6 +27,8 @@ public struct DrivingProfile: Sendable, Equatable, Hashable, Identifiable {
     public static let maxSpeedRange: ClosedRange<Int> = 50...250
     /// Profil adının en fazla karakter sayısı.
     public static let nameMaxLength = 40
+    /// Yeni aracın standart profilinin en yüksek hızı, km/h (backend bu değerle oluşturur).
+    public static let defaultMaxSpeedKmh = 120
 
     public let id: ID
     public let name: String

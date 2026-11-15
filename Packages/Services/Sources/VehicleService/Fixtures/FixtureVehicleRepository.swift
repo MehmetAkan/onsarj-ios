@@ -45,6 +45,15 @@ public actor FixtureVehicleRepository: VehicleRepository {
         try loadedBackend().deleteVehicle(id.rawValue)
     }
 
+    public func addVehicle(variantID: VehicleVariant.ID) async throws -> Vehicle {
+        let request = CreateVehicleRequestDTO(variantID: variantID)
+        return try respond(try loadedBackend().postVehicle(request, catalog: try FixtureVehicleCatalog.tables()))
+    }
+
+    public func setDefaultVehicle(_ id: Vehicle.ID) async throws -> Vehicle {
+        try respond(try loadedBackend().patchVehicle(id.rawValue, .makeDefault))
+    }
+
     public func saveProfile(_ draft: DrivingProfileDraft, for vehicleID: Vehicle.ID) async throws -> Vehicle {
         let request = DrivingProfileRequestDTO(draft: draft)
         let backend = try loadedBackend()

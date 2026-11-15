@@ -7,9 +7,13 @@ public enum VehicleRepositoryError: Error, Sendable, Equatable {
         case maxSpeed
         case batteryHealth
         case colorHex
+        /// Varsayılan araç isteği yalnızca `true` alır.
+        case isDefault
     }
 
     case vehicleNotFound
+    /// Eklenmek istenen varyant katalogda yok.
+    case variantNotFound
     case profileNotFound
     case invalidValue(Field)
     case duplicateProfileName

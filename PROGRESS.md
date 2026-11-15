@@ -54,6 +54,105 @@ diğerleri boş.
 
 ---
 
+## Adım 40 — Araçlarınız ve Araç ekle (GarageFeature)
+
+**Tarih:** 2026-11-15
+
+**Ne yapıldı**
+- **Önceki görevden kalanlar:** `SwipeBackProbeTests` silindi. Varsayılan araç silinince kalanlardan en son
+  eklenen varsayılan olur (fixture uyguluyor, `vehicles.md` açık noktası kapandı). `ValueEditorSheet.initialText`
+  kaldırıldı: geçersiz hal önizlemesi tüketimi aralık dışında (60) olan bir önizleme aracıyla kuruluyor.
+- **Domain:** `VehicleBrand`, `VehicleModel`, `VehicleVariant`, `VehicleCatalog` protokolü;
+  `VehicleRepository.addVehicle(variantID:)` ve `setDefaultVehicle(_:)`; hata `variantNotFound`,
+  `invalidValue(.isDefault)`; `DrivingProfile.defaultMaxSpeedKmh` (120).
+- **Servis:** katalog DTO'ları ve `VehicleCatalogMapper`; `FixtureVehicleCatalog` (10 marka, 20 model, 22 varyant;
+  değerler örnek). `CreateVehicleRequestDTO` (`POST /vehicles`), varsayılan için `PATCH` gövdesine `isDefault`.
+  Fixture backend aracı varyanttan oluşturuyor, varsayılanı tek tutuyor.
+- **Ekranlar:** `GarageView` (kök, iki başlangıç), Araçlarınız (`VehicleListPage`, etkin araçta çerçeve),
+  markalar (arama, logo yoksa araç simgesi, "N model"), modeller, varyantlar (onaysız ekleme, eklerken
+  diğer satırlar pasif). `GarageModel`, `AddVehicleModel` (katalog yanıtları bellekte).
+- **Ortak:** `SearchText` (`OnsarjCore`; şarj ağı fixture'ındaki arama anahtarı buraya taşındı, iki yer
+  kullanıyor; yer tutucu `OnsarjCore.swift` silindi). `SearchField` (`DesignSystem`; proje sahibinin onayıyla
+  `NetworkSearchField`'dan taşındı). `AppIcon.vehicle` (`car.fill`, iOS 13).
+- **App:** `AppRouter.garage` (`GaragePresentation`), `onSwitchVehicle` ve `onAddVehicle` bağlandı; garaj ve
+  ayarlar kapanınca kart yenileniyor (`vehiclesDidChange`). Release'de `EmptyVehicleCatalog`.
+
+**Dosyalar**
+- Eklenen: `Packages/Core/Sources/OnsarjCore/SearchText.swift`, `Packages/Core/Tests/CoreTests/SearchTextTests.swift`,
+  `Packages/Core/Sources/DesignSystem/Components/SearchField.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/Models/VehicleCatalogModels.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/Protocols/VehicleCatalog.swift`,
+  `Packages/Services/Sources/VehicleService/DTO/{VehicleCatalogDTOs,VehicleCatalogMapper}.swift`,
+  `Packages/Services/Sources/VehicleService/Fixtures/{FixtureVehicleCatalog,FixtureVehicleCatalogJSON}.swift`,
+  `Packages/Services/Tests/ServicesTests/VehicleCatalogTests.swift`,
+  `Packages/Features/Sources/GarageFeature/{GarageView,GarageModel,AddVehicleModel,VehicleListPage,BrandListPage,
+  ModelListPage,VariantListPage}.swift`,
+  `Packages/Features/Sources/GarageFeature/Components/{CatalogList,VehicleListCard}.swift`,
+  `Packages/Features/Tests/FeaturesTests/GarageModelTests.swift`, `OnsarjUITests/GaragePresentationTests.swift`,
+  `Docs/Backend/vehicle-catalog.md`
+- Silinen: `OnsarjUITests/SwipeBackProbeTests.swift`, `Packages/Core/Sources/OnsarjCore/OnsarjCore.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/NetworkSearchKey.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/Components/NetworkSearchField.swift`
+- Değişen: `Packages/Domain/Sources/OnsarjDomain/{Protocols/VehicleRepository,Models/VehicleRepositoryError,
+  Models/DrivingProfile}.swift`, `Packages/Services/Sources/VehicleService/DTO/{VehicleDTO,VehicleRequestDTOs}.swift`,
+  `Packages/Services/Sources/VehicleService/Fixtures/{FixtureVehicleRepository,FixtureVehicleBackend}.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/FixtureChargingNetworkCatalog.swift`,
+  `Packages/Services/Tests/ServicesTests/{VehicleRequestDTOTests,ChargingNetworkCatalogTests}.swift`,
+  `Packages/Features/Sources/GarageFeature/{VehicleSettingsModel,ValueEditorSheet,Vehicle+Presentation}.swift`,
+  `Packages/Features/Sources/GarageFeature/Components/{NoticeBanner,PreviewGarageSources}.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/PreviewVehicleSources.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/NetworkPickerView.swift`,
+  `Packages/Features/Tests/FeaturesTests/TestVehicles.swift`, `Packages/Core/Sources/DesignSystem/AppIcon.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`, `App/Navigation/AppRouter.swift`,
+  `App/RootView.swift`, `App/Composition/AppDependencies.swift`, `Docs/Backend/{README,vehicles}.md`, `PROGRESS.md`
+
+**Kararlar**
+- **Sunum (2.9):** sistem `.sheet`; `GarageView` kademeleri kendisi yönetir (`presentationDetents(_:selection:)`).
+  Araçlarınız, sayfanın ölçtüğü ideal yükseklikte (üst çubuk + kartlar + düğme + alt güvenli alan) açılır;
+  yığına sayfa eklenince `.large`'a, geri dönünce yeniden içerik yüksekliğine geçer. Kartın "Araç ekle"sinden
+  yalnızca `.large`. iOS 18.5 ve 26.3'te çalıştırılıp ekran görüntüleriyle karşılaştırıldı.
+  Davranış iki sürümde tutarlı: içerik yüksekliği doğru ölçülüyor (bir ve iki araçla, kesilme yok), "Yeni araç ekle"
+  tam yüksekliğe çıkıyor, geri dönüş yeniden iniyor. Tek fark sistem görünümü: iOS 26.3'te içerik yüksekliğindeki
+  sayfa kenarlardan içeride ("yüzen") çiziliyor, 18.5'te tam genişlik; tam yükseklikte ikisi de tam genişlik
+  (K-22'deki davranış; değer modalında kabul edilen farkla aynı).
+- **Varsayılan araç `PATCH /vehicles/{id}` ile** (`{"isDefault": true}`), ayrı uç nokta yok; `false` reddedilir.
+- **Silinen varsayılan araç:** kalanlardan en son eklenen varsayılan olur (proje sahibinin kararı; backend kuralı).
+- **Ortak metin taşımaları:** `networks.noResults` → `common.noResults` (ağ seçici, markalar);
+  `vehicleSettings.saveFailed` → `common.saveFailed` (araç ayarları, Araçlarınız).
+- `garage.modelCount %lld` anahtarı String Catalog çoğul biçimindedir; çoğul için anahtar `%lld` taşır
+  (Türkçede tek biçim "N model", İngilizcede "1 model" / "N models").
+- Profil adı karşılaştırmasında Türkçe `I/ı`, `İ/i` kuralı onaylandı (Adım 39).
+
+**Doğrulama**
+- `Packages/Core`: `swift build`, `swift test` 26/26.
+- `Packages/Domain`: `swift build`, `swift test` 31/31.
+- `Packages/Services`: `swift build`, `swift test` 62/62, `swift build -c release` geçti.
+- `./Tooling/Scripts/verify-ios.sh --package Features`: geçti. Uygulama Debug derlemesi geçti.
+- `xcodebuild test` Features (iPhone SE, iOS 18.3): 73/73.
+- `GaragePresentationTests` (2 test) iOS 18.5'te geçti: karttaki adla Araçlarınız → "Yeni araç ekle" → Togg → T10X
+  → V1 RWD → kart "Togg T10X"; Araçlarınız'dan BYD → kart "BYD Dolphin"; `noVehicles` ile "Araç ekle" doğrudan
+  markaları açıyor, geri düğmesi yok, "BYD" araması yalnızca BYD'yi bırakıyor.
+- iOS 26.3, tüm UI test paketi (10 test): garaj (2), araç ayarları (2), plan seçenekleri (2), arama (2) ve
+  başlangıç testleri geçti.
+- Uygulama Release: `FixtureVehicleCatalog`, `fixtureVehicleCatalogJSON`, `FixtureVehicleBackend`,
+  `FixtureVehicleRepository`, `PreviewGarageRepository` sembolleri 0; `variant_togg` dizgesi 0; `GarageView` ve
+  `EmptyVehicleCatalog` mevcut.
+- `swiftlint lint --strict`, `swift format lint --strict`: 0 ihlal.
+
+**Bilinen eksikler ve açık noktalar**
+- **Açık nokta:** Kayıt akışı yeniden giriş noktası olduğunda kenardan kaydırarak geri dönme, o akışın kendi UI
+  testi olarak yazılacak (`SwipeBackProbeTests` silindi; `RootView.opensMapOnLaunch` hâlâ `true`).
+- **Geçici:** katalog ve araç değişiklikleri yalnızca bellekte; uygulama yeniden açılınca fixture'a döner.
+- Katalog logoları ve görselleri `null`; eklenen Togg aracı görselsiz (BYD fixture aracının görseli bir Togg
+  çizimi, Adım 35'ten bilinen tutarsızlık).
+- Görselsiz araç kartı görselli karttan alçak (görsel alanı gizleniyor).
+- Araçlarınız'da silme ve düzenleme yok (ayarlar sayfasında).
+
+**Sıradaki adım**
+- İstasyon katmanı (CLAUDE.md 5.4) veya kayıt akışının yeniden giriş noktası olması.
+
+---
+
 ## Adım 39 — Araç ayarları ve sürüş profilleri (GarageFeature)
 
 **Tarih:** 2026-11-15

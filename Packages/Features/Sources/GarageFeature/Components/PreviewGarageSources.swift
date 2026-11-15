@@ -14,6 +14,8 @@ struct PreviewGarageRepository: VehicleRepository {
     func saveProfile(_ draft: DrivingProfileDraft, for vehicleID: Vehicle.ID) async throws -> Vehicle { vehicle }
     func deleteProfile(_ id: DrivingProfile.ID, for vehicleID: Vehicle.ID) async throws -> Vehicle { vehicle }
     func setActiveProfile(_ id: DrivingProfile.ID, for vehicleID: Vehicle.ID) async throws -> Vehicle { vehicle }
+    func addVehicle(variantID: VehicleVariant.ID) async throws -> Vehicle { vehicle }
+    func setDefaultVehicle(_ id: Vehicle.ID) async throws -> Vehicle { vehicle }
 
     static let standard = DrivingProfile(
         id: DrivingProfile.ID("std"), name: "Standart", consumptionKwhPer100Km: 17.8, maxSpeedKmh: 120, isStandard: true
@@ -22,7 +24,7 @@ struct PreviewGarageRepository: VehicleRepository {
         id: DrivingProfile.ID("hwy"), name: "Otoyol", consumptionKwhPer100Km: 20.5, maxSpeedKmh: 130, isStandard: false)
 
     /// Görselli araç. Adres önizlemede yüklenmezse alan gizlenir (görselsiz hal).
-    static func dolphin(imageURL: URL?) -> Vehicle {
+    static func dolphin(imageURL: URL?, consumption: Double = standard.consumptionKwhPer100Km) -> Vehicle {
         Vehicle(
             id: Vehicle.ID("preview_dolphin"),
             make: "BYD",
@@ -39,7 +41,16 @@ struct PreviewGarageRepository: VehicleRepository {
             imageURL: imageURL,
             batteryHealthPercent: 95,
             isDefault: true,
-            drivingProfiles: [standard, highway],
+            drivingProfiles: [
+                DrivingProfile(
+                    id: standard.id,
+                    name: standard.name,
+                    consumptionKwhPer100Km: consumption,
+                    maxSpeedKmh: standard.maxSpeedKmh,
+                    isStandard: true
+                ),
+                highway,
+            ],
             activeProfileID: standard.id
         )
     }
@@ -132,29 +143,23 @@ struct DrivingProfileFormViewPreviews: PreviewProvider {
 }
 
 struct ValueEditorSheetPreviews: PreviewProvider {
+    /// Geçersiz hal: Domain aralığın dışındaki bir değeri taşıyabilir (60 kWh/100 km); modal onu gösterir
+    /// ve hata satırı çıkar.
+    private static let cases: [(String, Double)] = [("geçerli", 17.8), ("geçersiz", 60)]
+
     static var previews: some View {
-        ForEach(["17,8", "60"], id: \.self) { text in
-            GaragePreviewMatrix(name: text == "60" ? "Değer · geçersiz" : "Değer · geçerli") {
-                ValueEditorPreviewHost(text: text)
+        ForEach(cases, id: \.0) { name, consumption in
+            GaragePreviewMatrix(name: "Değer · \(name)") {
+                Theme.backgroundPrimary
+                    .sheet(isPresented: .constant(true)) {
+                        ValueEditorSheet(
+                            target: .consumption,
+                            vehicle: PreviewGarageRepository.dolphin(imageURL: nil, consumption: consumption),
+                            onSave: { _ in }
+                        )
+                    }
             }
         }
-    }
-}
-
-/// Değer modalını, alana hazır yazılmış bir değerle gösterir.
-private struct ValueEditorPreviewHost: View {
-    let text: String
-
-    var body: some View {
-        Theme.backgroundPrimary
-            .sheet(isPresented: .constant(true)) {
-                ValueEditorSheet(
-                    target: .consumption,
-                    vehicle: PreviewGarageRepository.dolphin(imageURL: nil),
-                    initialText: text,
-                    onSave: { _ in }
-                )
-            }
     }
 }
 #endif

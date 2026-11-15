@@ -17,21 +17,9 @@ final class VehicleSettingsModel {
         case failed
     }
 
-    /// Ekranın altında kısa süre görünen bildirim. Her bildirimin kimliği yenidir; aynı bildirim
-    /// art arda da gösterilir.
-    struct Notice: Equatable, Identifiable {
-        enum Kind: Equatable {
-            case saveFailed
-            case connectorRequired
-        }
-
-        let id = UUID()
-        let kind: Kind
-    }
-
     private(set) var phase = Phase.loading
     private(set) var vehicle: Vehicle?
-    private(set) var notice: Notice?
+    private(set) var notice: GarageNotice?
 
     /// Kaydı süren anlık seçimler; ekran bunları gösterir.
     private var pendingProfileID: DrivingProfile.ID?
@@ -95,7 +83,7 @@ final class VehicleSettingsModel {
         var selected = Set(connectors)
         if selected.contains(connector) {
             guard selected.count > 1 else {
-                notice = Notice(kind: .connectorRequired)
+                notice = GarageNotice(kind: .connectorRequired)
                 return
             }
             selected.remove(connector)
@@ -145,7 +133,7 @@ final class VehicleSettingsModel {
             try await repository.deleteVehicle(vehicleID)
             return true
         } catch {
-            notice = Notice(kind: .saveFailed)
+            notice = GarageNotice(kind: .saveFailed)
             return false
         }
     }
@@ -159,7 +147,7 @@ final class VehicleSettingsModel {
             vehicle = try await operation(repository, vehicleID)
             return true
         } catch {
-            notice = Notice(kind: .saveFailed)
+            notice = GarageNotice(kind: .saveFailed)
             return false
         }
     }

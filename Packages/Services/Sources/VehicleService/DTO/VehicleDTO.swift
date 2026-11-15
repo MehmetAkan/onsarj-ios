@@ -26,7 +26,7 @@ struct VehicleDTO: Decodable {
     /// Fixture, görsel adını eşlemeden önce yerel dosya adresine çevirir.
     var imageUrl: String?
     var batteryHealthPercent: Int?
-    let isDefault: Bool?
+    var isDefault: Bool?
     var drivingProfiles: [DrivingProfileDTO]?
     var activeProfileId: String?
 

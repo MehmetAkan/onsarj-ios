@@ -43,9 +43,9 @@ struct RootView: View {
                     onSavedPlans: {},
                     onNearbyChargers: {},
                     onSavedPlaces: {},
-                    onSwitchVehicle: {},
+                    onSwitchVehicle: { router.garage = .vehicles },
                     onVehicleSettings: { router.vehicleSettings = VehicleSettingsPresentation(vehicleID: $0) },
-                    onAddVehicle: {},
+                    onAddVehicle: { router.garage = .addVehicle },
                     vehicleRevision: router.vehicleRevision
                 )
                 .sheet(isPresented: $router.isSearchPresented) {
@@ -54,8 +54,11 @@ struct RootView: View {
                 .sheet(isPresented: $router.isPlanOptionsPresented) {
                     planOptionsSheet
                 }
-                .sheet(item: $router.vehicleSettings, onDismiss: router.vehicleSettingsDidDismiss) { presentation in
+                .sheet(item: $router.vehicleSettings, onDismiss: router.vehiclesDidChange) { presentation in
                     vehicleSettingsSheet(presentation)
+                }
+                .sheet(item: $router.garage, onDismiss: router.vehiclesDidChange) { presentation in
+                    garageSheet(presentation)
                 }
             }
         }
@@ -97,6 +100,19 @@ struct RootView: View {
             repository: dependencies.vehicleRepository,
             vehicleID: presentation.vehicleID,
             onClose: { router.vehicleSettings = nil }
+        )
+        .presentationDragIndicator(.visible)
+        .onsarjDynamicTypeRange()
+    }
+
+    /// "Araçlarınız" (içerik yüksekliğinde) veya "Araç ekle" (tam yükseklik). Kademeleri `GarageView`
+    /// yönetir. Kapanınca ana sayfadaki kart yeniden yüklenir.
+    private func garageSheet(_ presentation: GaragePresentation) -> some View {
+        GarageView(
+            repository: dependencies.vehicleRepository,
+            catalog: dependencies.vehicleCatalog,
+            start: presentation == .vehicles ? .vehicles : .addVehicle,
+            onClose: { router.garage = nil }
         )
         .presentationDragIndicator(.visible)
         .onsarjDynamicTypeRange()

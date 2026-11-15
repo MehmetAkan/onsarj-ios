@@ -31,11 +31,15 @@ final class AppRouter {
     /// Ayarları açık olan araç; `nil` ise araç ayarları modalı kapalı.
     var vehicleSettings: VehicleSettingsPresentation?
 
-    /// Araç verisinin sürümü. Araç ayarları kapanınca artar; ana sayfadaki kart aracı yeniden yükler.
+    /// "Araçlarınız" / "Araç ekle" modalı; `nil` ise kapalı.
+    var garage: GaragePresentation?
+
+    /// Araç verisinin sürümü. Araç ayarları veya garaj modalı kapanınca artar; ana sayfadaki kart aracı
+    /// yeniden yükler.
     private(set) var vehicleRevision = 0
 
-    /// Araç ayarları modalı kapandı (X, aşağı çekme veya araç silindi).
-    func vehicleSettingsDidDismiss() {
+    /// Araçları değiştirebilen bir modal kapandı (X, aşağı çekme, araç seçildi, eklendi veya silindi).
+    func vehiclesDidChange() {
         vehicleRevision += 1
     }
 
@@ -79,4 +83,14 @@ struct VehicleSettingsPresentation: Identifiable, Equatable {
     let vehicleID: Vehicle.ID
 
     var id: String { vehicleID.rawValue }
+}
+
+/// "Araçlarınız" / "Araç ekle" modalının sunumu: hangi sayfayla açıldığı.
+enum GaragePresentation: String, Identifiable {
+    /// Kartın adı ve okundan: araç listesi.
+    case vehicles
+    /// Araç yokken kartın "Araç ekle"sinden: markalar.
+    case addVehicle
+
+    var id: String { rawValue }
 }

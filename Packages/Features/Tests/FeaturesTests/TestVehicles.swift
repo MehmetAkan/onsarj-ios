@@ -40,7 +40,8 @@ extension Vehicle {
         colorHex: String? = nil,
         batteryHealthPercent: Int? = nil,
         drivingProfiles: [DrivingProfile]? = nil,
-        activeProfileID: DrivingProfile.ID? = nil
+        activeProfileID: DrivingProfile.ID? = nil,
+        isDefault: Bool? = nil
     ) -> Vehicle {
         Vehicle(
             id: id,
@@ -57,7 +58,7 @@ extension Vehicle {
             bodyType: bodyType,
             imageURL: imageURL,
             batteryHealthPercent: batteryHealthPercent ?? self.batteryHealthPercent,
-            isDefault: isDefault,
+            isDefault: isDefault ?? self.isDefault,
             drivingProfiles: drivingProfiles ?? self.drivingProfiles,
             activeProfileID: activeProfileID ?? self.activeProfileID
         )
@@ -141,6 +142,25 @@ actor FakeVehicleRepository: VehicleRepository {
 
     func setActiveProfile(_ id: DrivingProfile.ID, for vehicleID: Vehicle.ID) async throws -> Vehicle {
         try replace(vehicleID) { $0.with(activeProfileID: id) }
+    }
+
+    func addVehicle(variantID: VehicleVariant.ID) async throws -> Vehicle {
+        if failsWrites { throw Failure() }
+        guard case .success(let vehicles) = result else { throw Failure() }
+        let added = TestVehicles.dolphin(id: "added_\(variantID.rawValue)_\(vehicles.count)", isDefault: true)
+        result = .success(vehicles.map { $0.with(isDefault: false) } + [added])
+        return added
+    }
+
+    func setDefaultVehicle(_ id: Vehicle.ID) async throws -> Vehicle {
+        if failsWrites { throw Failure() }
+        guard case .success(let vehicles) = result, vehicles.contains(where: { $0.id == id }) else {
+            throw VehicleRepositoryError.vehicleNotFound
+        }
+        let updated = vehicles.map { $0.with(isDefault: $0.id == id) }
+        result = .success(updated)
+        guard let vehicle = updated.first(where: { $0.id == id }) else { throw VehicleRepositoryError.vehicleNotFound }
+        return vehicle
     }
 
     private func replace(_ id: Vehicle.ID, _ change: (Vehicle) -> Vehicle) throws -> Vehicle {

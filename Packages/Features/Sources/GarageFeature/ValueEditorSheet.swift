@@ -16,22 +16,15 @@ struct ValueEditorSheet: View {
     @State private var isSaving = false
     @FocusState private var isFocused: Bool
 
-    /// - Parameter initialText: Alana yazılmış hazır metin; yalnızca önizleme verir. Kaydet, aracın
-    ///   değeriyle karşılaştırır.
     init(
         target: ValueEditTarget,
         vehicle: Vehicle,
         locale: Locale = .current,
-        initialText: String? = nil,
         onSave: @escaping (ValueEditor) async -> Void
     ) {
         self.target = target
         self.onSave = onSave
-        var editor = target.editor(for: vehicle, locale: locale)
-        if let initialText {
-            editor.text = initialText
-        }
-        _editor = State(initialValue: editor)
+        _editor = State(initialValue: target.editor(for: vehicle, locale: locale))
     }
 
     var body: some View {

@@ -21,8 +21,10 @@ struct NetworkPickerView: View {
 
     var body: some View {
         VStack(spacing: Spacing.md) {
-            NetworkSearchField(query: $model.query, isFocused: $isFieldFocused)
-                .padding(.horizontal, Spacing.screenMargin)
+            SearchField(
+                query: $model.query, placeholder: Text("common.search", bundle: .onsarj), isFocused: $isFieldFocused
+            )
+            .padding(.horizontal, Spacing.screenMargin)
             results
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
@@ -50,7 +52,7 @@ struct NetworkPickerView: View {
         case .failed:
             failure
         case .loaded(let networks) where networks.isEmpty:
-            message("networks.noResults")
+            message("common.noResults")
         case .loaded(let networks):
             list(networks)
         }

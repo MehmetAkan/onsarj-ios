@@ -199,6 +199,24 @@
         }
       }
     },
+    "common.noResults" : {
+      "comment" : "Ortak: arama sonucu yok.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No results found"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonuç bulunamadı"
+          }
+        }
+      }
+    },
     "common.retry" : {
       "comment" : "Ortak: başarısız yüklemeyi yeniden deneyen düğme.",
       "extractionState" : "manual",
@@ -231,6 +249,24 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kaydet"
+          }
+        }
+      }
+    },
+    "common.saveFailed" : {
+      "comment" : "Ortak: yazma işlemi başarısız; değer eski haline döndü.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save the change"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Değişiklik kaydedilemedi"
           }
         }
       }
@@ -411,6 +447,210 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sürüş profilleri"
+          }
+        }
+      }
+    },
+    "garage.addFailed" : {
+      "comment" : "Araçlarınız / Araç ekle: varyanttan araç eklenemedi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't add the vehicle"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Araç eklenemedi"
+          }
+        }
+      }
+    },
+    "garage.addNew" : {
+      "comment" : "Araçlarınız / Araç ekle: araç listesinin altındaki düğme.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add new vehicle"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yeni araç ekle"
+          }
+        }
+      }
+    },
+    "garage.addVehicle" : {
+      "comment" : "Araçlarınız / Araç ekle: marka listesi başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add vehicle"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Araç ekle"
+          }
+        }
+      }
+    },
+    "garage.capacityValue" : {
+      "comment" : "Araçlarınız / Araç ekle: batarya kapasitesi. %@ yerel biçimli sayı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kWh"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kWh"
+          }
+        }
+      }
+    },
+    "garage.catalogLoadFailed" : {
+      "comment" : "Araçlarınız / Araç ekle: marka, model veya varyant listesi okunamadı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load the catalog"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Katalog yüklenemedi"
+          }
+        }
+      }
+    },
+    "garage.loadFailed" : {
+      "comment" : "Araçlarınız / Araç ekle: araç listesi okunamadı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load vehicles"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Araçlar yüklenemedi"
+          }
+        }
+      }
+    },
+    "garage.modelCount %lld" : {
+      "comment" : "Araçlarınız / Araç ekle: markanın model sayısı. %lld sayı; çoğul kurallı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld model"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld models"
+                }
+              }
+            }
+          }
+        },
+        "tr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld model"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld model"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "garage.selected" : {
+      "comment" : "Araçlarınız / Araç ekle: VoiceOver: etkin aracın kartı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected vehicle"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seçili araç"
+          }
+        }
+      }
+    },
+    "garage.title" : {
+      "comment" : "Araçlarınız / Araç ekle: araç listesi başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your vehicles"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Araçlarınız"
+          }
+        }
+      }
+    },
+    "garage.variantSummary" : {
+      "comment" : "Araçlarınız / Araç ekle: varyant satırının ikincil metni. %1$@ yıl, %2$@ kapasite, %3$@ konnektörler.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@ · %3$@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@ · %3$@"
           }
         }
       }
@@ -861,24 +1101,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ağlar yüklenemedi"
-          }
-        }
-      }
-    },
-    "networks.noResults" : {
-      "comment" : "Ağ seçici: aramada sonuç yok.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No results found"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sonuç bulunamadı"
           }
         }
       }
@@ -2301,24 +2523,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sarı"
-          }
-        }
-      }
-    },
-    "vehicleSettings.saveFailed" : {
-      "comment" : "Araç ayarları: yazma işlemi başarısız; değer eski haline döndü.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn't save the change"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Değişiklik kaydedilemedi"
           }
         }
       }

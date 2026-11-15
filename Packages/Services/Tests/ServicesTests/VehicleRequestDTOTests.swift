@@ -31,6 +31,18 @@ struct VehicleRequestDTOTests {
         #expect(body as? [String: String] == ["activeProfileId": "prof_1"])
     }
 
+    @Test("Varsayılan araç isteği yalnızca isDefault: true taşır")
+    func makeDefaultRequest() throws {
+        let body = try json(UpdateVehicleRequestDTO.makeDefault)
+        #expect(body as? [String: Bool] == ["isDefault": true])
+    }
+
+    @Test("Araç oluşturma isteği variantId taşır")
+    func createRequest() throws {
+        let body = try json(CreateVehicleRequestDTO(variantID: VehicleVariant.ID("variant_togg_t10x_v1_rwd")))
+        #expect(body as? [String: String] == ["variantId": "variant_togg_t10x_v1_rwd"])
+    }
+
     @Test("Profil isteği ad, tüketim ve hız taşır; kimlik yolda gider")
     func profileRequest() throws {
         let draft = DrivingProfileDraft(

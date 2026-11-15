@@ -9,7 +9,8 @@ göre güncellenir.
 
 | Belge | Kapsam | İstemcideki durum |
 |---|---|---|
-| [vehicles.md](vehicles.md) | Araç listesi, sürüş profilleri, araç ve profil yazma istekleri | Debug'da fixture, Release'de boş |
+| [vehicles.md](vehicles.md) | Araç listesi, araç oluşturma, varsayılan araç, sürüş profilleri, yazma istekleri | Debug'da fixture, Release'de boş |
+| [vehicle-catalog.md](vehicle-catalog.md) | Araç kataloğu: marka → model → varyant | Debug'da fixture, Release'de boş |
 | [route-preferences.md](route-preferences.md) | Rota planlama tercihleri | Şimdilik cihazda (`UserDefaults`) |
 | [charging-networks.md](charging-networks.md) | Şarj ağı kataloğu: arama ve kimlikle getirme | Debug'da fixture, Release'de boş |
 
@@ -60,7 +61,7 @@ yalnızca günlük içindir, kullanıcıya gösterilmez (metin istemcinin String
 |---|---|
 | 400 | Gövde çözülemedi |
 | 401 | Oturum yok veya süresi doldu (istemci yeniler, tek noktadan) |
-| 404 | Kaynak yok (`vehicle_not_found`, `profile_not_found`) |
+| 404 | Kaynak yok (`vehicle_not_found`, `variant_not_found`, `profile_not_found`) |
 | 409 | Durumla çakışma (`duplicate_profile_name`, `cannot_delete_standard_profile`) |
 | 422 | Geçersiz değer (`invalid_value`, `at_least_one_connector_required`) |
 

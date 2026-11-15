@@ -8,6 +8,9 @@ import OnsarjDomain
 /// İstek DTO'larını alır, backend'in yapacağı gibi doğrular (sınırlar Domain'deki sabitlerdir),
 /// bellekteki DTO'ya uygular ve güncel araç DTO'sunu döner. Hatalar `VehicleRepositoryError`'dır.
 /// Bir referans tipidir; tek örneği `FixtureVehicleRepository` aktörünün içinde yaşar.
+///
+/// `vehicles` ekleme sırasındadır: son eleman en son eklenen araçtır (gerçek backend oluşturma zamanını
+/// kullanır).
 final class FixtureVehicleBackend {
     private(set) var vehicles: [VehicleDTO]
 
@@ -26,12 +29,19 @@ final class FixtureVehicleBackend {
             colorHex: request.colorHex
         )
         if let error = update.validationError() { throw error }
+        if request.isDefault == false { throw VehicleRepositoryError.invalidValue(.isDefault) }
         if let profileID = request.activeProfileId {
             guard vehicles[index].drivingProfiles?.contains(where: { $0.id == profileID }) == true else {
                 throw VehicleRepositoryError.profileNotFound
             }
-            vehicles[index].activeProfileId = profileID
         }
+        apply(request, connectors: connectors, at: index)
+        return vehicles[index]
+    }
+
+    /// Doğrulanmış güncellemeyi uygular; yalnızca dolu alanlar değişir.
+    private func apply(_ request: UpdateVehicleRequestDTO, connectors: [ConnectorType]?, at index: Int) {
+        if let profileID = request.activeProfileId { vehicles[index].activeProfileId = profileID }
         if let nickname = request.nickname {
             let trimmed = nickname.trimmingCharacters(in: .whitespacesAndNewlines)
             vehicles[index].nickname = trimmed.isEmpty ? nil : trimmed
@@ -39,12 +49,74 @@ final class FixtureVehicleBackend {
         if let connectors { vehicles[index].connectors = connectors.map(\.rawValue) }
         if let health = request.batteryHealthPercent { vehicles[index].batteryHealthPercent = health }
         if let colorHex = request.colorHex { vehicles[index].colorHex = colorHex.uppercased() }
-        return vehicles[index]
+        if request.isDefault == true { makeDefault(at: index) }
     }
 
-    /// `DELETE /vehicles/{id}`
+    /// `DELETE /vehicles/{id}`: silinen araç varsayılansa kalan araçlardan en son eklenen varsayılan olur.
     func deleteVehicle(_ id: String) throws {
-        vehicles.remove(at: try vehicleIndex(id))
+        let removed = vehicles.remove(at: try vehicleIndex(id))
+        if removed.isDefault == true, !vehicles.isEmpty {
+            makeDefault(at: vehicles.count - 1)
+        }
+    }
+
+    /// `POST /vehicles`: aracı katalogdaki varyanttan oluşturur. Standart profil varyantın referans
+    /// tüketimi ve `DrivingProfile.defaultMaxSpeedKmh` ile gelir; boya beyaz, batarya sağlığı %100;
+    /// yeni araç varsayılan olur.
+    func postVehicle(_ request: CreateVehicleRequestDTO, catalog: FixtureVehicleCatalog.Tables) throws -> VehicleDTO {
+        guard let variant = catalog.variants.first(where: { $0.id == request.variantId }),
+            let model = catalog.models.first(where: { $0.id == variant.modelId }),
+            let brand = catalog.brands.first(where: { $0.id == model.brandId })
+        else { throw VehicleRepositoryError.variantNotFound }
+        vehicles.append(Self.vehicle(from: variant, model: model, brand: brand))
+        makeDefault(at: vehicles.count - 1)
+        return vehicles[vehicles.count - 1]
+    }
+
+    /// Varyanttan oluşan araç kaydı; tek, standart ve etkin bir profille.
+    private static func vehicle(
+        from variant: VehicleVariantDTO,
+        model: VehicleModelDTO,
+        brand: VehicleBrandDTO
+    ) -> VehicleDTO {
+        let suffix = UUID().uuidString.lowercased()
+        let profileID = "prof_\(suffix)"
+        return VehicleDTO(
+            id: "veh_\(suffix)",
+            make: brand.name,
+            model: model.name,
+            variant: variant.name,
+            modelYear: variant.modelYear,
+            nickname: nil,
+            batteryCapacityKwh: variant.batteryCapacityKwh,
+            connectors: variant.connectors,
+            maxAcPowerKw: variant.maxAcPowerKw,
+            maxDcPowerKw: variant.maxDcPowerKw,
+            colorHex: VehiclePaint.white.hex,
+            bodyType: model.bodyType,
+            imageUrl: variant.imageUrl,
+            batteryHealthPercent: 100,
+            isDefault: false,
+            drivingProfiles: [
+                DrivingProfileDTO(
+                    id: profileID,
+                    name: standardProfileName,
+                    consumptionKwhPer100Km: variant.referenceConsumptionKwhPer100Km,
+                    maxSpeedKmh: DrivingProfile.defaultMaxSpeedKmh,
+                    isStandard: true
+                )
+            ],
+            activeProfileId: profileID
+        )
+    }
+    /// Backend'in yeni araçta standart profile verdiği ad (veri; istemci metni değil).
+    private static let standardProfileName = "Standart"
+
+    /// Aracı varsayılan yapar, diğerlerini varsayılan olmaktan çıkarır.
+    private func makeDefault(at index: Int) {
+        for other in vehicles.indices {
+            vehicles[other].isDefault = other == index
+        }
     }
 
     /// `POST /vehicles/{id}/driving-profiles`: yeni kimlik üretir.
