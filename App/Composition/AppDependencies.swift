@@ -2,7 +2,9 @@ import Foundation
 import LocationKit
 import OnsarjDomain
 import PhoneNumbers
+import RoutePlanningService
 import SearchFeature
+import StationService
 import VehicleService
 
 /// Uygulama boyunca paylaşılan bağımlılıklar (CLAUDE.md 5.3 kural 2 ve 7).
@@ -36,6 +38,21 @@ final class AppDependencies {
     /// Araç kartındaki batarya yüzdesi; cihazda saklanır.
     private(set) lazy var batteryLevelStore: any BatteryLevelStoring = UserDefaultsBatteryLevelStore()
 
+    /// Kullanıcının rota planlama tercihleri; cihazda saklanır. İleride backend'e taşınır.
+    private(set) lazy var routePreferencesStore: any RoutePreferencesStoring = UserDefaultsRoutePreferencesStore()
+
+    /// Şarj ağı kataloğu. Backend hazır olana kadar Debug'da fixture (K-23); Release'de boş liste:
+    /// uydurma veri dağıtıma girmez.
+    private(set) lazy var chargingNetworkCatalog: any ChargingNetworkCatalog = Self.makeChargingNetworkCatalog()
+
+    private static func makeChargingNetworkCatalog() -> any ChargingNetworkCatalog {
+        #if DEBUG
+        return FixtureChargingNetworkCatalog()
+        #else
+        return NoChargingNetworksCatalog()
+        #endif
+    }
+
     private static func makeVehicleRepository() -> any VehicleRepository {
         #if DEBUG
         let scenario = FixtureScenario(value: UserDefaults.standard.string(forKey: FixtureScenario.userDefaultsKey))
@@ -51,5 +68,11 @@ final class AppDependencies {
 /// Release'de, backend bağlanana kadar araç listesi boştur; kart "Araç ekle" halinde açılır.
 private struct NoVehiclesRepository: VehicleRepository {
     func vehicles() async throws -> [Vehicle] { [] }
+}
+
+/// Release'de, backend bağlanana kadar şarj ağı kataloğu boştur; seçici "Sonuç bulunamadı" gösterir.
+private struct NoChargingNetworksCatalog: ChargingNetworkCatalog {
+    func networks(matching query: String) async throws -> [ChargingNetwork] { [] }
+    func networks(withIDs ids: [ChargingNetwork.ID]) async throws -> [ChargingNetwork] { [] }
 }
 #endif

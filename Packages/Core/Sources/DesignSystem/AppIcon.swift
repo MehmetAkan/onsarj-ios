@@ -48,6 +48,21 @@ public enum AppIcon: Sendable, Hashable {
     case place
     /// Şarj istasyonu. `bolt.fill` (iOS 13)
     case charger
+    /// Bir önceki sayfaya dönme. `chevron.left` (iOS 13)
+    case back
+    /// Listeden kaldırma. `xmark` (iOS 13)
+    case remove
+    /// Eklendi, seçildi. `checkmark` (iOS 13)
+    case checkmark
+
+    /// Geçiş ücretleri. `creditcard` (iOS 13)
+    case avoidTolls
+    /// Otoyollar. `road.lanes` (iOS 16)
+    case avoidHighways
+    /// Feribotlar ve araba trenleri. `ferry` (iOS 16)
+    case avoidFerries
+    /// Ülke sınırları. `flag` (iOS 13)
+    case avoidBorders
 
     /// `fork.knife` (iOS 15)
     case categoryRestaurant
@@ -85,6 +100,13 @@ public enum AppIcon: Sendable, Hashable {
         case .history: .symbol("clock.arrow.circlepath")
         case .place: .symbol("mappin.and.ellipse")
         case .charger: .symbol("bolt.fill")
+        case .back: .symbol("chevron.left")
+        case .remove: .symbol("xmark")
+        case .checkmark: .symbol("checkmark")
+        case .avoidTolls: .symbol("creditcard")
+        case .avoidHighways: .symbol("road.lanes")
+        case .avoidFerries: .symbol("ferry")
+        case .avoidBorders: .symbol("flag")
         case .categoryRestaurant: .symbol("fork.knife")
         case .categoryCafe: .symbol("cup.and.saucer")
         case .categoryMosque: .asset("icon-category-mosque", .template)
@@ -139,6 +161,8 @@ private struct AssetIcon: View {
     let icons: [AppIcon] = [
         .search, .options, .savedPlans, .assistant, .settings, .dropdown,
         .close, .clearText, .home, .work, .add, .history, .place, .charger,
+        .back, .remove, .checkmark,
+        .avoidTolls, .avoidHighways, .avoidFerries, .avoidBorders,
         .categoryRestaurant, .categoryCafe, .categoryMosque, .categoryMarket,
         .categoryPharmacy, .categoryHotel, .categoryATM,
     ]

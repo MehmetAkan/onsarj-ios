@@ -31,6 +31,11 @@ verisi (`SearchDesignFixtures`, silinecek). **Sırada:** sonuç listesi ekranı 
 Proje sahibinin kararını bekleyenler: sayfa arka planının sürümler arası farkı (sistem sayfası mı,
 `DetentSheet` mi), istasyon rozeti için ayrı token, `icon-category-mosque` görseli.
 
+**Plan seçenekleri (Adım 37):** Ana sayfadaki "Seçenekler"den, arama sayfasıyla aynı sistem `.sheet`'iyle açılıyor;
+şarj ağları ve ağ seçici aynı modal içinde yığınla açılıyor. Güçlü tercih (kalp) Adım 38'de kaldırıldı. Kaydet düğmesi yok, her değişiklik anında
+`UserDefaults`'a yazılıyor (`RoutePreferencesStoring` arkasında; ileride backend). Şarj ağları Debug'da fixture'dan
+(`FixtureChargingNetworkCatalog`, K-23), Release'de boş katalog.
+
 **Sırada:** İstasyon katmanı (GeoJSON kaynağı + symbol layer + kaynak düzeyinde kümeleme, CLAUDE.md 5.4).
 Kayıt akışının ekranları tamam ve ana haritaya bağlı. Kodun doğrulanması,
 tekrar gönderilmesi, kayıtlı kullanıcının ayrılması ve ad-soyadın kaydı backend sözleşmesini
@@ -44,6 +49,149 @@ diğerleri boş.
 
 **Tüm dosyası `#if canImport(UIKit)` ile korunan dosyalar (CLAUDE.md 6.8, eşik 5):** 3 —
 `UITypography.swift`, `FormTextField.swift`, `HiddenNavigationBar.swift`.
+
+---
+
+## Adım 38 — Plan seçenekleri düzeltmeleri: X, özet düzeni, güçlü tercih kaldırıldı
+
+**Tarih:** 2026-11-15
+
+**Ne yapıldı**
+- Plan seçenekleri başlığındaki "Tamamlandı" kaldırıldı; yerine alt sayfalardaki yuvarlak X (`ModalCloseButton`).
+- Şarj ağları özeti yeniden düzenlendi: "Tercih edilen" ve "Kaçınılan" küçük başlık (`caption`, `textSecondary`),
+  altında virgülle ayrılmış ağ adları (en çok 2 satır, "…"); iki grup ince bir çizgiyle ayrılıyor (ikisi de doluysa).
+- **Güçlü tercih (kalp) tamamen kaldırıldı** (proje sahibinin kararı): `NetworkPreference` silindi,
+  `RoutePreferences.preferredNetworks` artık `[ChargingNetwork.ID]`, `toggleStrong` yok. Şarj ağları sayfasındaki
+  kalp düğmesi ve `StrongPreferenceToggleStyle` silindi. `AppIcon`'dan `preference`, `strongPreference` ve yalnızca
+  özetteki kalp için eklenen `image` erişimcisi kaldırıldı.
+- Tercih deposu eski kayıt biçimini (`{"id", "isStrong"}`) okuyabiliyor, yalnızca kimliği alıyor; yeni kayıt düz dizge.
+- Metinler: `plan.done`, `plan.networks.preferredSummary`, `plan.networks.avoidedSummary`,
+  `plan.networks.accessibility.strong`, `networks.accessibility.strong` silindi; `plan.networks.preferred`
+  ("Tercih edilen"), `plan.networks.avoided` ("Kaçınılan") eklendi; `networks.preferred.note` kalp cümlesi çıkarılarak
+  "Planlamada önceliklendirilir." oldu.
+
+**Dosyalar**
+- Silinen: `Packages/Domain/Sources/OnsarjDomain/Models/NetworkPreference.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/Components/StrongPreferenceToggleStyle.swift`
+- Değişen: `Packages/Domain/Sources/OnsarjDomain/Models/RoutePreferences.swift`,
+  `Packages/Domain/Tests/DomainTests/RoutePreferencesTests.swift`,
+  `Packages/Services/Sources/RoutePlanningService/UserDefaultsRoutePreferencesStore.swift`,
+  `Packages/Services/Tests/ServicesTests/RoutePreferencesStoreTests.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/{PlanOptionsView,PlanOptionsPage,ChargingNetworksView,
+  RoutePreferencesModel,RoutePreferences+Presentation}.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/Components/{ModalHeader,NetworkRow,NetworkSummary,
+  PreviewRoutePlanningSources}.swift`, `Packages/Features/Tests/FeaturesTests/RoutePreferencesModelTests.swift`,
+  `Packages/Core/Sources/DesignSystem/AppIcon.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`,
+  `OnsarjUITests/PlanOptionsPresentationTests.swift`, `PROGRESS.md`
+
+**Kararlar**
+- Güçlü tercihin tamamen kaldırılması (Domain modeli dahil) proje sahibinin kararı; Android tarafının da aynı
+  modele uyması gerekir.
+- Adım 37'deki karşılaştırma görüntüsünde görünen gri ikinci segment, 2.9 doğrulaması için geçici konan sistem
+  `Picker`'ıydı; uygulamada yoktur.
+
+**Doğrulama**
+- `Packages/Domain`: `swift test` 18/18. `Packages/Services`: `swift test` 38/38 (eski biçim testi yeni),
+  `swift build -c release` geçti. `Packages/Core`: `swift build` geçti.
+- `xcodebuild test` Features (iPhone SE, iOS 18.3): 48/48.
+- `PlanOptionsPresentationTests` (2 test): iOS 18.5 ve 26.3'te geçti. Akışa kaçınılan ağ ekleme eklendi; özet, X ile
+  kapanma ve yeniden açılışta korunma doğrulandı.
+- `swiftlint lint --strict`, `swift format lint --strict`: 0 ihlal.
+
+**Bilinen eksikler**
+- Adım 37'deki diğer eksikler geçerli ("Kaçınılıyor" kapsülü dolgusuz, ad çözümü hatası ayrımı, fixture geçici).
+
+**Sıradaki adım**
+- İstasyon katmanı veya rota planlama isteğinin tercihleri taşıması (K-10).
+
+---
+
+## Adım 37 — Plan seçenekleri ve şarj ağları (RoutePlanningFeature)
+
+**Tarih:** 2026-11-15
+
+**Ne yapıldı**
+- Domain: `ChargeStopStrategy`, `RouteAvoidance`, `ChargingNetwork` (`ID` sarmalayıcı), `NetworkPreference`,
+  `RoutePreferences` (değişmez: bir ağ iki listede birden olamaz, tekrar eklenmez; `init` de düzeltir) ve
+  `RoutePreferencesStoring`, `ChargingNetworkCatalog` protokolleri.
+- Servisler: `UserDefaultsRoutePreferencesStore` (batarya deposuyla aynı yaklaşım; tek anahtar
+  `onsarj.routePreferences`, enum'lar dizge olarak); `FixtureChargingNetworkCatalog` (tamamı `#if DEBUG`, JSON → DTO →
+  `ChargingNetworkMapper`, 15 ağ). Arama Türkçe kurallarla büyük/küçük harf ve aksan duyarsız "içerir"
+  (`NetworkSearchKey`), sonuç Türkçe alfabe sırasıyla.
+- Özellik: `PlanOptionsView` (kök, kendi `NavigationStack`'i), `PlanOptionsPage`, `ChargingNetworksView`,
+  `NetworkPickerView` (iki kip). `RoutePreferencesModel` üç sayfada paylaşılıyor; her değişiklik bir kez ve sırayla
+  `save` ediliyor, sonucu değiştirmeyen işlem kaydedilmiyor. `NetworkPickerModel`: 300 ms bekleme, `task(id:)` ile eski
+  istek iptali, yükleniyor / sonuç yok / hata + "Tekrar dene".
+- DesignSystem: `SegmentedControl` bileşeni; `AppIcon`'a 9 simge ve `Text` içinde kullanmak için `image` erişimcisi.
+- App: `AppRouter.isPlanOptionsPresented`, `RootView` sunumu (`onOptions` bağlandı), `AppDependencies`'e tercih deposu
+  ve katalog (Release'de `NoChargingNetworksCatalog`).
+- `OnsarjUITests/PlanOptionsPresentationTests`: aç → seç → ağ ekle → güçlü tercih → kapat → uygulamayı yeniden aç →
+  seçimler korunuyor; X ve aşağı çekme ile kapanma. Test sonunda tercihleri varsayılana döndürüyor.
+
+**Dosyalar**
+- Eklenen: `Packages/Domain/Sources/OnsarjDomain/Models/{ChargeStopStrategy,RouteAvoidance,ChargingNetwork,
+  NetworkPreference,RoutePreferences}.swift`, `Packages/Domain/Sources/OnsarjDomain/Protocols/{RoutePreferencesStoring,
+  ChargingNetworkCatalog}.swift`, `Packages/Domain/Tests/DomainTests/RoutePreferencesTests.swift`,
+  `Packages/Services/Sources/RoutePlanningService/UserDefaultsRoutePreferencesStore.swift`,
+  `Packages/Services/Sources/StationService/DTO/{ChargingNetworkDTO,ChargingNetworkMapper}.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/{FixtureChargingNetworkCatalog,NetworkSearchKey}.swift`,
+  `Packages/Services/Tests/ServicesTests/{RoutePreferencesStoreTests,ChargingNetworkCatalogTests}.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/{PlanOptionsView,PlanOptionsPage,ChargingNetworksView,
+  NetworkPickerView,RoutePreferencesModel,NetworkPickerModel,RoutePreferences+Presentation}.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/Components/{ModalHeader,WrappingHStack,AvoidanceChips,
+  StrongPreferenceToggleStyle,NetworkRow,NetworkSummary,NetworkSearchField,PickerRow,
+  PreviewRoutePlanningSources}.swift`, `Packages/Features/Tests/FeaturesTests/RoutePreferencesModelTests.swift`,
+  `Packages/Core/Sources/DesignSystem/Components/SegmentedControl.swift`,
+  `OnsarjUITests/PlanOptionsPresentationTests.swift`
+- Değişen: `Packages/Core/Sources/DesignSystem/AppIcon.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`, `App/Navigation/AppRouter.swift`,
+  `App/RootView.swift`, `App/Composition/AppDependencies.swift`, `PROGRESS.md`
+- Silinen: `Packages/Features/Sources/RoutePlanningFeature/RoutePlanningFeature.swift`,
+  `Packages/Services/Sources/RoutePlanningService/RoutePlanningService.swift`,
+  `Packages/Services/Sources/StationService/StationService.swift`
+- Proje sahibi uygulama hedefine `RoutePlanningFeature`, `RoutePlanningService`, `StationService` ürünlerini bağladı.
+
+**Kararlar**
+- **Segment denetimi: kendi `SegmentedControl`'ümüz (2.9).** Sistem `Picker(.segmented)` geçici olarak kendi
+  denetimimizin altına konup iOS 18.5 ve 26.3'te ekran görüntüsüyle karşılaştırıldı, sonra kaldırıldı. Sistem denetimi
+  iki sürümde farklı çiziliyor (18.5: ayırıcılı yuvarlak dikdörtgen; 26.3: ayırıcısız kapsül). İkisinde de seçili parça
+  beyaz ve dolgusuz, yazı küçük ve sabit. Tasarımın istediği belirgin dolgu yalnızca uygulama geneli
+  `UISegmentedControl.appearance()` ile verilebiliyor. Bizimki: `backgroundCard` yol, seçili parça `actionPrimary` /
+  `onActionPrimary`, eşit genişlik, büyük yazıda sarar, VoiceOver'da her parça düğme + "seçili".
+- **Sunum:** arama sayfasıyla aynı sistem `.sheet` (görünür tutamaç). Üst çubuk sistem gezinme çubuğu değil,
+  özelliğe ait `ModalHeader` (sürümler arası aynı görünüm; `hidesNavigationBar()` ile kenardan kaydırarak geri açık).
+- **Simgeler (SF Symbols, iOS 17'de var):** `back` `chevron.left` (13), `preference` `heart` (13),
+  `strongPreference` `heart.fill` (13), `remove` `xmark` (13), `checkmark` `checkmark` (13), `avoidTolls`
+  `creditcard` (13), `avoidHighways` `road.lanes` (16), `avoidFerries` `ferry` (16), `avoidBorders` `flag` (13).
+- **Yeniden kullanılan metinler:** geri `signup.phone.accessibility.back`, kapat `search.close`, tekrar dene
+  `vehicleCard.retry`, arama yer tutucusu `search.submit` ("Ara"). Bu yüzden `networks.retry` eklenmedi.
+  VoiceOver için `networks.accessibility.strong`, `networks.accessibility.remove`,
+  `plan.networks.accessibility.strong` eklendi.
+- Saklama: tanınmayan kaçınma değeri atlanır; tanınmayan durak stratejisi `optimal`'e düşer; kayıtta iki listede
+  geçen ağ yalnızca tercih edilenlerde kalır.
+- Yeni renk token'ı eklenmedi.
+
+**Doğrulama**
+- `Packages/Domain`: `swift build`, `swift test` 19/19.
+- `Packages/Services`: `swift build`, `swift test` 37/37, `swift build -c release` geçti.
+- `./Tooling/Scripts/verify-ios.sh --package Features`: geçti.
+- `xcodebuild test` Features (iPhone SE, iOS 18.3): 48/48 (7 yeni).
+- `PlanOptionsPresentationTests` (2 test): iOS 18.5, 26.3, 27.0'da geçti; tercihler yeniden açılışta korunuyor.
+- Uygulama Release: `FixtureChargingNetworkCatalog` sembolü 0, `NetworkSearchKey` 0, "CHARGING TOGETHER" dizgesi 0
+  (Debug'da 54 sembol); `UserDefaultsRoutePreferencesStore` mevcut.
+- `swiftlint lint --strict`, `swift format lint --strict`: 0 ihlal.
+
+**Bilinen eksikler**
+- **Geçici, silinecek:** `StationService/Fixtures/` (katalog ve arama anahtarı), backend gelince (K-23).
+- Katalog ad çözümünde hata alırsa kayıtlı ağlar "Bilinmeyen ağ" görünür (ağ hatası ile silinmiş ağ ayrılmıyor).
+- "Kaçınılıyor" kapsülü dolu değil, onay simgeli kırmızı çerçeve: kırmızı dolgu için uygun token yok.
+- Kaçınma çiplerinden feribot çipi simgesi nedeniyle birkaç nokta daha yüksek.
+- `ModalHeader` `ScreenHeader`'a benziyor; başka modal da gerekirse `DesignSystem`'e taşınabilir.
+- `xxxLarge` / iPhone SE matrisi önizlemede yazıldı; Xcode kanvasında gözle kontrol edilecek.
+
+**Sıradaki adım**
+- İstasyon katmanı veya rota planlama isteğinin tercihleri taşıması (backend sözleşmesi K-10 ile).
 
 ---
 

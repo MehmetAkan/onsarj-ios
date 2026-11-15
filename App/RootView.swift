@@ -1,6 +1,7 @@
 import AuthFeature
 import DesignSystem
 import HomeMapFeature
+import RoutePlanningFeature
 import SearchFeature
 import SwiftUI
 
@@ -37,7 +38,7 @@ struct RootView: View {
                     onSearchTapped: { router.isSearchPresented = true },
                     onAssistant: {},
                     onCategory: { _ in },
-                    onOptions: {},
+                    onOptions: { router.isPlanOptionsPresented = true },
                     onSavedPlans: {},
                     onNearbyChargers: {},
                     onSavedPlaces: {},
@@ -47,6 +48,9 @@ struct RootView: View {
                 )
                 .sheet(isPresented: $router.isSearchPresented) {
                     searchSheet
+                }
+                .sheet(isPresented: $router.isPlanOptionsPresented) {
+                    planOptionsSheet
                 }
             }
         }
@@ -65,6 +69,18 @@ struct RootView: View {
             onSetWork: {},
             onAddSaved: {},
             onDeleteHistory: { _ in }
+        )
+        .presentationDragIndicator(.visible)
+        .onsarjDynamicTypeRange()
+    }
+
+    /// Plan seçenekleri; arama sayfasıyla aynı sunum. Değişiklikler anında kaydedildiği için aşağı
+    /// çekerek kapatmak bir şey kaybettirmez.
+    private var planOptionsSheet: some View {
+        PlanOptionsView(
+            preferencesStore: dependencies.routePreferencesStore,
+            networkCatalog: dependencies.chargingNetworkCatalog,
+            onClose: { router.isPlanOptionsPresented = false }
         )
         .presentationDragIndicator(.visible)
         .onsarjDynamicTypeRange()

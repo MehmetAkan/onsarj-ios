@@ -24,6 +24,9 @@ final class AppRouter {
     /// Arama sayfası ana haritanın üstünde büyük bir modal olarak açık mı (K-25).
     var isSearchPresented = false
 
+    /// Plan seçenekleri (ve ondan açılan şarj ağları sayfaları) ana haritanın üstünde modal olarak açık mı.
+    var isPlanOptionsPresented = false
+
     /// - Parameter flow: Açılıştaki akış.
     init(flow: Flow = .signUp) {
         self.flow = flow
