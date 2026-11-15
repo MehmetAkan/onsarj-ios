@@ -72,7 +72,7 @@ final class SwipeBackProbeTests: XCTestCase {
 
     @MainActor func testNameBackArrowReturnsToPhoneNotCode() {
         goToName()
-        app.buttons["Geri dön"].firstMatch.tap()
+        app.buttons["Geri"].firstMatch.tap()
         XCTAssertTrue(app.staticTexts["Telefon numaran nedir?"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.staticTexts["Kodunu gir"].exists)
     }

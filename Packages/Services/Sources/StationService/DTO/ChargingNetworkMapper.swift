@@ -1,5 +1,4 @@
 import Foundation
-
 import OnsarjDomain
 
 /// Şarj ağı DTO'sunu Domain modeline eşler.

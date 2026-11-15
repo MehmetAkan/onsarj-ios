@@ -32,7 +32,8 @@ public struct HomeMapView: View {
     private let onNearbyChargers: () -> Void
     private let onSavedPlaces: () -> Void
     private let onSwitchVehicle: () -> Void
-    private let onVehicleSettings: () -> Void
+    private let onVehicleSettings: (Vehicle.ID) -> Void
+    private let vehicleRevision: Int
     private let onAddVehicle: () -> Void
 
     /// - Parameters:
@@ -48,8 +49,10 @@ public struct HomeMapView: View {
     ///   - onNearbyChargers: Şimşek butonuna dokunulduğunda çağrılır.
     ///   - onSavedPlaces: Yer imi butonuna dokunulduğunda çağrılır.
     ///   - onSwitchVehicle: Araç kartında araç adına dokunulduğunda çağrılır.
-    ///   - onVehicleSettings: Araç kartında ayarlar simgesine dokunulduğunda çağrılır.
+    ///   - onVehicleSettings: Araç kartında ayarlar simgesine dokunulduğunda, kartın aracıyla çağrılır.
     ///   - onAddVehicle: Araç yokken kartta "Araç ekle"ye dokunulduğunda çağrılır.
+    ///   - vehicleRevision: Araç verisinin sürümü. Değiştiğinde (ör. araç ayarları kapandığında) kart
+    ///     aracı yeniden yükler; araç silindiyse "Araç ekle" haline geçer.
     public init(
         locationSource: any LocationSource,
         vehicleRepository: any VehicleRepository,
@@ -63,8 +66,9 @@ public struct HomeMapView: View {
         onNearbyChargers: @escaping () -> Void,
         onSavedPlaces: @escaping () -> Void,
         onSwitchVehicle: @escaping () -> Void,
-        onVehicleSettings: @escaping () -> Void,
-        onAddVehicle: @escaping () -> Void
+        onVehicleSettings: @escaping (Vehicle.ID) -> Void,
+        onAddVehicle: @escaping () -> Void,
+        vehicleRevision: Int
     ) {
         self.init(
             model: HomeMapModel(locationSource: locationSource),
@@ -79,7 +83,8 @@ public struct HomeMapView: View {
             onSavedPlaces: onSavedPlaces,
             onSwitchVehicle: onSwitchVehicle,
             onVehicleSettings: onVehicleSettings,
-            onAddVehicle: onAddVehicle
+            onAddVehicle: onAddVehicle,
+            vehicleRevision: vehicleRevision
         )
     }
 
@@ -95,8 +100,9 @@ public struct HomeMapView: View {
         onNearbyChargers: @escaping () -> Void = {},
         onSavedPlaces: @escaping () -> Void = {},
         onSwitchVehicle: @escaping () -> Void = {},
-        onVehicleSettings: @escaping () -> Void = {},
-        onAddVehicle: @escaping () -> Void = {}
+        onVehicleSettings: @escaping (Vehicle.ID) -> Void = { _ in },
+        onAddVehicle: @escaping () -> Void = {},
+        vehicleRevision: Int = 0
     ) {
         _model = State(initialValue: model)
         _vehicleCard = State(initialValue: vehicleCard)
@@ -111,6 +117,7 @@ public struct HomeMapView: View {
         self.onSwitchVehicle = onSwitchVehicle
         self.onVehicleSettings = onVehicleSettings
         self.onAddVehicle = onAddVehicle
+        self.vehicleRevision = vehicleRevision
     }
 
     public var body: some View {
@@ -127,6 +134,9 @@ public struct HomeMapView: View {
         .task { await model.observeAuthorization() }
         .task { await model.observeLocation() }
         .task { await vehicleCard.load() }
+        .onChange(of: vehicleRevision) {
+            Task { await vehicleCard.refresh() }
+        }
         .alert(
             Text("home.map.locationDenied.title", bundle: .onsarj),
             isPresented: $model.isLocationDeniedAlertPresented

@@ -41,7 +41,7 @@ final class PlanOptionsPresentationTests: XCTestCase {
         XCTAssertTrue(app.buttons["Trugo, Eklendi"].waitForExistence(timeout: 3))
         attachScreenshot("3-secici")
 
-        app.buttons["Geri dön"].tap()
+        app.buttons["Geri"].tap()
         XCTAssertTrue(app.buttons["ZES kaldır"].waitForExistence(timeout: 3))
         app.buttons["Kaçınılan ağ ekle"].tap()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "Klavye açılmadı")
@@ -49,11 +49,11 @@ final class PlanOptionsPresentationTests: XCTestCase {
         XCTAssertTrue(app.buttons["TotalEnergies, Kaçın"].waitForExistence(timeout: 3))
         app.buttons["TotalEnergies, Kaçın"].tap()
         XCTAssertTrue(app.buttons["TotalEnergies, Kaçınılıyor"].waitForExistence(timeout: 3))
-        app.buttons["Geri dön"].tap()
+        app.buttons["Geri"].tap()
         XCTAssertTrue(app.buttons["TotalEnergies kaldır"].waitForExistence(timeout: 3))
         attachScreenshot("4-sarj-aglari-dolu")
 
-        app.buttons["Geri dön"].tap()
+        app.buttons["Geri"].tap()
         XCTAssertTrue(app.staticTexts["ZES, Trugo"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.staticTexts["TotalEnergies"].exists)
         attachScreenshot("5-ozet")
@@ -113,7 +113,7 @@ final class PlanOptionsPresentationTests: XCTestCase {
         app.buttons["ZES kaldır"].tap()
         app.buttons["Trugo kaldır"].tap()
         app.buttons["TotalEnergies kaldır"].tap()
-        app.buttons["Geri dön"].tap()
+        app.buttons["Geri"].tap()
         XCTAssertTrue(app.staticTexts["Tercih edilen ağ yok."].waitForExistence(timeout: 3))
     }
 

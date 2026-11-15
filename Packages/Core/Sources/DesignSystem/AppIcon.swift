@@ -50,6 +50,8 @@ public enum AppIcon: Sendable, Hashable {
     case charger
     /// Bir önceki sayfaya dönme. `chevron.left` (iOS 13)
     case back
+    /// Satırın başka bir sayfa veya modal açtığını gösteren ok. `chevron.right` (iOS 13)
+    case disclosure
     /// Listeden kaldırma. `xmark` (iOS 13)
     case remove
     /// Eklendi, seçildi. `checkmark` (iOS 13)
@@ -101,6 +103,7 @@ public enum AppIcon: Sendable, Hashable {
         case .place: .symbol("mappin.and.ellipse")
         case .charger: .symbol("bolt.fill")
         case .back: .symbol("chevron.left")
+        case .disclosure: .symbol("chevron.right")
         case .remove: .symbol("xmark")
         case .checkmark: .symbol("checkmark")
         case .avoidTolls: .symbol("creditcard")
@@ -161,7 +164,7 @@ private struct AssetIcon: View {
     let icons: [AppIcon] = [
         .search, .options, .savedPlans, .assistant, .settings, .dropdown,
         .close, .clearText, .home, .work, .add, .history, .place, .charger,
-        .back, .remove, .checkmark,
+        .back, .disclosure, .remove, .checkmark,
         .avoidTolls, .avoidHighways, .avoidFerries, .avoidBorders,
         .categoryRestaurant, .categoryCafe, .categoryMosque, .categoryMarket,
         .categoryPharmacy, .categoryHotel, .categoryATM,

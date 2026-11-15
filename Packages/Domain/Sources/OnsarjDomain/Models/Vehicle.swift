@@ -25,10 +25,6 @@ public struct Vehicle: Sendable, Equatable, Hashable, Identifiable {
     /// Kullanıcının araca verdiği ad.
     public let nickname: String?
     public let batteryCapacityKwh: Double
-    /// %100 şarjda gerçekçi menzil.
-    public let rangeKm: Int
-    /// Referans tüketim.
-    public let consumptionWhPerKm: Int
     public let connectors: [ConnectorType]
     public let maxAcPowerKw: Double?
     public let maxDcPowerKw: Double?
@@ -41,6 +37,16 @@ public struct Vehicle: Sendable, Equatable, Hashable, Identifiable {
     public let batteryHealthPercent: Int
     /// Kullanıcının varsayılan aracı mı.
     public let isDefault: Bool
+    /// Aracın sürüş profilleri; boş değildir ve tam olarak biri standarttır.
+    public let drivingProfiles: [DrivingProfile]
+    /// Etkin profilin kimliği; her zaman `drivingProfiles` içindedir.
+    public let activeProfileID: DrivingProfile.ID
+
+    /// Batarya bozulmasının (100 − sağlık) geçerli aralığı, yüzde.
+    public static let batteryDegradationRange = 0...50
+    /// Batarya sağlığının geçerli aralığı, yüzde; bozulma aralığından türetilir.
+    public static let batteryHealthRange =
+        (100 - batteryDegradationRange.upperBound)...(100 - batteryDegradationRange.lowerBound)
 
     public init(
         id: ID,
@@ -50,8 +56,6 @@ public struct Vehicle: Sendable, Equatable, Hashable, Identifiable {
         modelYear: Int,
         nickname: String?,
         batteryCapacityKwh: Double,
-        rangeKm: Int,
-        consumptionWhPerKm: Int,
         connectors: [ConnectorType],
         maxAcPowerKw: Double?,
         maxDcPowerKw: Double?,
@@ -59,8 +63,14 @@ public struct Vehicle: Sendable, Equatable, Hashable, Identifiable {
         bodyType: BodyType,
         imageURL: URL?,
         batteryHealthPercent: Int,
-        isDefault: Bool
+        isDefault: Bool,
+        drivingProfiles: [DrivingProfile],
+        activeProfileID: DrivingProfile.ID
     ) {
+        precondition(
+            drivingProfiles.filter(\.isStandard).count == 1,
+            "Aracın tam olarak bir standart profili olmalı; eşleme bunu denetler."
+        )
         self.id = id
         self.make = make
         self.model = model
@@ -68,8 +78,6 @@ public struct Vehicle: Sendable, Equatable, Hashable, Identifiable {
         self.modelYear = modelYear
         self.nickname = nickname
         self.batteryCapacityKwh = batteryCapacityKwh
-        self.rangeKm = rangeKm
-        self.consumptionWhPerKm = consumptionWhPerKm
         self.connectors = connectors
         self.maxAcPowerKw = maxAcPowerKw
         self.maxDcPowerKw = maxDcPowerKw
@@ -78,6 +86,11 @@ public struct Vehicle: Sendable, Equatable, Hashable, Identifiable {
         self.imageURL = imageURL
         self.batteryHealthPercent = batteryHealthPercent
         self.isDefault = isDefault
+        self.drivingProfiles = drivingProfiles
+        // Etkin profil bilinmiyorsa (ör. silindiyse) standart profil etkindir.
+        self.activeProfileID =
+            drivingProfiles.contains { $0.id == activeProfileID }
+            ? activeProfileID : Self.standardProfile(in: drivingProfiles).id
     }
 
     /// Marka ve model, örneğin "BYD Dolphin".
@@ -85,10 +98,36 @@ public struct Vehicle: Sendable, Equatable, Hashable, Identifiable {
         "\(make) \(model)"
     }
 
-    /// Verilen batarya yüzdesiyle tahmini menzil: %100 menzilin o yüzdesi, en yakın tam
-    /// sayıya yuvarlanmış.
+    /// Etkin sürüş profili.
+    public var activeProfile: DrivingProfile {
+        drivingProfiles.first { $0.id == activeProfileID } ?? standardProfile
+    }
+
+    /// Standart sürüş profili.
+    public var standardProfile: DrivingProfile {
+        Self.standardProfile(in: drivingProfiles)
+    }
+
+    /// Batarya bozulması, yüzde: `100 − sağlık`.
+    public var batteryDegradationPercent: Int {
+        100 - batteryHealthPercent
+    }
+
+    /// Verilen batarya yüzdesiyle tahmini menzil, en yakın tam sayıya yuvarlanmış:
+    /// `kapasite × sağlık/100 × yüzde/100 ÷ (etkin profilin tüketimi / 100)`.
+    ///
+    /// Saf hesaptır; kart çevrimdışıyken de anında güncellenir. Backend ileride sonucu kendisi
+    /// verirse yalnızca bu işlev değişir.
     public func estimatedRangeKm(at level: BatteryLevel) -> Int {
-        Int((Double(rangeKm) * Double(level.percent) / 100).rounded())
+        let usableKwh = batteryCapacityKwh * Double(batteryHealthPercent) / 100 * Double(level.percent) / 100
+        let kwhPerKm = activeProfile.consumptionKwhPer100Km / 100
+        guard kwhPerKm > 0 else { return 0 }
+        return Int((usableKwh / kwhPerKm).rounded())
+    }
+
+    private static func standardProfile(in profiles: [DrivingProfile]) -> DrivingProfile {
+        // `init` tam olarak bir standart profil olduğunu garanti eder.
+        profiles.first(where: \.isStandard) ?? profiles[0]
     }
 
     /// Etkin araç: varsayılan olarak işaretlenen; yoksa listenin ilki; liste boşsa `nil`.

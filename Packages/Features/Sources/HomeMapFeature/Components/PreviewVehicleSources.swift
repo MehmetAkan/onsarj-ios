@@ -39,8 +39,6 @@ struct PreviewVehicleRepository: VehicleRepository {
         modelYear: 2023,
         nickname: nil,
         batteryCapacityKwh: 60.5,
-        rangeKm: 393,
-        consumptionWhPerKm: 178,
         connectors: [.type2, .ccs2],
         maxAcPowerKw: 11,
         maxDcPowerKw: 88,
@@ -49,8 +47,39 @@ struct PreviewVehicleRepository: VehicleRepository {
         bodyType: .hatchback,
         imageURL: nil,
         batteryHealthPercent: 95,
-        isDefault: true
+        isDefault: true,
+        drivingProfiles: [
+            DrivingProfile(
+                id: DrivingProfile.ID("preview_standard"),
+                name: "Standart",
+                consumptionKwhPer100Km: 17.8,
+                maxSpeedKmh: 120,
+                isStandard: true
+            )
+        ],
+        activeProfileID: DrivingProfile.ID("preview_standard")
     )
+
+    // Kart yazma işlemi yapmaz; önizlemede çağrılmazlar.
+    func updateVehicle(_ id: Vehicle.ID, _ update: VehicleUpdate) async throws -> Vehicle {
+        throw VehicleRepositoryError.vehicleNotFound
+    }
+
+    func deleteVehicle(_ id: Vehicle.ID) async throws {
+        throw VehicleRepositoryError.vehicleNotFound
+    }
+
+    func saveProfile(_ draft: DrivingProfileDraft, for vehicleID: Vehicle.ID) async throws -> Vehicle {
+        throw VehicleRepositoryError.vehicleNotFound
+    }
+
+    func deleteProfile(_ id: DrivingProfile.ID, for vehicleID: Vehicle.ID) async throws -> Vehicle {
+        throw VehicleRepositoryError.vehicleNotFound
+    }
+
+    func setActiveProfile(_ id: DrivingProfile.ID, for vehicleID: Vehicle.ID) async throws -> Vehicle {
+        throw VehicleRepositoryError.vehicleNotFound
+    }
 }
 
 /// Önizleme için batarya deposu: verilen yüzdeyi kayıtlıymış gibi döner, kaydetmez.

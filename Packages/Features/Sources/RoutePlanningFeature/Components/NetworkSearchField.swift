@@ -12,7 +12,7 @@ struct NetworkSearchField: View {
             AppIcon.search
                 .foregroundStyle(Theme.textSecondary)
             TextField(text: $query, prompt: placeholder) {
-                Text("search.submit", bundle: .onsarj)
+                Text("common.search", bundle: .onsarj)
             }
             .foregroundStyle(Theme.textPrimary)
             .focused(isFocused)
@@ -27,6 +27,6 @@ struct NetworkSearchField: View {
     }
 
     private var placeholder: Text {
-        Text("search.submit", bundle: .onsarj).foregroundStyle(Theme.textPlaceholder)
+        Text("common.search", bundle: .onsarj).foregroundStyle(Theme.textPlaceholder)
     }
 }

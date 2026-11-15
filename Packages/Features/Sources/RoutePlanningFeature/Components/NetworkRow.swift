@@ -47,34 +47,3 @@ struct NetworkRow: View {
         return PlanText.format(String(localized: "networks.accessibility.remove", bundle: .onsarj), displayName)
     }
 }
-
-/// Listenin altındaki "+ … ekle" satırı: arama sayfasındaki "Kayıtlı ekle" ile aynı dil.
-struct AddNetworkRow: View {
-    let titleKey: LocalizedStringKey
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: Spacing.xs) {
-                AppIcon.add
-                Text(titleKey, bundle: .onsarj)
-            }
-            .font(Typography.secondary)
-            .foregroundStyle(Theme.textSecondary)
-            .frame(maxWidth: .infinity, minHeight: Spacing.minTapTarget, alignment: .leading)
-            .padding(.horizontal, Spacing.lg)
-            .padding(.vertical, Spacing.xs)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-/// Satırlar arasındaki ince ayırıcı; satır içeriğinin sol kenarından başlar.
-struct RowDivider: View {
-    var body: some View {
-        Divider()
-            .overlay(Theme.borderSubtle)
-            .padding(.leading, Spacing.lg)
-    }
-}

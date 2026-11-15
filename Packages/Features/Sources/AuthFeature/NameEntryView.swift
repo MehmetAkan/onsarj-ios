@@ -56,7 +56,7 @@ public struct NameEntryView: View {
         .safeAreaInset(edge: .top) {
             ScreenHeader(
                 "signup.name.navTitle",
-                backLabel: "signup.phone.accessibility.back",
+                backLabel: "common.back",
                 bundle: .onsarj,
                 onBack: onBack
             )

@@ -24,6 +24,8 @@ struct VehicleMappingError: Error, Equatable {
 /// - Boş veya geçersiz görsel adresi `nil` olur. Yalnızca sunucusu olan `http(s)` adresleri
 ///   geçerlidir; `file` şeması yalnızca `acceptsFileImageURLs` ile, `#if DEBUG` fixture'ı için
 ///   kabul edilir. Gerçek (backend) yol bu parametreyi vermez.
+/// - Sürüş profilleri: liste yoksa, boşsa, bir profilin alanı eksikse veya standart profil sayısı
+///   birden farklıysa hata. `activeProfileId` yoksa veya bilinmiyorsa standart profil etkindir.
 /// - Zorunlu alan eksikse, renk `#RRGGBB` değilse veya batarya sağlığı 0…100 dışındaysa
 ///   `VehicleMappingError` fırlatılır; tek hatalı kayıt tüm listeyi düşürür.
 enum VehicleMapper {
@@ -45,16 +47,12 @@ enum VehicleMapper {
 
     static func vehicle(from dto: VehicleDTO, acceptsFileImageURLs: Bool) throws -> Vehicle {
         let id = try required(dto.id, .id, in: dto)
-        let colorHex = try required(dto.colorHex, .colorHex, in: dto)
-        guard isHexColor(colorHex) else {
-            throw VehicleMappingError(vehicleID: id, field: .colorHex, reason: .invalid)
-        }
-        let health = try required(dto.batteryHealthPercent, .batteryHealthPercent, in: dto)
-        guard healthRange.contains(health) else {
-            throw VehicleMappingError(vehicleID: id, field: .batteryHealthPercent, reason: .invalid)
-        }
+        let colorHex = try validated(dto.colorHex, .colorHex, in: dto, where: VehiclePaint.isValidHex)
+        let health = try validated(
+            dto.batteryHealthPercent, .batteryHealthPercent, in: dto, where: healthRange.contains)
         let bodyType = try required(dto.bodyType, .bodyType, in: dto)
         let connectors = try required(dto.connectors, .connectors, in: dto)
+        let profiles = try drivingProfiles(in: dto)
 
         return Vehicle(
             id: Vehicle.ID(id),
@@ -64,8 +62,6 @@ enum VehicleMapper {
             modelYear: try required(dto.modelYear, .modelYear, in: dto),
             nickname: dto.nickname,
             batteryCapacityKwh: try required(dto.batteryCapacityKwh, .batteryCapacityKwh, in: dto),
-            rangeKm: try required(dto.rangeKm, .rangeKm, in: dto),
-            consumptionWhPerKm: try required(dto.consumptionWhPerKm, .consumptionWhPerKm, in: dto),
             connectors: connectors.compactMap(ConnectorType.init(rawValue:)),
             maxAcPowerKw: dto.maxAcPowerKw,
             maxDcPowerKw: dto.maxDcPowerKw,
@@ -73,8 +69,44 @@ enum VehicleMapper {
             bodyType: BodyType(rawValue: bodyType) ?? .other,
             imageURL: imageURL(from: dto.imageUrl, acceptsFile: acceptsFileImageURLs),
             batteryHealthPercent: health,
-            isDefault: try required(dto.isDefault, .isDefault, in: dto)
+            isDefault: try required(dto.isDefault, .isDefault, in: dto),
+            drivingProfiles: profiles,
+            // Eksik veya bilinmeyen kimlikte `Vehicle` standart profili etkin yapar.
+            activeProfileID: DrivingProfile.ID(dto.activeProfileId ?? "")
         )
+    }
+
+    private static func drivingProfiles(in dto: VehicleDTO) throws -> [DrivingProfile] {
+        let list = try required(dto.drivingProfiles, .drivingProfiles, in: dto)
+        let invalid = VehicleMappingError(vehicleID: dto.id, field: .drivingProfiles, reason: .invalid)
+        let profiles = try list.map { profile in
+            guard let id = profile.id, let name = profile.name, let consumption = profile.consumptionKwhPer100Km,
+                let speed = profile.maxSpeedKmh, let isStandard = profile.isStandard
+            else { throw invalid }
+            return DrivingProfile(
+                id: DrivingProfile.ID(id),
+                name: name,
+                consumptionKwhPer100Km: consumption,
+                maxSpeedKmh: speed,
+                isStandard: isStandard
+            )
+        }
+        guard profiles.filter(\.isStandard).count == 1 else { throw invalid }
+        return profiles
+    }
+
+    /// Zorunlu ve koşulu sağlaması gereken alan; koşul sağlanmazsa `invalid` hatası.
+    private static func validated<Value>(
+        _ value: Value?,
+        _ field: VehicleDTO.CodingKeys,
+        in dto: VehicleDTO,
+        where isValid: (Value) -> Bool
+    ) throws -> Value {
+        let value = try required(value, field, in: dto)
+        guard isValid(value) else {
+            throw VehicleMappingError(vehicleID: dto.id, field: field, reason: .invalid)
+        }
+        return value
     }
 
     private static func required<Value>(
@@ -86,12 +118,6 @@ enum VehicleMapper {
             throw VehicleMappingError(vehicleID: dto.id, field: field, reason: .missing)
         }
         return value
-    }
-
-    /// `#` ve ardından altı onaltılık rakam.
-    private static func isHexColor(_ value: String) -> Bool {
-        let digits = value.dropFirst()
-        return value.first == "#" && digits.count == 6 && digits.allSatisfy(\.isHexDigit)
     }
 
     /// Sunucusu olan http(s) adresleri kabul edilir; `acceptsFile` ise yolu olan `file` adresleri de.

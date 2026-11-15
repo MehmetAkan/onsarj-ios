@@ -36,6 +36,8 @@ Proje sahibinin kararını bekleyenler: sayfa arka planının sürümler arası 
 `UserDefaults`'a yazılıyor (`RoutePreferencesStoring` arkasında; ileride backend). Şarj ağları Debug'da fixture'dan
 (`FixtureChargingNetworkCatalog`, K-23), Release'de boş katalog.
 
+**Backend sözleşme notları:** [Docs/Backend/README.md](Docs/Backend/README.md)
+
 **Sırada:** İstasyon katmanı (GeoJSON kaynağı + symbol layer + kaynak düzeyinde kümeleme, CLAUDE.md 5.4).
 Kayıt akışının ekranları tamam ve ana haritaya bağlı. Kodun doğrulanması,
 tekrar gönderilmesi, kayıtlı kullanıcının ayrılması ve ad-soyadın kaydı backend sözleşmesini
@@ -49,6 +51,125 @@ diğerleri boş.
 
 **Tüm dosyası `#if canImport(UIKit)` ile korunan dosyalar (CLAUDE.md 6.8, eşik 5):** 3 —
 `UITypography.swift`, `FormTextField.swift`, `HiddenNavigationBar.swift`.
+
+---
+
+## Adım 39 — Araç ayarları ve sürüş profilleri (GarageFeature)
+
+**Tarih:** 2026-11-15
+
+**Ne yapıldı**
+- **Ortak metinler (0):** `common.back`, `common.close`, `common.retry`, `common.search`, `common.save`,
+  `common.cancel`, `common.delete` eklendi; ekranlar arası paylaşılan kullanımlar bunlara taşındı, eski
+  anahtarlar silindi (taşıma tablosu aşağıda).
+- **K-26 (1):** `CLAUDE.md` 9.1'e K-26 ve ek notu, 5.6'ya `Docs/Backend/` satırı eklendi (proje sahibinin izniyle).
+- **Domain:** `DrivingProfile` (sınırlar: tüketim 5,0…50,0, hız 50…250, ad ≤ 40 ve araçta benzersiz),
+  `DrivingProfileDraft`, `VehicleUpdate`, `VehiclePaint` (8 boya), `VehicleRepositoryError`; `Vehicle`'a
+  `drivingProfiles`, `activeProfileID`, `activeProfile`, `batteryDegradationPercent` (aralık 0…50) eklendi,
+  `consumptionWhPerKm` ve `rangeKm` kaldırıldı. Menzil: `kapasite × sağlık × yüzde ÷ etkin tüketim`
+  (fixture %30 → 97 km). `VehicleRepository`'ye beş yazma işlemi.
+- **Servis:** DTO'ya profiller ve `activeProfileId`; istek DTO'ları `UpdateVehicleRequestDTO`
+  (etkin profil de bununla), `DrivingProfileRequestDTO`. `FixtureVehicleRepository` artık `actor`;
+  `FixtureVehicleBackend` istekleri bir backend gibi doğrulayıp bellekteki DTO'ya uygular.
+- **Ekranlar:** araç ayarları (görsel, profil çipleri, tüketim/hız, ayrıntılar, boya, "Aracı sil" + onay),
+  değer modalı, konnektör türleri, sürüş profilleri listesi (kaydırarak sil), profil formu. Anlık seçimler
+  hata olursa geri döner ve "Değişiklik kaydedilemedi" bildirilir.
+- **Ana sayfa kartı:** alt başlık etkin profil adı; menzil yeni hesap; dişli aracın kimliğini verir; ayarlar
+  kapanınca kart yenilenir (`vehicleRevision`), araç silindiyse "Araç ekle".
+- **DesignSystem (proje sahibinin onayıyla):** `ModalHeader`, `WrappingHStack`, `SelectableChip`,
+  `AddRowButton`/`InsetDivider` `RoutePlanningFeature`'dan taşındı; iki özellik de bunları kullanıyor.
+  `AppIcon.disclosure` (`chevron.right`, iOS 13) eklendi.
+- `Docs/Backend/` açıldı: `README.md`, `vehicles.md`, `route-preferences.md`, `charging-networks.md`.
+
+**Metin anahtarı taşımaları**
+
+| Eski | Yeni | Kullanan ekranlar |
+|---|---|---|
+| `signup.phone.accessibility.back` ("Geri dön") | `common.back` ("Geri") | Telefon, SMS kodu, ad ekranları; plan seçenekleri ve garaj üst çubuğu |
+| `search.close` | `common.close` | Arama; plan seçenekleri ve garaj üst çubuğu |
+| `vehicleCard.retry` | `common.retry` | Araç kartı, ağ seçici, araç ayarları |
+| `search.submit` | `common.search` | Arama "Ara" düğmesi, ağ seçici yer tutucusu |
+| `search.delete` | `common.delete` | Arama geçmişi, profil listesi, araç silme onayı |
+
+`home.search.placeholder` ana sayfa ve arama sayfasında aynı soruyu sorduğu için ortak bırakıldı.
+
+**Dosyalar**
+- Eklenen: `Packages/Domain/Sources/OnsarjDomain/Models/{DrivingProfile,DrivingProfileDraft,VehicleUpdate,
+  VehiclePaint,VehicleRepositoryError}.swift`, `Packages/Domain/Tests/DomainTests/DrivingProfileTests.swift`,
+  `Packages/Services/Sources/VehicleService/DTO/VehicleRequestDTOs.swift`,
+  `Packages/Services/Sources/VehicleService/Fixtures/FixtureVehicleBackend.swift`,
+  `Packages/Services/Tests/ServicesTests/{FixtureVehicleWriteTests,VehicleRequestDTOTests}.swift`,
+  `Packages/Features/Sources/GarageFeature/{VehicleSettingsView,VehicleSettingsPage,VehicleSettingsModel,
+  ValueEditor,ValueEditTarget,ValueEditorSheet,ConnectorTypesView,DrivingProfilesView,DrivingProfileForm,
+  DrivingProfileFormView,Vehicle+Presentation}.swift`,
+  `Packages/Features/Sources/GarageFeature/Components/{SettingsRow,ValueInputField,PaintPicker,NoticeBanner,
+  PreviewGarageSources}.swift`, `Packages/Features/Tests/FeaturesTests/{TestVehicles,
+  VehicleSettingsModelTests}.swift`, `Packages/Core/Sources/DesignSystem/Components/{ModalHeader,
+  SelectableChip,AddRowButton}.swift`, `OnsarjUITests/VehicleSettingsPresentationTests.swift`,
+  `Docs/Backend/{README,vehicles,route-preferences,charging-networks}.md`
+- Taşınan: `RoutePlanningFeature/Components/WrappingHStack.swift` → `DesignSystem/Components/WrappingHStack.swift`
+- Silinen: `Packages/Features/Sources/GarageFeature/GarageFeature.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/Components/ModalHeader.swift`
+- Değişen: `CLAUDE.md` (5.6, K-26), `Packages/Domain/Sources/OnsarjDomain/Models/Vehicle.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/Protocols/VehicleRepository.swift`,
+  `Packages/Domain/Tests/DomainTests/VehicleTests.swift`,
+  `Packages/Services/Sources/VehicleService/DTO/{VehicleDTO,VehicleMapper}.swift`,
+  `Packages/Services/Sources/VehicleService/Fixtures/FixtureVehicleRepository.swift`,
+  `Packages/Services/Tests/ServicesTests/VehicleMapperTests.swift`,
+  `Packages/Features/Sources/HomeMapFeature/{HomeMapView,VehicleCardModel}.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/{VehicleCard,HomeSheetActions,PreviewVehicleSources}.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/{PlanOptionsPage,ChargingNetworksView,NetworkPickerView}.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/Components/{AvoidanceChips,NetworkRow,NetworkSearchField}.swift`,
+  `Packages/Features/Sources/{AuthFeature/PhoneEntryView,AuthFeature/VerificationCodeView,AuthFeature/NameEntryView,
+  SearchFeature/SearchView,SearchFeature/Components/SearchTopBar}.swift`,
+  `Packages/Features/Tests/FeaturesTests/VehicleCardModelTests.swift`,
+  `Packages/Core/Sources/DesignSystem/{AppIcon,Components/ScreenHeader}.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`,
+  `App/Navigation/AppRouter.swift`, `App/RootView.swift`, `App/Composition/AppDependencies.swift`,
+  `OnsarjUITests/{PlanOptionsPresentationTests,SwipeBackProbeTests}.swift`, `PROGRESS.md`
+- Proje sahibi uygulama hedefine `GarageFeature` ürününü bağladı.
+
+**Kararlar**
+- **K-26** (proje sahibi) ve ek notu: DTO/fixture değişikliği aynı görevde `Docs/Backend/`'i günceller.
+- **Ortak bileşenler `DesignSystem`'e taşındı** (proje sahibinin cevabı): kopyalamak 2.4'e aykırıydı.
+- **Değer modalı sunumu (2.9):** sistem `.sheet`, içeriğin ölçülen yüksekliğinde (`presentationDetents(.height)`),
+  görünür tutamaç; plan seçenekleri ve aramayla aynı yaklaşım. İçerik sürümler arasında aynı; iOS 26'da
+  kısa sayfalar sistem gereği kenarlardan içeride ("yüzen") çizilir (K-22'deki davranış), iOS 18'de tam
+  genişlik. Değer modalı kısa ömürlü bir giriş olduğu ve aşağı çekip kapatma gerektiği için kabul edildi;
+  birebir aynılık istenirse karar proje sahibinde.
+- **Etkin profil `PATCH /vehicles/{id}` ile** (`activeProfileId`): ayrı uç nokta açılmadı.
+- **Takma ad:** boş dizge takma adı kaldırır; JSON'da `nil` alanlar yazılmadığı için "değişmesin" ile
+  "kaldır" böyle ayrılır.
+- Profil adı benzersizliği Türkçe `I/ı`, `İ/i`'yi aynı sayar (İngilizce "HIGHWAY"/"highway" de aynı kalsın diye).
+- Kayıt başarısızsa değer modalı kapanır, değer eski haliyle kalır ve bildirim gösterilir; profil formu açık kalır.
+
+**Doğrulama**
+- `Packages/Domain`: `swift build`, `swift test` 31/31.
+- `Packages/Services`: `swift build`, `swift test` 52/52, `swift build -c release` geçti.
+- `./Tooling/Scripts/verify-ios.sh --package Features`: geçti. Uygulama Debug derlemesi geçti.
+- `xcodebuild test` Features (iPhone SE, iOS 18.3): 65/65.
+- `VehicleSettingsPresentationTests` (2 test) iOS 18.5'te geçti: dişliyle açılış, "Otoyol" çipi → kartta
+  "Otoyol" ve ≈84 km (önce "Standart", 97 km), değer modalında geçersiz değer "5 ile 50 arasında bir değer gir" ve
+  pasif Kaydet, 18,5 kaydı, aracı sil + onay → kart "Araç ekle".
+- iOS 26.3, tüm UI test paketi: garaj (2), plan seçenekleri (2), arama (2) ve başlangıç testleri geçti.
+  `SwipeBackProbeTests` (5) başarısız: testler kayıt akışının ilk ekranından başlıyor, uygulama ise Adım 27'den
+  beri doğrudan haritayla açılıyor (`opensMapOnLaunch = true`). Bu adımdan bağımsız, önceden var olan durum;
+  dosyada yalnızca "Geri dön" → "Geri" etiketi güncellendi.
+- Uygulama Release: `FixtureVehicleRepository`, `FixtureVehicleBackend`, `FixtureChargingNetworkCatalog`,
+  `PreviewGarageRepository` sembolleri 0; `prof_fixture` dizgesi 0; `VehicleSettingsView` mevcut.
+- `swiftlint lint --strict`, `swift format lint --strict`: 0 ihlal.
+
+**Bilinen eksikler**
+- **Geçici:** Fixture değişiklikleri yalnızca bellektedir; uygulama yeniden açılınca araç fixture'a döner (K-26).
+- Çevrimdışı davranış (son alınan aracın kullanılması) bu görevin dışında; K-26 açık noktası.
+- "Araç" satırı ve profil adı gibi veriler arayüzde olduğu gibi gösterilir (marka/model çevrilmez).
+- Görselli önizleme gerçek adres olmadığı için görselsiz çizilir; görsel simülatörde fixture'dan görünüyor.
+- `ValueEditorSheet`'in `initialText` parametresini yalnızca önizleme kullanıyor.
+- Silinen araç varsayılansa yeni varsayılanın seçimi backend'e ait (`vehicles.md` açık nokta).
+- Araç değiştirme ("⌄") ve "Araçlarınız" ekranı yok.
+
+**Sıradaki adım**
+- "Araçlarınız" ekranı ve araç değiştirme; ya da istasyon katmanı.
 
 ---
 

@@ -12,7 +12,7 @@ import SwiftUI
 /// ```swift
 /// content
 ///     .safeAreaInset(edge: .top) {
-///         ScreenHeader("signup.phone.navTitle", backLabel: "signup.phone.accessibility.back",
+///         ScreenHeader("signup.phone.navTitle", backLabel: "common.back",
 ///                      bundle: .onsarj, onBack: onBack)
 ///     }
 ///     .hidesNavigationBar()

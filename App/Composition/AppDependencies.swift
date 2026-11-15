@@ -65,9 +65,30 @@ final class AppDependencies {
 }
 
 #if !DEBUG
-/// Release'de, backend bağlanana kadar araç listesi boştur; kart "Araç ekle" halinde açılır.
+/// Release'de, backend bağlanana kadar araç listesi boştur; kart "Araç ekle" halinde açılır. Liste boş
+/// olduğu için yazma işlemlerinin hedefi de yoktur.
 private struct NoVehiclesRepository: VehicleRepository {
     func vehicles() async throws -> [Vehicle] { [] }
+
+    func updateVehicle(_ id: Vehicle.ID, _ update: VehicleUpdate) async throws -> Vehicle {
+        throw VehicleRepositoryError.vehicleNotFound
+    }
+
+    func deleteVehicle(_ id: Vehicle.ID) async throws {
+        throw VehicleRepositoryError.vehicleNotFound
+    }
+
+    func saveProfile(_ draft: DrivingProfileDraft, for vehicleID: Vehicle.ID) async throws -> Vehicle {
+        throw VehicleRepositoryError.vehicleNotFound
+    }
+
+    func deleteProfile(_ id: DrivingProfile.ID, for vehicleID: Vehicle.ID) async throws -> Vehicle {
+        throw VehicleRepositoryError.vehicleNotFound
+    }
+
+    func setActiveProfile(_ id: DrivingProfile.ID, for vehicleID: Vehicle.ID) async throws -> Vehicle {
+        throw VehicleRepositoryError.vehicleNotFound
+    }
 }
 
 /// Release'de, backend bağlanana kadar şarj ağı kataloğu boştur; seçici "Sonuç bulunamadı" gösterir.

@@ -50,6 +50,12 @@ final class VehicleCardModel {
         await fetch()
     }
 
+    /// Araç başka bir ekranda değişti (ör. araç ayarları kapandı): kart yükleniyor haline geçmeden
+    /// yeniden okunur; araç silindiyse "araç yok", hata olursa "hata" halidir.
+    func refresh() async {
+        await fetch()
+    }
+
     /// Sürükleme sırasında ekrandaki yüzde; 0–100 dışı sınıra çekilir. Depoya yazmaz.
     func updateLevel(_ percent: Int) {
         guard case .loaded(let vehicle, let current) = state else { return }

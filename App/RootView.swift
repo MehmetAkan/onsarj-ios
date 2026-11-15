@@ -1,5 +1,6 @@
 import AuthFeature
 import DesignSystem
+import GarageFeature
 import HomeMapFeature
 import RoutePlanningFeature
 import SearchFeature
@@ -43,14 +44,18 @@ struct RootView: View {
                     onNearbyChargers: {},
                     onSavedPlaces: {},
                     onSwitchVehicle: {},
-                    onVehicleSettings: {},
-                    onAddVehicle: {}
+                    onVehicleSettings: { router.vehicleSettings = VehicleSettingsPresentation(vehicleID: $0) },
+                    onAddVehicle: {},
+                    vehicleRevision: router.vehicleRevision
                 )
                 .sheet(isPresented: $router.isSearchPresented) {
                     searchSheet
                 }
                 .sheet(isPresented: $router.isPlanOptionsPresented) {
                     planOptionsSheet
+                }
+                .sheet(item: $router.vehicleSettings, onDismiss: router.vehicleSettingsDidDismiss) { presentation in
+                    vehicleSettingsSheet(presentation)
                 }
             }
         }
@@ -81,6 +86,17 @@ struct RootView: View {
             preferencesStore: dependencies.routePreferencesStore,
             networkCatalog: dependencies.chargingNetworkCatalog,
             onClose: { router.isPlanOptionsPresented = false }
+        )
+        .presentationDragIndicator(.visible)
+        .onsarjDynamicTypeRange()
+    }
+
+    /// Araç ayarları; plan seçenekleriyle aynı sunum. Kapanınca ana sayfadaki kart yeniden yüklenir.
+    private func vehicleSettingsSheet(_ presentation: VehicleSettingsPresentation) -> some View {
+        VehicleSettingsView(
+            repository: dependencies.vehicleRepository,
+            vehicleID: presentation.vehicleID,
+            onClose: { router.vehicleSettings = nil }
         )
         .presentationDragIndicator(.visible)
         .onsarjDynamicTypeRange()

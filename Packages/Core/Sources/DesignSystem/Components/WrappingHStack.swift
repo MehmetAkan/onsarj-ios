@@ -3,10 +3,15 @@ import SwiftUI
 /// Öğeleri yan yana dizer; satıra sığmayan öğe alt satıra geçer. Satırlar sola yaslıdır.
 ///
 /// Bir öğe tek başına satırdan genişse satır genişliğine sınırlanır ve kendi içinde sarar.
-struct WrappingHStack: Layout {
-    let spacing: CGFloat
+/// Çip grupları için: plan seçeneklerindeki kaçınma çipleri, araç ayarlarındaki profil çipleri.
+public struct WrappingHStack: Layout {
+    private let spacing: CGFloat
 
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+    public init(spacing: CGFloat) {
+        self.spacing = spacing
+    }
+
+    public func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let width = proposal.width ?? .infinity
         let rows = arrange(subviews, in: width)
         let height = rows.map(\.height).reduce(0, +) + spacing * CGFloat(max(rows.count - 1, 0))
@@ -14,7 +19,7 @@ struct WrappingHStack: Layout {
         return CGSize(width: proposal.width ?? usedWidth, height: height)
     }
 
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+    public func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         var y = bounds.minY
         for row in arrange(subviews, in: bounds.width) {
             var x = bounds.minX

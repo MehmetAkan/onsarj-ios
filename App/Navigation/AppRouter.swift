@@ -1,4 +1,5 @@
 import Observation
+import OnsarjDomain
 
 /// Özellikler arası tek geçiş noktası (CLAUDE.md 5.3 kural 1).
 ///
@@ -26,6 +27,17 @@ final class AppRouter {
 
     /// Plan seçenekleri (ve ondan açılan şarj ağları sayfaları) ana haritanın üstünde modal olarak açık mı.
     var isPlanOptionsPresented = false
+
+    /// Ayarları açık olan araç; `nil` ise araç ayarları modalı kapalı.
+    var vehicleSettings: VehicleSettingsPresentation?
+
+    /// Araç verisinin sürümü. Araç ayarları kapanınca artar; ana sayfadaki kart aracı yeniden yükler.
+    private(set) var vehicleRevision = 0
+
+    /// Araç ayarları modalı kapandı (X, aşağı çekme veya araç silindi).
+    func vehicleSettingsDidDismiss() {
+        vehicleRevision += 1
+    }
 
     /// - Parameter flow: Açılıştaki akış.
     init(flow: Flow = .signUp) {
@@ -60,4 +72,11 @@ final class AppRouter {
         }
         path.append(route)
     }
+}
+
+/// Araç ayarları modalının sunumu: hangi aracın ayarları açık.
+struct VehicleSettingsPresentation: Identifiable, Equatable {
+    let vehicleID: Vehicle.ID
+
+    var id: String { vehicleID.rawValue }
 }

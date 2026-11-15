@@ -10,25 +10,7 @@ struct VehicleCardModelTests {
     private nonisolated static let recordedAt = Date(timeIntervalSince1970: 1_800_000_000)
 
     private static func vehicle(id: String = "veh_1", isDefault: Bool = true) -> Vehicle {
-        Vehicle(
-            id: Vehicle.ID(id),
-            make: "BYD",
-            model: "Dolphin",
-            variant: "Standart",
-            modelYear: 2023,
-            nickname: nil,
-            batteryCapacityKwh: 60.5,
-            rangeKm: 393,
-            consumptionWhPerKm: 178,
-            connectors: [.type2],
-            maxAcPowerKw: 11,
-            maxDcPowerKw: 88,
-            colorHex: "#F2F2F2",  // swiftlint:disable:this no_hardcoded_hex_color
-            bodyType: .hatchback,
-            imageURL: nil,
-            batteryHealthPercent: 95,
-            isDefault: isDefault
-        )
+        TestVehicles.dolphin(id: id, isDefault: isDefault)
     }
 
     private func makeModel(
@@ -131,7 +113,7 @@ struct VehicleCardModelTests {
         #expect(await store.lastVehicleID == Vehicle.ID("veh_1"))
     }
 
-    @Test("Menzil karta doğru yansır: 393 km, %30 → 118 km")
+    @Test("Menzil karta doğru yansır: %30 → 97 km (60,5 kWh × %95 ÷ 17,8 kWh/100 km)")
     func rangeReflectsLevel() async {
         let model = makeModel(repository: FakeVehicleRepository(result: .success([Self.vehicle()])))
         await model.load()
@@ -140,35 +122,30 @@ struct VehicleCardModelTests {
             Issue.record("Kart yüklenmedi")
             return
         }
-        #expect(vehicle.estimatedRangeKm(at: level) == 118)
-    }
-}
-
-private actor FakeVehicleRepository: VehicleRepository {
-    enum Result {
-        case success([Vehicle])
-        case failure
+        #expect(vehicle.estimatedRangeKm(at: level) == 97)
     }
 
-    private struct Failure: Error {}
-
-    private var result: Result
-    private(set) var callCount = 0
-
-    init(result: Result) {
-        self.result = result
+    @Test("Kartın alt başlığı etkin profilin adıdır")
+    func subtitleIsActiveProfile() {
+        let vehicle = Self.vehicle()
+        #expect(VehicleCard.subtitle(for: vehicle) == "Standart")
+        #expect(VehicleCard.subtitle(for: vehicle.with(activeProfileID: TestVehicles.highway.id)) == "Otoyol")
     }
 
-    func setResult(_ result: Result) {
-        self.result = result
-    }
+    @Test("Yenileme değişen aracı gösterir; araç silindiyse 'araç yok'")
+    func refreshAfterSettings() async {
+        let repository = FakeVehicleRepository(result: .success([Self.vehicle()]))
+        let model = makeModel(repository: repository)
+        await model.load()
 
-    func vehicles() async throws -> [Vehicle] {
-        callCount += 1
-        switch result {
-        case .success(let vehicles): return vehicles
-        case .failure: throw Failure()
-        }
+        let changed = Self.vehicle().with(activeProfileID: TestVehicles.highway.id)
+        await repository.setResult(.success([changed]))
+        await model.refresh()
+        #expect(model.state == .loaded(changed, .initial))
+
+        await repository.setResult(.success([]))
+        await model.refresh()
+        #expect(model.state == .empty)
     }
 }
 

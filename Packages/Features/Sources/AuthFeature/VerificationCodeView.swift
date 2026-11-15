@@ -61,7 +61,7 @@ public struct VerificationCodeView: View {
         .safeAreaInset(edge: .top) {
             ScreenHeader(
                 "verification.navTitle",
-                backLabel: "signup.phone.accessibility.back",
+                backLabel: "common.back",
                 bundle: .onsarj,
                 onBack: onBack
             )
