@@ -4,8 +4,9 @@ import SwiftUI
 
 /// Alt sayfanın başlığındaki arama satırı: arama alanı ve yapay zekâ asistanı butonu.
 ///
-/// İki ayrı öğedir. Arama alanı kalan genişliği doldurur; arama alanı gibi görünür ama metin
-/// almaz, dokunulduğunda `onSearch` çağrılır ve yazma arama ekranında başlar. Asistan butonu
+/// İki ayrı öğedir. Arama alanı kalan genişliği doldurur; arama alanı gibi görünür ama bir
+/// düğmedir: metin almaz, klavye açmaz, alt sayfayı büyütmez. Dokunulduğunda `onSearch` çağrılır
+/// ve arama ayrı bir ekranda açılır (K-25). VoiceOver'da yer tutucu metniyle düğme olarak okunur. Asistan butonu
 /// daire biçimindedir ve yüksekliği arama alanınınkine eşittir; yazı büyüdükçe birlikte büyür.
 struct MapSearchBar: View {
     let onSearch: () -> Void
@@ -39,6 +40,7 @@ struct MapSearchBar: View {
             .contentShape(fieldShape)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(Text("home.search.placeholder", bundle: .onsarj))
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.height
         } action: { height in

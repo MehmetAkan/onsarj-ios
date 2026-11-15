@@ -361,24 +361,6 @@
         }
       }
     },
-    "home.sheet.accessibility.expanded" : {
-      "comment" : "Ana sayfa alt sayfası, VoiceOver değeri: büyük kademe, ekranın üstüne kadar açık.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Full screen"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tam ekran"
-          }
-        }
-      }
-    },
     "home.sheet.accessibility.label" : {
       "comment" : "Ana sayfa, alt sayfanın sürükleme göstergesinin VoiceOver etiketi. Artır/azalt ile sayfa büyür ve küçülür.",
       "extractionState" : "manual",
@@ -411,6 +393,780 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Yarım ekran"
+          }
+        }
+      }
+    },
+    "networks.accessibility.remove" : {
+      "comment" : "Şarj ağları: VoiceOver: kaldır düğmesi. %@ ağ adı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kaldır"
+          }
+        }
+      }
+    },
+    "networks.add" : {
+      "comment" : "Ağ seçici: ağı tercih edilenlere ekleyen kapsül düğme.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ekle"
+          }
+        }
+      }
+    },
+    "networks.addAvoided" : {
+      "comment" : "Şarj ağları: ekle satırı ve ağ seçici başlığı (kaçınma kipi).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add avoided network"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaçınılan ağ ekle"
+          }
+        }
+      }
+    },
+    "networks.addPreferred" : {
+      "comment" : "Şarj ağları: ekle satırı ve ağ seçici başlığı (tercih kipi).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add preferred network"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tercih edilen ağ ekle"
+          }
+        }
+      }
+    },
+    "networks.added" : {
+      "comment" : "Ağ seçici: ağ tercih edilenlerde; dokununca geri alınır.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eklendi"
+          }
+        }
+      }
+    },
+    "networks.avoid" : {
+      "comment" : "Ağ seçici: ağı kaçınılanlara ekleyen kapsül düğme.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avoid"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaçın"
+          }
+        }
+      }
+    },
+    "networks.avoided" : {
+      "comment" : "Şarj ağları: kaçınılan ağlar bölüm başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avoided networks"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaçınılan ağlar"
+          }
+        }
+      }
+    },
+    "networks.avoided.note" : {
+      "comment" : "Şarj ağları: kaçınılan ağlar açıklaması.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avoided in planning."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planlamada kaçınılır."
+          }
+        }
+      }
+    },
+    "networks.avoiding" : {
+      "comment" : "Ağ seçici: ağ kaçınılanlarda (düğme ve pasif satırın ikincil metni).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avoiding"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaçınılıyor"
+          }
+        }
+      }
+    },
+    "networks.loadFailed" : {
+      "comment" : "Ağ seçici: liste yüklenemedi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load networks"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ağlar yüklenemedi"
+          }
+        }
+      }
+    },
+    "networks.noResults" : {
+      "comment" : "Ağ seçici: aramada sonuç yok.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No results found"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonuç bulunamadı"
+          }
+        }
+      }
+    },
+    "networks.preferred" : {
+      "comment" : "Şarj ağları: tercih edilen ağlar bölüm başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your networks"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ağların"
+          }
+        }
+      }
+    },
+    "networks.preferred.note" : {
+      "comment" : "Şarj ağları: tercih edilen ağlar açıklaması.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prioritized in planning."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planlamada önceliklendirilir."
+          }
+        }
+      }
+    },
+    "networks.preferring" : {
+      "comment" : "Ağ seçici: ağ tercih edilenlerde (pasif satırın ikincil metni).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preferred"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tercih ediliyor"
+          }
+        }
+      }
+    },
+    "networks.title" : {
+      "comment" : "Şarj ağları: sayfa başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Charging networks"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şarj ağları"
+          }
+        }
+      }
+    },
+    "networks.unknown" : {
+      "comment" : "Şarj ağları: katalogda adı bulunamayan ağ.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown network"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bilinmeyen ağ"
+          }
+        }
+      }
+    },
+    "plan.avoid" : {
+      "comment" : "Plan seçenekleri: kaçınılacak yol türleri bölüm başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avoid on route"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rotadan kaçının"
+          }
+        }
+      }
+    },
+    "plan.avoid.borders" : {
+      "comment" : "Plan seçenekleri: kaçınma çipi: ülke sınırları.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borders"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sınırlar"
+          }
+        }
+      }
+    },
+    "plan.avoid.ferries" : {
+      "comment" : "Plan seçenekleri: kaçınma çipi: feribot ve araba trenleri.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ferries and car trains"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feribotlar ve araba trenleri"
+          }
+        }
+      }
+    },
+    "plan.avoid.highways" : {
+      "comment" : "Plan seçenekleri: kaçınma çipi: otoyollar.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Highways"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otoyollar"
+          }
+        }
+      }
+    },
+    "plan.avoid.tolls" : {
+      "comment" : "Plan seçenekleri: kaçınma çipi: ücretli yollar.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tolls"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geçiş ücretleri"
+          }
+        }
+      }
+    },
+    "plan.chargeStops" : {
+      "comment" : "Plan seçenekleri: şarj durağı sıklığı bölüm başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Charging stops"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şarj duraklamaları"
+          }
+        }
+      }
+    },
+    "plan.chargeStops.fewer" : {
+      "comment" : "Plan seçenekleri: şarj durağı seçeneği: daha az durak.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fewer"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daha az"
+          }
+        }
+      }
+    },
+    "plan.chargeStops.fewest" : {
+      "comment" : "Plan seçenekleri: şarj durağı seçeneği: en az durak.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fewest"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En az"
+          }
+        }
+      }
+    },
+    "plan.chargeStops.optimal" : {
+      "comment" : "Plan seçenekleri: şarj durağı seçeneği, varsayılan.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optimal"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optimal"
+          }
+        }
+      }
+    },
+    "plan.networks" : {
+      "comment" : "Plan seçenekleri: şarj ağları bölüm başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Charging networks"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şarj ağları"
+          }
+        }
+      }
+    },
+    "plan.networks.avoided" : {
+      "comment" : "Plan seçenekleri: özet kutusunda kaçınılan ağların küçük başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avoided"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaçınılan"
+          }
+        }
+      }
+    },
+    "plan.networks.edit" : {
+      "comment" : "Plan seçenekleri: şarj ağları sayfasını açan düğme.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Düzenle"
+          }
+        }
+      }
+    },
+    "plan.networks.none" : {
+      "comment" : "Plan seçenekleri: hiç ağ seçilmemişken özet kutusu.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No preferred networks."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tercih edilen ağ yok."
+          }
+        }
+      }
+    },
+    "plan.networks.preferred" : {
+      "comment" : "Plan seçenekleri: özet kutusunda tercih edilen ağların küçük başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preferred"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tercih edilen"
+          }
+        }
+      }
+    },
+    "plan.title" : {
+      "comment" : "Plan seçenekleri: sayfa başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan options"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan seçenekleri"
+          }
+        }
+      }
+    },
+    "search.accessibility.kind.charger" : {
+      "comment" : "Arama sayfası, VoiceOver: satır türü, şarj istasyonu.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Charging station"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şarj istasyonu"
+          }
+        }
+      }
+    },
+    "search.accessibility.kind.history" : {
+      "comment" : "Arama sayfası, VoiceOver: satır türü, geçmiş araması.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geçmiş"
+          }
+        }
+      }
+    },
+    "search.accessibility.kind.place" : {
+      "comment" : "Arama sayfası, VoiceOver: satır türü, konum önerisi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggestion"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öneri"
+          }
+        }
+      }
+    },
+    "search.addSaved" : {
+      "comment" : "Arama sayfası: kayıtlı yer ekleme düğmesi (artı simgeli, dolgusuz).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Saved"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kayıtlı ekle"
+          }
+        }
+      }
+    },
+    "search.clearText" : {
+      "comment" : "Arama sayfası: arama alanındaki metni silen düğme (VoiceOver etiketi).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear text"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metni temizle"
+          }
+        }
+      }
+    },
+    "search.close" : {
+      "comment" : "Arama sayfası: sayfayı kapatan düğme (VoiceOver etiketi).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapat"
+          }
+        }
+      }
+    },
+    "search.delete" : {
+      "comment" : "Arama sayfası: geçmiş satırını sola kaydırınca çıkan silme eylemi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sil"
+          }
+        }
+      }
+    },
+    "search.history" : {
+      "comment" : "Arama sayfası, başlangıç hali: geçmiş başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geçmiş"
+          }
+        }
+      }
+    },
+    "search.savedPlaces" : {
+      "comment" : "Arama sayfası, başlangıç hali: kayıtlı yerler başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved directions"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kayıtlı yerler"
+          }
+        }
+      }
+    },
+    "search.setHome" : {
+      "comment" : "Arama sayfası: ev adresi ekleme çipi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Home"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ev ekle"
+          }
+        }
+      }
+    },
+    "search.setWork" : {
+      "comment" : "Arama sayfası: iş adresi ekleme çipi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set work"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İş ekle"
+          }
+        }
+      }
+    },
+    "search.submit" : {
+      "comment" : "Arama sayfası: metin yazılınca kapat düğmesinin yerine gelen arama düğmesi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ara"
           }
         }
       }
@@ -699,6 +1455,132 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Telefon numaran nedir?"
+          }
+        }
+      }
+    },
+    "vehicleCard.addVehicle" : {
+      "comment" : "Ana sayfa araç kartı, araç yokken: araç ekleme butonu.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add vehicle"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Araç ekle"
+          }
+        }
+      }
+    },
+    "vehicleCard.batteryLevel" : {
+      "comment" : "Ana sayfa araç kartı: batarya yüzdesi çubuğu (VoiceOver etiketi).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Battery level"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batarya seviyesi"
+          }
+        }
+      }
+    },
+    "vehicleCard.loadFailed" : {
+      "comment" : "Ana sayfa araç kartı: araç bilgisi yüklenemedi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load your vehicle"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Araç yüklenemedi"
+          }
+        }
+      }
+    },
+    "vehicleCard.range" : {
+      "comment" : "Ana sayfa araç kartı: seçili batarya yüzdesiyle tahmini menzil. %lld kilometre.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "≈%lld km range"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "≈%lld km menzil"
+          }
+        }
+      }
+    },
+    "vehicleCard.retry" : {
+      "comment" : "Ana sayfa araç kartı, hata halinde: yeniden yükleme butonu.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekrar dene"
+          }
+        }
+      }
+    },
+    "vehicleCard.settings" : {
+      "comment" : "Ana sayfa araç kartı: dişli simgeli araç ayarları butonu (VoiceOver etiketi).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vehicle settings"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Araç ayarları"
+          }
+        }
+      }
+    },
+    "vehicleCard.switchVehicle" : {
+      "comment" : "Ana sayfa araç kartı: araç adına dokununca araç değiştirilir (VoiceOver ipucu).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch vehicle"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Araç değiştir"
           }
         }
       }

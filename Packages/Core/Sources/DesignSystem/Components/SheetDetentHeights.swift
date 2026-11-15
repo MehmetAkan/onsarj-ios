@@ -7,13 +7,11 @@ import CoreGraphics
 struct SheetDetentHeights: Equatable {
     var collapsed: CGFloat
     var medium: CGFloat
-    var expanded: CGFloat
 
     subscript(detent: SheetDetent) -> CGFloat {
         switch detent {
         case .collapsed: collapsed
         case .medium: medium
-        case .expanded: expanded
         }
     }
 }

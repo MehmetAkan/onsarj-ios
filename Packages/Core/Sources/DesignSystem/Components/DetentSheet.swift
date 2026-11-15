@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Üç kademeli, tam genişlikte, kapatılamayan alt sayfa (K-22).
+/// İki kademeli, tam genişlikte, kapatılamayan alt sayfa (K-22, K-25).
 ///
 /// iOS'un `presentationDetents` yapısı iOS 26'dan itibaren küçük ve orta kademede sayfayı
 /// kenarlardan içeride çiziyor; tasarım tüm sürümlerde tam genişlik istediği için bu bileşen
@@ -10,17 +10,15 @@ import SwiftUI
 ///   bir görünümün üstüne (`ZStack`) konur; yalnızca kendi alanındaki dokunuşları alır, geri
 ///   kalan alan alttaki görünüme (ör. harita) açıktır.
 /// - **Kademeler:** Küçük = sürükleme göstergesi + başlığın ölçülen yüksekliği + alt güvenli
-///   alan. Orta = kullanılabilir yüksekliğin yarısı. Büyük = üst güvenli alanın hemen altı.
-///   Ölçüm değişince (yazı boyutu) kademeler de değişir.
-/// - **Sürükleme:** Başlık her zaman sayfayı sürükler. İçerik, sürüklemeyle ulaşılabilen en
-///   büyük kademede kayar; içerik ile sayfa arasındaki devir `DetentSheetTracker`'da anlatılır.
-///   Bırakınca kademe `DetentResolver` ile seçilir; sınırların ötesinde lastik direnci vardır.
-/// - **Sürüklenebilir kademeler:** `draggableDetents` dışındaki kademeye kullanıcı sürükleyerek
-///   gidemez; yalnızca `detent` bağlamasıyla gidilir (ör. aramaya dokununca büyük kademe).
-///   O kademedeyken sayfa aşağı sürüklenebilir.
+///   alan. Orta (en büyük kademe) içeriğin tamamını gösterecek kadar uzar: en az kullanılabilir
+///   yüksekliğin yarısı, en çok `maxMediumHeightRatio`'su; içerik bundan uzunsa kayar. Ölçüm
+///   değişince (yazı boyutu) kademeler de değişir.
+/// - **Sürükleme:** Başlık her zaman sayfayı sürükler. İçerik orta kademede kayar; içerik ile
+///   sayfa arasındaki devir `DetentSheetTracker`'da anlatılır. Bırakınca kademe
+///   `DetentResolver` ile seçilir; sınırların ötesinde lastik direnci vardır.
 /// - **Eşlikçi:** `accessory` (ör. harita üzerindeki yüzen butonlar) sayfanın üst kenarının hemen
-///   üstünde durur ve sayfayı orta kademeye kadar parmakla birlikte izler; ortanın üstünde
-///   yerinde kalır, sayfa onun üzerinden geçer.
+///   üstünde durur ve sayfayı parmakla birlikte izler; orta kademenin üstüne çıkmaz, lastik
+///   direnciyle uzayan sayfa onun üzerinden geçer.
 /// - **İçerikteki butonlar:** İçerik bölgesinin sürüklemesi eşzamanlıdır (yatay listeler kayabilsin
 ///   diye), bu yüzden sayfayı sürükleyen parmak bir butonun üstünde kalkarsa buton da tetiklenebilir.
 ///   Sayfa sürüklenirken `isSheetDragInProgress` ortam değeri `true` olur; `CategoryChip` ve
@@ -32,7 +30,6 @@ import SwiftUI
 ///   kısa bir geçiş kullanılır.
 public struct DetentSheet<Header: View, Content: View, Accessory: View>: View {
     @Binding private var detent: SheetDetent
-    private let draggableDetents: Set<SheetDetent>
     private let accessibilityLabel: Text
     private let accessibilityValue: (SheetDetent) -> Text
     private let header: Header
@@ -45,13 +42,16 @@ public struct DetentSheet<Header: View, Content: View, Accessory: View>: View {
     @GestureState private var isDraggingContent = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// Orta kademenin, güvenli alanlar dışındaki yüksekliğe oranı.
+    /// Orta kademenin, güvenli alanlar dışındaki yüksekliğe en küçük oranı.
     private static var mediumHeightRatio: CGFloat { 0.5 }
+
+    /// Orta kademenin en büyük oranı: içerik ne kadar uzun olursa olsun haritanın ve üstündeki
+    /// butonların görünür kalacağı sınır.
+    private static var maxMediumHeightRatio: CGFloat { 0.8 }
 
     /// - Parameters:
     ///   - detent: Mevcut kademe. Sayfa bir kademeye oturduğunda güncellenir; dışarıdan
     ///     değiştirilirse sayfa o kademeye geçer.
-    ///   - draggableDetents: Kullanıcının sürükleyerek ulaşabildiği kademeler.
     ///   - accessibilityLabel: Sürükleme göstergesinin VoiceOver etiketi.
     ///   - accessibilityValue: Kademenin VoiceOver'da seslendirilen adı.
     ///   - header: Her zaman görünen, sayfayı sürükleyen üst bölge.
@@ -59,7 +59,6 @@ public struct DetentSheet<Header: View, Content: View, Accessory: View>: View {
     ///   - accessory: Sayfanın üstünde duran ve onu orta kademeye kadar izleyen öğeler.
     public init(
         detent: Binding<SheetDetent>,
-        draggableDetents: Set<SheetDetent> = Set(SheetDetent.allCases),
         accessibilityLabel: Text,
         accessibilityValue: @escaping (SheetDetent) -> Text,
         @ViewBuilder header: () -> Header,
@@ -68,7 +67,6 @@ public struct DetentSheet<Header: View, Content: View, Accessory: View>: View {
     ) {
         _detent = detent
         _tracker = State(initialValue: DetentSheetTracker(detent: detent.wrappedValue))
-        self.draggableDetents = draggableDetents
         self.accessibilityLabel = accessibilityLabel
         self.accessibilityValue = accessibilityValue
         self.header = header()
@@ -146,8 +144,8 @@ public struct DetentSheet<Header: View, Content: View, Accessory: View>: View {
         }
         .contentShape(Rectangle())
         // Öncelikli: sürükleme başlayınca başlıktaki butonun dokunuşu iptal olur. Eşzamanlı
-        // olsaydı parmak butonun üstünde kalkınca buton da tetiklenirdi (ör. arama, sayfayı
-        // büyük kademeye açardı). Kısa dokunuş sürükleme eşiğini geçmediği için butona gider.
+        // olsaydı parmak butonun üstünde kalkınca buton da tetiklenirdi (ör. arama açılırdı).
+        // Kısa dokunuş sürükleme eşiğini geçmediği için butona gider.
         .highPriorityGesture(dragGesture(.header, state: $isDraggingHeader))
     }
 
@@ -217,21 +215,18 @@ public struct DetentSheet<Header: View, Content: View, Accessory: View>: View {
 
     private var heights: SheetDetentHeights {
         let collapsed = metrics.headerHeight + metrics.safeBottom
-        let expanded = max(collapsed, metrics.screen.height - metrics.safeTop - Spacing.sm)
         let usable = metrics.screen.height - metrics.safeTop - metrics.safeBottom
-        let medium = min(max(usable * Self.mediumHeightRatio + metrics.safeBottom, collapsed), expanded)
-        return SheetDetentHeights(collapsed: collapsed, medium: medium, expanded: expanded)
-    }
-
-    /// Şu an ulaşılabilen kademeler: sürüklenebilenler ve sayfanın bulunduğu kademe.
-    private var reachableDetents: [SheetDetent] {
-        draggableDetents.union([tracker.detent]).sorted()
+        let fitted = metrics.headerHeight + metrics.contentHeight + metrics.safeBottom
+        let lower = usable * Self.mediumHeightRatio + metrics.safeBottom
+        let upper = usable * Self.maxMediumHeightRatio + metrics.safeBottom
+        let medium = max(min(max(fitted, lower), upper), collapsed)
+        return SheetDetentHeights(collapsed: collapsed, medium: medium)
     }
 
     private var limits: DetentSheetTracker.Limits {
         let heights = heights
-        let detents = reachableDetents
-        let upper = heights[detents.last ?? .expanded]
+        let detents = SheetDetent.allCases
+        let upper = heights[detents.last ?? .medium]
         let visibleContent = upper - metrics.headerHeight
         let fullContent = metrics.contentHeight + metrics.contentBottomInset
         return DetentSheetTracker.Limits(
@@ -266,7 +261,7 @@ public struct DetentSheet<Header: View, Content: View, Accessory: View>: View {
     }
 
     private func adjust(_ direction: AccessibilityAdjustmentDirection) {
-        let detents = reachableDetents
+        let detents = SheetDetent.allCases
         switch direction {
         case .increment: detent = detents.first { $0 > detent } ?? detent
         case .decrement: detent = detents.last { $0 < detent } ?? detent
@@ -275,7 +270,7 @@ public struct DetentSheet<Header: View, Content: View, Accessory: View>: View {
     }
 
     private func scrollForAccessibility(_ edge: Edge) {
-        let page = heights[reachableDetents.last ?? detent] - metrics.headerHeight
+        let page = heights[.medium] - metrics.headerHeight
         let amount: CGFloat
         switch edge {
         case .top, .leading: amount = -page
@@ -289,7 +284,6 @@ extension DetentSheet where Accessory == EmptyView {
     /// Eşlikçisi olmayan sayfa.
     public init(
         detent: Binding<SheetDetent>,
-        draggableDetents: Set<SheetDetent> = Set(SheetDetent.allCases),
         accessibilityLabel: Text,
         accessibilityValue: @escaping (SheetDetent) -> Text,
         @ViewBuilder header: () -> Header,
@@ -297,7 +291,6 @@ extension DetentSheet where Accessory == EmptyView {
     ) {
         self.init(
             detent: detent,
-            draggableDetents: draggableDetents,
             accessibilityLabel: accessibilityLabel,
             accessibilityValue: accessibilityValue,
             header: header,

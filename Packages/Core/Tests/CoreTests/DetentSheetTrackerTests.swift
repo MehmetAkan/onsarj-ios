@@ -7,15 +7,10 @@ import Testing
 @Suite("DetentSheetTracker")
 struct DetentSheetTrackerTests {
     private let start = Date(timeIntervalSinceReferenceDate: 0)
-    private let heights = SheetDetentHeights(collapsed: 100, medium: 400, expanded: 800)
+    private let heights = SheetDetentHeights(collapsed: 100, medium: 400)
     private var limits: DetentSheetTracker.Limits {
         DetentSheetTracker.Limits(
-            heights: heights, detents: [.collapsed, .medium, .expanded], maxContentOffset: 500, dimension: 900)
-    }
-    /// Büyük kademe sürüklemeyle ulaşılamaz (ana sayfa: yalnızca arama açar).
-    private var restricted: DetentSheetTracker.Limits {
-        DetentSheetTracker.Limits(
-            heights: heights, detents: [.collapsed, .medium], maxContentOffset: 0, dimension: 900)
+            heights: heights, detents: [.collapsed, .medium], maxContentOffset: 500, dimension: 900)
     }
 
     private func tracker(at detent: SheetDetent) -> DetentSheetTracker {
@@ -57,20 +52,20 @@ struct DetentSheetTrackerTests {
         #expect(tracker.height(at: start) == 400)
     }
 
-    @Test("İçerikte yukarı çekiş önce sayfayı büyütür, büyük kademeden sonra içeriği kaydırır")
+    @Test("İçerikte yukarı çekiş önce sayfayı büyütür, orta kademeden sonra içeriği kaydırır")
     func contentDragUpExpandsThenScrolls() {
-        var tracker = tracker(at: .medium)
+        var tracker = tracker(at: .collapsed)
 
-        drag(&tracker, region: .content, through: [0, -300, -500])
+        drag(&tracker, region: .content, through: [0, -200, -400])
 
-        #expect(tracker.height(at: start) == 800)
+        #expect(tracker.height(at: start) == 400)
         #expect(tracker.contentOffset(at: start) == 100)
     }
 
     @Test("İçerikte aşağı çekiş önce içeriği en üste döndürür, sonra sayfayı küçültür")
     func contentDragDownScrollsThenShrinks() {
         var tracker = tracker(at: .medium)
-        drag(&tracker, region: .content, through: [0, -500])
+        drag(&tracker, region: .content, through: [0, -100])
         _ = tracker.dragEnded(velocity: 0, limits: limits, at: start, reduceMotion: false)
         tracker.finishMotions(limits: limits, at: start.addingTimeInterval(10))
         #expect(tracker.contentOffset(at: start) == 100)
@@ -78,16 +73,16 @@ struct DetentSheetTrackerTests {
         drag(&tracker, region: .content, through: [0, 60, 250])
 
         #expect(tracker.contentOffset(at: start) == 0)
-        #expect(tracker.height(at: start) == 650)
+        #expect(tracker.height(at: start) == 250)
     }
 
     @Test("Başlık her zaman sayfayı sürükler, içeriği kaydırmaz")
     func headerDragMovesSheetOnly() {
-        var tracker = tracker(at: .medium)
+        var tracker = tracker(at: .collapsed)
 
         drag(&tracker, region: .header, through: [0, -200])
 
-        #expect(tracker.height(at: start) == 600)
+        #expect(tracker.height(at: start) == 300)
         #expect(tracker.contentOffset(at: start) == 0)
     }
 
@@ -104,8 +99,8 @@ struct DetentSheetTrackerTests {
 
     @Test("Bırakılan sayfa seçilen kademeye oturur ve kademeyi bildirir")
     func releaseSettlesOnDetent() {
-        var tracker = tracker(at: .medium)
-        drag(&tracker, region: .header, through: [0, -150])
+        var tracker = tracker(at: .collapsed)
+        drag(&tracker, region: .header, through: [0, -250])
 
         let detent = tracker.dragEnded(velocity: 0, limits: limits, at: start, reduceMotion: false)
         tracker.finishMotions(limits: limits, at: start.addingTimeInterval(10))
@@ -124,38 +119,5 @@ struct DetentSheetTrackerTests {
 
         #expect(tracker.height(at: start) == 400)
         #expect(tracker.dragEnded(velocity: -900, limits: limits, at: start, reduceMotion: false) == nil)
-    }
-
-    @Test("Sürüklenemeyen kademeye çıkılamaz: ortadan yukarı fırlatılan sayfa ortaya döner")
-    func restrictedUpperDetentIsNotReachable() {
-        var tracker = DetentSheetTracker(detent: .medium)
-        tracker.layoutChanged(restricted, at: start)
-
-        for step: CGFloat in [0, -300] {
-            tracker.dragChanged(
-                region: .header, translation: CGSize(width: 0, height: step), limits: restricted, at: start
-            )
-        }
-        #expect(tracker.height(at: start) < 700)
-
-        let detent = tracker.dragEnded(velocity: -2_000, limits: restricted, at: start, reduceMotion: false)
-        #expect(detent == .medium)
-    }
-
-    @Test("Aramayla açılan büyük kademeden aşağı sürüklenebilir")
-    func expandedCanBeDraggedDown() {
-        var tracker = DetentSheetTracker(detent: .expanded)
-        let fromExpanded = DetentSheetTracker.Limits(
-            heights: heights, detents: [.collapsed, .medium, .expanded], maxContentOffset: 0, dimension: 900
-        )
-        tracker.layoutChanged(fromExpanded, at: start)
-
-        for step: CGFloat in [0, 350] {
-            tracker.dragChanged(
-                region: .header, translation: CGSize(width: 0, height: step), limits: fromExpanded, at: start
-            )
-        }
-
-        #expect(tracker.dragEnded(velocity: 0, limits: fromExpanded, at: start, reduceMotion: false) == .medium)
     }
 }

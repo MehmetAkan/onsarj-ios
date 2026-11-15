@@ -19,11 +19,22 @@ katmanı yazıldı: renk paleti, tipografi, boşluk ve yarıçap token'ları. Ma
 bağlı (Adım 26). **Geçici:** ana sayfa tasarlanırken açılış doğrudan haritaya gidiyor
 (`RootView.opensMapOnLaunch = true`, Adım 27). Oturum backend'le birlikte gelecek.
 
-**Ana sayfa:** Dört parçada yazılıyor. A parçası (yüzen butonlar + üç kademeli alt sayfa +
-arama çubuğu) tamam (Adım 27). Alt sayfa kendi bileşenimiz `DetentSheet` (K-22, Adım 28);
-iOS'un `presentationDetents` yapısı kullanılmıyor. Alt butonlar sayfayı izliyor, büyük kademe
-yalnızca aramayla açılıyor (Adım 29). Sırada B–D: kategori çipleri, araç kartı,
-alt butonlar.
+**Ana sayfa:** Alt sayfa kendi bileşenimiz `DetentSheet` (K-22); iOS'un `presentationDetents`
+yapısı kullanılmıyor. **İki kademeli** (küçük, orta; K-25, Adım 33): arama alanı sayfayı
+büyütmez, `onSearchTapped` ile dışarı bildirir; arama ayrı bir ekran olacak. Sayfada arama
+satırı, kategori çipleri, araç kartı (Adım 33) ve alt butonlar var. Araç verisi Debug'da
+fixture'dan, Release'de boş depodan geliyor (backend bekleniyor).
+
+**Arama sayfası (Adım 36):** Ana sayfadaki arama alanından sistem `.sheet`'i olarak açılıyor; başlangıç ve
+yazma halleri tamam, iOS 18.5 / 26.3 / 27.0'da UI testiyle doğrulandı. Veri Debug'da geçici tasarım
+verisi (`SearchDesignFixtures`, silinecek). **Sırada:** sonuç listesi ekranı ve arama kaynağının kararı.
+Proje sahibinin kararını bekleyenler: sayfa arka planının sürümler arası farkı (sistem sayfası mı,
+`DetentSheet` mi), istasyon rozeti için ayrı token, `icon-category-mosque` görseli.
+
+**Plan seçenekleri (Adım 37):** Ana sayfadaki "Seçenekler"den, arama sayfasıyla aynı sistem `.sheet`'iyle açılıyor;
+şarj ağları ve ağ seçici aynı modal içinde yığınla açılıyor. Güçlü tercih (kalp) Adım 38'de kaldırıldı. Kaydet düğmesi yok, her değişiklik anında
+`UserDefaults`'a yazılıyor (`RoutePreferencesStoring` arkasında; ileride backend). Şarj ağları Debug'da fixture'dan
+(`FixtureChargingNetworkCatalog`, K-23), Release'de boş katalog.
 
 **Sırada:** İstasyon katmanı (GeoJSON kaynağı + symbol layer + kaynak düzeyinde kümeleme, CLAUDE.md 5.4).
 Kayıt akışının ekranları tamam ve ana haritaya bağlı. Kodun doğrulanması,
@@ -38,6 +49,513 @@ diğerleri boş.
 
 **Tüm dosyası `#if canImport(UIKit)` ile korunan dosyalar (CLAUDE.md 6.8, eşik 5):** 3 —
 `UITypography.swift`, `FormTextField.swift`, `HiddenNavigationBar.swift`.
+
+---
+
+## Adım 38 — Plan seçenekleri düzeltmeleri: X, özet düzeni, güçlü tercih kaldırıldı
+
+**Tarih:** 2026-11-15
+
+**Ne yapıldı**
+- Plan seçenekleri başlığındaki "Tamamlandı" kaldırıldı; yerine alt sayfalardaki yuvarlak X (`ModalCloseButton`).
+- Şarj ağları özeti yeniden düzenlendi: "Tercih edilen" ve "Kaçınılan" küçük başlık (`caption`, `textSecondary`),
+  altında virgülle ayrılmış ağ adları (en çok 2 satır, "…"); iki grup ince bir çizgiyle ayrılıyor (ikisi de doluysa).
+- **Güçlü tercih (kalp) tamamen kaldırıldı** (proje sahibinin kararı): `NetworkPreference` silindi,
+  `RoutePreferences.preferredNetworks` artık `[ChargingNetwork.ID]`, `toggleStrong` yok. Şarj ağları sayfasındaki
+  kalp düğmesi ve `StrongPreferenceToggleStyle` silindi. `AppIcon`'dan `preference`, `strongPreference` ve yalnızca
+  özetteki kalp için eklenen `image` erişimcisi kaldırıldı.
+- Tercih deposu eski kayıt biçimini (`{"id", "isStrong"}`) okuyabiliyor, yalnızca kimliği alıyor; yeni kayıt düz dizge.
+- Metinler: `plan.done`, `plan.networks.preferredSummary`, `plan.networks.avoidedSummary`,
+  `plan.networks.accessibility.strong`, `networks.accessibility.strong` silindi; `plan.networks.preferred`
+  ("Tercih edilen"), `plan.networks.avoided` ("Kaçınılan") eklendi; `networks.preferred.note` kalp cümlesi çıkarılarak
+  "Planlamada önceliklendirilir." oldu.
+
+**Dosyalar**
+- Silinen: `Packages/Domain/Sources/OnsarjDomain/Models/NetworkPreference.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/Components/StrongPreferenceToggleStyle.swift`
+- Değişen: `Packages/Domain/Sources/OnsarjDomain/Models/RoutePreferences.swift`,
+  `Packages/Domain/Tests/DomainTests/RoutePreferencesTests.swift`,
+  `Packages/Services/Sources/RoutePlanningService/UserDefaultsRoutePreferencesStore.swift`,
+  `Packages/Services/Tests/ServicesTests/RoutePreferencesStoreTests.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/{PlanOptionsView,PlanOptionsPage,ChargingNetworksView,
+  RoutePreferencesModel,RoutePreferences+Presentation}.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/Components/{ModalHeader,NetworkRow,NetworkSummary,
+  PreviewRoutePlanningSources}.swift`, `Packages/Features/Tests/FeaturesTests/RoutePreferencesModelTests.swift`,
+  `Packages/Core/Sources/DesignSystem/AppIcon.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`,
+  `OnsarjUITests/PlanOptionsPresentationTests.swift`, `PROGRESS.md`
+
+**Kararlar**
+- Güçlü tercihin tamamen kaldırılması (Domain modeli dahil) proje sahibinin kararı; Android tarafının da aynı
+  modele uyması gerekir.
+- Adım 37'deki karşılaştırma görüntüsünde görünen gri ikinci segment, 2.9 doğrulaması için geçici konan sistem
+  `Picker`'ıydı; uygulamada yoktur.
+
+**Doğrulama**
+- `Packages/Domain`: `swift test` 18/18. `Packages/Services`: `swift test` 38/38 (eski biçim testi yeni),
+  `swift build -c release` geçti. `Packages/Core`: `swift build` geçti.
+- `xcodebuild test` Features (iPhone SE, iOS 18.3): 48/48.
+- `PlanOptionsPresentationTests` (2 test): iOS 18.5 ve 26.3'te geçti. Akışa kaçınılan ağ ekleme eklendi; özet, X ile
+  kapanma ve yeniden açılışta korunma doğrulandı.
+- `swiftlint lint --strict`, `swift format lint --strict`: 0 ihlal.
+
+**Bilinen eksikler**
+- Adım 37'deki diğer eksikler geçerli ("Kaçınılıyor" kapsülü dolgusuz, ad çözümü hatası ayrımı, fixture geçici).
+
+**Sıradaki adım**
+- İstasyon katmanı veya rota planlama isteğinin tercihleri taşıması (K-10).
+
+---
+
+## Adım 37 — Plan seçenekleri ve şarj ağları (RoutePlanningFeature)
+
+**Tarih:** 2026-11-15
+
+**Ne yapıldı**
+- Domain: `ChargeStopStrategy`, `RouteAvoidance`, `ChargingNetwork` (`ID` sarmalayıcı), `NetworkPreference`,
+  `RoutePreferences` (değişmez: bir ağ iki listede birden olamaz, tekrar eklenmez; `init` de düzeltir) ve
+  `RoutePreferencesStoring`, `ChargingNetworkCatalog` protokolleri.
+- Servisler: `UserDefaultsRoutePreferencesStore` (batarya deposuyla aynı yaklaşım; tek anahtar
+  `onsarj.routePreferences`, enum'lar dizge olarak); `FixtureChargingNetworkCatalog` (tamamı `#if DEBUG`, JSON → DTO →
+  `ChargingNetworkMapper`, 15 ağ). Arama Türkçe kurallarla büyük/küçük harf ve aksan duyarsız "içerir"
+  (`NetworkSearchKey`), sonuç Türkçe alfabe sırasıyla.
+- Özellik: `PlanOptionsView` (kök, kendi `NavigationStack`'i), `PlanOptionsPage`, `ChargingNetworksView`,
+  `NetworkPickerView` (iki kip). `RoutePreferencesModel` üç sayfada paylaşılıyor; her değişiklik bir kez ve sırayla
+  `save` ediliyor, sonucu değiştirmeyen işlem kaydedilmiyor. `NetworkPickerModel`: 300 ms bekleme, `task(id:)` ile eski
+  istek iptali, yükleniyor / sonuç yok / hata + "Tekrar dene".
+- DesignSystem: `SegmentedControl` bileşeni; `AppIcon`'a 9 simge ve `Text` içinde kullanmak için `image` erişimcisi.
+- App: `AppRouter.isPlanOptionsPresented`, `RootView` sunumu (`onOptions` bağlandı), `AppDependencies`'e tercih deposu
+  ve katalog (Release'de `NoChargingNetworksCatalog`).
+- `OnsarjUITests/PlanOptionsPresentationTests`: aç → seç → ağ ekle → güçlü tercih → kapat → uygulamayı yeniden aç →
+  seçimler korunuyor; X ve aşağı çekme ile kapanma. Test sonunda tercihleri varsayılana döndürüyor.
+
+**Dosyalar**
+- Eklenen: `Packages/Domain/Sources/OnsarjDomain/Models/{ChargeStopStrategy,RouteAvoidance,ChargingNetwork,
+  NetworkPreference,RoutePreferences}.swift`, `Packages/Domain/Sources/OnsarjDomain/Protocols/{RoutePreferencesStoring,
+  ChargingNetworkCatalog}.swift`, `Packages/Domain/Tests/DomainTests/RoutePreferencesTests.swift`,
+  `Packages/Services/Sources/RoutePlanningService/UserDefaultsRoutePreferencesStore.swift`,
+  `Packages/Services/Sources/StationService/DTO/{ChargingNetworkDTO,ChargingNetworkMapper}.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/{FixtureChargingNetworkCatalog,NetworkSearchKey}.swift`,
+  `Packages/Services/Tests/ServicesTests/{RoutePreferencesStoreTests,ChargingNetworkCatalogTests}.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/{PlanOptionsView,PlanOptionsPage,ChargingNetworksView,
+  NetworkPickerView,RoutePreferencesModel,NetworkPickerModel,RoutePreferences+Presentation}.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/Components/{ModalHeader,WrappingHStack,AvoidanceChips,
+  StrongPreferenceToggleStyle,NetworkRow,NetworkSummary,NetworkSearchField,PickerRow,
+  PreviewRoutePlanningSources}.swift`, `Packages/Features/Tests/FeaturesTests/RoutePreferencesModelTests.swift`,
+  `Packages/Core/Sources/DesignSystem/Components/SegmentedControl.swift`,
+  `OnsarjUITests/PlanOptionsPresentationTests.swift`
+- Değişen: `Packages/Core/Sources/DesignSystem/AppIcon.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`, `App/Navigation/AppRouter.swift`,
+  `App/RootView.swift`, `App/Composition/AppDependencies.swift`, `PROGRESS.md`
+- Silinen: `Packages/Features/Sources/RoutePlanningFeature/RoutePlanningFeature.swift`,
+  `Packages/Services/Sources/RoutePlanningService/RoutePlanningService.swift`,
+  `Packages/Services/Sources/StationService/StationService.swift`
+- Proje sahibi uygulama hedefine `RoutePlanningFeature`, `RoutePlanningService`, `StationService` ürünlerini bağladı.
+
+**Kararlar**
+- **Segment denetimi: kendi `SegmentedControl`'ümüz (2.9).** Sistem `Picker(.segmented)` geçici olarak kendi
+  denetimimizin altına konup iOS 18.5 ve 26.3'te ekran görüntüsüyle karşılaştırıldı, sonra kaldırıldı. Sistem denetimi
+  iki sürümde farklı çiziliyor (18.5: ayırıcılı yuvarlak dikdörtgen; 26.3: ayırıcısız kapsül). İkisinde de seçili parça
+  beyaz ve dolgusuz, yazı küçük ve sabit. Tasarımın istediği belirgin dolgu yalnızca uygulama geneli
+  `UISegmentedControl.appearance()` ile verilebiliyor. Bizimki: `backgroundCard` yol, seçili parça `actionPrimary` /
+  `onActionPrimary`, eşit genişlik, büyük yazıda sarar, VoiceOver'da her parça düğme + "seçili".
+- **Sunum:** arama sayfasıyla aynı sistem `.sheet` (görünür tutamaç). Üst çubuk sistem gezinme çubuğu değil,
+  özelliğe ait `ModalHeader` (sürümler arası aynı görünüm; `hidesNavigationBar()` ile kenardan kaydırarak geri açık).
+- **Simgeler (SF Symbols, iOS 17'de var):** `back` `chevron.left` (13), `preference` `heart` (13),
+  `strongPreference` `heart.fill` (13), `remove` `xmark` (13), `checkmark` `checkmark` (13), `avoidTolls`
+  `creditcard` (13), `avoidHighways` `road.lanes` (16), `avoidFerries` `ferry` (16), `avoidBorders` `flag` (13).
+- **Yeniden kullanılan metinler:** geri `signup.phone.accessibility.back`, kapat `search.close`, tekrar dene
+  `vehicleCard.retry`, arama yer tutucusu `search.submit` ("Ara"). Bu yüzden `networks.retry` eklenmedi.
+  VoiceOver için `networks.accessibility.strong`, `networks.accessibility.remove`,
+  `plan.networks.accessibility.strong` eklendi.
+- Saklama: tanınmayan kaçınma değeri atlanır; tanınmayan durak stratejisi `optimal`'e düşer; kayıtta iki listede
+  geçen ağ yalnızca tercih edilenlerde kalır.
+- Yeni renk token'ı eklenmedi.
+
+**Doğrulama**
+- `Packages/Domain`: `swift build`, `swift test` 19/19.
+- `Packages/Services`: `swift build`, `swift test` 37/37, `swift build -c release` geçti.
+- `./Tooling/Scripts/verify-ios.sh --package Features`: geçti.
+- `xcodebuild test` Features (iPhone SE, iOS 18.3): 48/48 (7 yeni).
+- `PlanOptionsPresentationTests` (2 test): iOS 18.5, 26.3, 27.0'da geçti; tercihler yeniden açılışta korunuyor.
+- Uygulama Release: `FixtureChargingNetworkCatalog` sembolü 0, `NetworkSearchKey` 0, "CHARGING TOGETHER" dizgesi 0
+  (Debug'da 54 sembol); `UserDefaultsRoutePreferencesStore` mevcut.
+- `swiftlint lint --strict`, `swift format lint --strict`: 0 ihlal.
+
+**Bilinen eksikler**
+- **Geçici, silinecek:** `StationService/Fixtures/` (katalog ve arama anahtarı), backend gelince (K-23).
+- Katalog ad çözümünde hata alırsa kayıtlı ağlar "Bilinmeyen ağ" görünür (ağ hatası ile silinmiş ağ ayrılmıyor).
+- "Kaçınılıyor" kapsülü dolu değil, onay simgeli kırmızı çerçeve: kırmızı dolgu için uygun token yok.
+- Kaçınma çiplerinden feribot çipi simgesi nedeniyle birkaç nokta daha yüksek.
+- `ModalHeader` `ScreenHeader`'a benziyor; başka modal da gerekirse `DesignSystem`'e taşınabilir.
+- `xxxLarge` / iPhone SE matrisi önizlemede yazıldı; Xcode kanvasında gözle kontrol edilecek.
+
+**Sıradaki adım**
+- İstasyon katmanı veya rota planlama isteğinin tercihleri taşıması (backend sözleşmesi K-10 ile).
+
+---
+
+## Adım 36 — Arama sayfası, tasarım aşaması (SearchFeature)
+
+**Tarih:** 2026-11-15
+
+**Ne yapıldı**
+- `SearchFeature` yazıldı: `SearchView` (kök), `SearchModel` (`@Observable`), `SearchRow` (`place`,
+  `history`, `charger`); bileşenler `SearchTopBar`, `SearchRowView`, `SavedPlacesChips`. Yer tutucu
+  `SearchFeature.swift` silindi.
+- İki hal: **başlangıç** (kayıtlı yer çipleri + geçmiş; geçmiş satırı sola kaydırınca "Sil") ve **yazma**
+  (çipler ve geçmiş gizli, öneri listesi). Yalnızca boşluktan oluşan sorgu başlangıç sayılır. Yazma halinde
+  alanın içinde temizle düğmesi, kapat yerine "Ara" kapsülü; geçiş hareketli, "Hareketi Azalt" açıkken hareketsiz.
+  Klavye arama tuşu "Ara" ile aynı; boş sorguda `onSubmit` çağrılmaz. Liste kaydırılınca klavye kapanır.
+- Sayfa açılınca alan odaklanır, klavye açılır. Ekran geçiş yapmaz; tüm istekler kapanışlarla dışarı bildirilir.
+- App: `AppRouter.isSearchPresented` (2.6 onayıyla), `RootView` ana haritanın üstünde sistem `.sheet`'i
+  (büyük kademe, görünür tutamaç) sunuyor; `onSearchTapped` açıyor, `onClose` kapatıyor, diğer kapanışlar boş.
+  `AppDependencies` geçmiş ve öneri kapanışlarını veriyor.
+- `AppIcon`: `close` (`xmark`, iOS 13), `clearText` (`xmark.circle.fill`, 13), `home` (`house.fill`, 13),
+  `work` (`briefcase.fill`, 13), `add` (`plus`, 13), `history` (`clock.arrow.circlepath`, 14),
+  `place` (`mappin.and.ellipse`, 14), `charger` (`bolt.fill`, 13). `search.*` metinleri ve satır türü için
+  VoiceOver anahtarları eklendi; yer tutucu için `home.search.placeholder` yeniden kullanıldı.
+- `OnsarjUITests/SearchPresentationTests`: aç → odak ve klavye → yaz → temizle → X ile kapat; ve aşağı
+  çekerek kapat. Her adımda ekran görüntüsü.
+
+**Dosyalar**
+- Eklenen: `Packages/Features/Sources/SearchFeature/{SearchView,SearchModel,SearchRow}.swift`,
+  `Packages/Features/Sources/SearchFeature/Components/{SearchTopBar,SearchRowView,SavedPlacesChips}.swift`,
+  `Packages/Features/Tests/FeaturesTests/SearchModelTests.swift`, `App/Composition/SearchDesignFixtures.swift`,
+  `OnsarjUITests/SearchPresentationTests.swift`
+- Değişen: `Packages/Core/Sources/DesignSystem/AppIcon.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`, `App/Navigation/AppRouter.swift`,
+  `App/RootView.swift`, `App/Composition/AppDependencies.swift`, `PROGRESS.md`
+- Silinen: `Packages/Features/Sources/SearchFeature/SearchFeature.swift`
+- Proje sahibi Xcode'dan uygulama hedefine `SearchFeature` ürününü bağladı (`project.pbxproj`).
+
+**Kararlar**
+- **Sunum: sistem `.sheet` (büyük kademe).** Doğrulama (2.9): aynı UI testi iOS 18.5 (iPhone 16 Pro Max),
+  26.3 (iPhone 17 Pro Max) ve 27.0 (iPhone 18 Pro Max) simülatörlerinde koşuldu, ekran görüntüleri
+  karşılaştırıldı. Üçünde de üstte harita şeridi, yuvarlak köşe, tutamaç, alan odaklı ve klavye açık;
+  X ve aşağı çekme ile kapanıyor. Sayfanın içi üçünde aynı. **Sürüme bağlı fark yalnızca sistemin arka
+  planında:** iOS 18.5'te harita küçülüp geriye itiliyor (kart yığını, üstte siyah şerit); 26.3 ve 27.0'da
+  harita yerinde kalıp karartılıyor, köşeler daha yuvarlak. Kendi `DetentSheet`'imiz bu farkı kaldırırdı,
+  ama K-22 gereği hiçbir zaman kapanmaz; aşağı çekerek kapatma, klavye ve odak için yeni bir kapanabilir
+  mod gerekirdi. İçerik birebir aynı kaldığı ve fark yalnızca arka plan olduğu için sistem sayfası seçildi.
+  Arka planın da birebir aynı olması istenirse karar proje sahibinde (K-22'ye ek).
+- **Token:** `actionInverse`/`onActionInverse` eklenmedi; istenen değerler mevcut `Theme.actionPrimary`
+  (gray950 / beyaz) ve `Theme.onActionPrimary` (gray50 / ink0) ile aynı. "Ara" kapsülü bunları kullanıyor.
+- **iOS 17 doğrudan denenmedi (açık nokta):** makinede iOS 17 simülatörü yok. Proje sahibinin kararıyla
+  iOS 18.5, 26 öncesi davranışın temsilcisi sayıldı.
+- "Ara" kapsülüne `accessibilityIdentifier` verildi: klavyenin arama tuşu da "Ara" etiketini taşıdığı için
+  UI testi kapsülü kimlikle buluyor. Kimlik kullanıcıya görünmez.
+- Liste ayırıcısı satır içeriğinin sağ kenarına hizalandı; iOS 18.5 varsayılan olarak ekran kenarına uzatıyordu.
+
+**Doğrulama**
+- `cd Packages/Core && swift build`: geçti.
+- `./Tooling/Scripts/verify-ios.sh --package Features`: geçti.
+- `xcodebuild test` Features (iPhone SE, iOS 18.3): 41/41 geçti (`SearchModel` 6 yeni test, `HomeMapModel` ve
+  `VehicleCardModel` dahil).
+- `SearchPresentationTests` (2 test): iOS 18.5, 26.3, 27.0'da geçti. Ayırıcı düzeltmesinden sonra iOS 18.5'te
+  yeniden koşuldu, geçti.
+- Uygulama Release: `SearchDesignFixtures` sembolü 0, "Raw Coffe" dizgesi 0 (Debug'da 2).
+- `swiftlint lint --strict`, `swift format lint --strict`: 0 ihlal.
+
+**Bilinen eksikler**
+- **Geçici, silinecek:** `App/Composition/SearchDesignFixtures.swift` (yalnızca Debug) tasarım verisidir; arama
+  kaynağı kararlaştırılıp bağlanınca silinir (K-23 ile aynı ilke). Release'de geçmiş ve öneriler boş.
+- Şarj istasyonu rozeti `Theme.actionPrimary` dairesi üzerinde `onActionPrimary` simge kullanıyor (koyu temada
+  beyaz daire). Anlamsal olarak eylem token'ı; ayrı bir rozet token'ı istenirse eklenmeli.
+- Sonuç listesi ekranı, kayıtlı yer (ev, iş) ekranları ve geçmiş silmenin kalıcılığı yok; kapanışlar boş.
+- Önizleme matrisi yazıldı; `xxxLarge` görünümü Xcode kanvasında/cihazda kontrol edilecek.
+
+**Sıradaki adım**
+- Sonuç listesi ekranı (Ara'ya basınca) ve arama kaynağının kararı.
+
+---
+
+## Adım 35 — Debug senaryoları, fixture görseli ve tutamaç token'ı (C3)
+
+**Tarih:** 2026-11-14
+
+**Ne yapıldı**
+- `FixtureScenario` (`#if DEBUG`): `default`, `noImage`, `noVehicles`, `failure`; tanınmayan veya eksik
+  değer `default`. Başlatma argümanı `-onsarjFixtureScenario <değer>` ile seçilir; okuma yalnızca
+  `App/Composition` içinde, `#if DEBUG` altında.
+- `FixtureVehicleRepository` senaryoyu ve `resourceLookup: @Sendable (String) -> URL?` kapanışını init'te
+  alıyor. `failure` için ayrı `FixtureScenarioFailure` hatası. JSON'daki `imageUrl` artık görsel adı
+  (`"vehicle-empty-state"`); depo adı `file://` adresine çevirip **eşlemeden önce** DTO'ya yazıyor.
+- `VehicleMapper`'a dahili `acceptsFileImageURLs` parametresi (varsayılan `false`) eklendi; yalnızca
+  fixture `true` veriyor. `true` iken de boş, geçersiz, `ftp://` ve yolsuz `file://` `nil` kalıyor.
+- `App/Composition/FixtureImageExporter` (`#if DEBUG`): `Illustration.vehicleEmptyState`'i `ImageRenderer`
+  ile şeffaf PNG'ye çevirip (ölçek 3) `Caches/onsarj-fixture/vehicle-empty-state.png`'ye yazıyor; yazılamazsa
+  sözlük boş, araç görselsiz yükleniyor.
+- `Theme.batteryThumb` (iki temada beyaz) eklendi; çubuk tutamacı onu kullanıyor, gölge aynı.
+
+**Dosyalar**
+- Eklenen: `Packages/Services/Sources/VehicleService/Fixtures/FixtureScenario.swift`,
+  `Packages/Services/Tests/ServicesTests/FixtureScenarioTests.swift`,
+  `App/Composition/FixtureImageExporter.swift`
+- Değişen: `Packages/Services/Sources/VehicleService/Fixtures/FixtureVehicleRepository.swift`,
+  `Packages/Services/Sources/VehicleService/DTO/{VehicleDTO,VehicleMapper}.swift`,
+  `Packages/Services/Tests/ServicesTests/VehicleMapperTests.swift`,
+  `Packages/Core/Sources/DesignSystem/SemanticColors.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/BatteryLevelSlider.swift`,
+  `App/Composition/AppDependencies.swift`, `PROGRESS.md`
+
+**Kararlar**
+- **`acceptsFileImageURLs` (proje sahibinin kararı, Seçenek 1):** `file://` görsel adresi yalnızca
+  `#if DEBUG` fixture'ının çağrısında kabul edilir. Gerekçe: eşleme her zaman `file` şemasını kabul etseydi
+  backend'den gelebilecek hatalı bir yerel adres sessizce geçerli sayılırdı (Seçenek 2); fixture görseli
+  eşlemeden sonra yazsaydı eşleme yolu atlanırdı (Seçenek 3). Parametre `internal`; Domain ve genel API değişmedi.
+- `VehicleDTO.imageUrl` ve `VehicleListDTO.vehicles` `var` oldu (fixture'ın eşlemeden önce yazabilmesi için).
+
+**Doğrulama**
+- `Packages/Domain`: `swift build`, `swift test` 10/10.
+- `Packages/Services`: `swift build`, `swift test` 24/24 (C1'in 14 testi aynen geçiyor; 3 eşleme, 7 senaryo testi
+  yeni), `swift build -c release` geçti.
+- `./Tooling/Scripts/verify-ios.sh --package Features`: geçti.
+- `swiftlint lint --strict`, `swift format lint --strict … App Packages/*/Sources Packages/*/Tests`: 0 ihlal.
+- Uygulama Release (genel iOS simülatörü): `FixtureScenario` sembolü 0, `FixtureVehicleRepository` sembolü 0,
+  `onsarjFixtureScenario` dizgesi 0. Karşılaştırma için Debug'da (`Onsarj.debug.dylib`) 128 sembol ve 1 dizge.
+- Simülatör (iPhone SE 3. nesil), dört senaryo ekran görüntüsüyle: `default` görselli kart; `noImage` görselsiz
+  kart, yazılar tam genişlikte; `noVehicles` bulanık görsel + "Araç ekle"; `failure` "Araç yüklenemedi" +
+  "Tekrar dene". **`AsyncImage` `file://` adresini simülatörde yüklüyor.** Dört halde kart yüksekliği aynı.
+
+**Bilinen eksikler**
+- Fixture görseli bir Togg, fixture aracı BYD Dolphin: yalnızca test için bilinen tutarsızlık. Gerçek Dolphin
+  görseli gelince fixture'daki `imageUrl` değişir.
+- Yazılan PNG ~3,6 MB (görselin doğal boyutu × 3). Yalnızca Debug'da ve `Caches`'te; uygulama her açılışta
+  üzerine yazar.
+- "Camiler" çipinde simge yok (`icon-category-mosque` henüz eklenmedi).
+
+**Sıradaki adım**
+- Proje sahibi şemada senaryoyu seçip cihazda dener; ardından arama modalı (`SearchFeature`).
+
+---
+
+## Adım 34 — Araç kartı sıkılaştırıldı, orta kademe içeriğe göre uzuyor
+
+**Tarih:** 2026-11-14
+
+**Ne yapıldı**
+- Donanım paketi ("Standart") araç adının hemen altına alındı. Ad, ok ve donanım paketi artık tek
+  düğme (`onSwitchVehicle`); iki satır birlikte dokunma alanını sağlıyor. Önceden ad satırının
+  44 pt'lik dokunma alanı paketi aşağı itiyordu.
+- Kartın dikey iç boşluğu `Spacing.lg` → `Spacing.md`, satır aralıkları `Spacing.md` → `Spacing.sm`.
+  Ölçü iskeleti de buna göre güncellendi.
+- `DetentSheet` orta kademesi içeriğe göre uzuyor: en az kullanılabilir yüksekliğin %50'si, içerik
+  sığmazsa en çok %80'i; ötesinde içerik kayar. Amaç: tüm aksiyonların ilk bakışta görünmesi.
+- Alt sayfa içeriğinin altına `Spacing.md` boşluk eklendi (butonlar ekran kenarına yapışmasın).
+
+**Dosyalar**
+- Değişen: `Packages/Features/Sources/HomeMapFeature/Components/{VehicleCard,HomeBottomSheet}.swift`,
+  `Packages/Core/Sources/DesignSystem/Components/{DetentSheet,SheetDetent}.swift`, `PROGRESS.md`
+
+**Kararlar**
+- Orta kademenin üst sınırı %80 (`DetentSheet.maxMediumHeightRatio`): haritanın ve üstündeki
+  butonların görünür kalması için. Proje sahibi cihazda değerlendirecek.
+
+**Doğrulama**
+- `verify-ios.sh --package Features`: geçti. `swift test` (Core): geçti.
+- `swiftlint lint --strict`, `swift format lint --strict`: 0 ihlal.
+- Uygulama iPhone SE (3. nesil) ve iPhone 16 Pro Max simülatöründe çalıştırıldı (Large, açık tema):
+  iki cihazda da arama, çipler, araç kartı ve iki alt buton orta kademede tamamen görünüyor.
+
+**Bilinen eksikler**
+- "Camiler" çipinde simge görünmüyor: `icon-category-mosque` asset kataloğunda hâlâ yok.
+- `xxxLarge` yazı boyutunda içerik %80 sınırını aşarsa kayar; cihazda bakılacak.
+
+**Sıradaki adım**
+- Kartın cihazda onayı; ardından arama modalı (`SearchFeature`).
+
+---
+
+## Adım 33 — Ana sayfa modalı iki kademe + araç kartı (C2)
+
+**Tarih:** 2026-11-14
+
+**Ne yapıldı**
+- `DetentSheet` iki kademeye indi: `SheetDetent.expanded`, `SheetDetentHeights.expanded`,
+  `draggableDetents` parametresi ve ulaşılabilir kademe hesabı kaldırıldı; `HomeMapModel.beginSearch()`
+  ve `home.sheet.accessibility.expanded` metni silindi. Arama alanı artık sayfayı büyütmez;
+  `HomeMapView` `onSearch` → `onSearchTapped` (K-25). Arama alanı VoiceOver'da yer tutucu metniyle düğme.
+- Araç kartı (`VehicleCard`) çip şeridinin altına, alt butonların üstüne eklendi. Haller:
+  yükleniyor, dolu, görselsiz, araç yok ("Araç ekle"), hata ("Tekrar dene"). Tüm haller aynı
+  yüksekliği, dolu halin satırlarıyla aynı yazı tiplerinden oluşan görünmez bir ölçü iskeletinden alır.
+- `BatteryLevelSlider`: yalnızca yatay başlayan sürüklemeyi alır (`DetentSheet` ile aynı kural ve
+  eşik), 1'er adım, renk `BatteryLevel.band`'den, bant değişince seçim titreşimi (yalnızca sürüklerken),
+  depoya sürükleme bitince bir kez yazılır; VoiceOver ayarlanabilir öğe, adım 5.
+- `VehicleCardModel` (`@Observable`): `load()` (bir kez), `reload()`, `updateLevel(_:)`, `commitLevel()`.
+  Kayıtlı yüzde yoksa `BatteryLevel.initial`; başlangıç değeri yazılmaz.
+- DesignSystem: `Palette.yellow50…950`; `Theme.batteryLow/Medium/High/Track`; `Illustration.vehicleEmptyState`;
+  `Effects.Muted` (bulanıklık 8, opaklık 0,6); `AppIcon.settings` (`gearshape`, iOS 14) ve
+  `AppIcon.dropdown` (`chevron.down`, iOS 13). `.swiftlint.yml`'de `type_name` için `ID` istisnası;
+  `Vehicle.ID`'deki satır içi istisna kaldırıldı.
+- App: `AppDependencies` araç deposunu (Debug: `FixtureVehicleRepository`, Release: boş depo) ve
+  `UserDefaultsBatteryLevelStore`'u veriyor; `RootView` yeni parametreleri boş kapanışlarla geçiriyor.
+- CLAUDE.md 9.1'e **K-25** ve **K-22 ek notu** eklendi (proje sahibinin metni ve izniyle).
+
+**Dosyalar**
+- Eklenen: `Packages/Features/Sources/HomeMapFeature/VehicleCardModel.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/{VehicleCard,BatteryLevelSlider,PreviewVehicleSources}.swift`,
+  `Packages/Features/Tests/FeaturesTests/VehicleCardModelTests.swift`,
+  `Packages/Core/Sources/DesignSystem/{Illustration,Effects}.swift`
+- Değişen: `Packages/Core/Sources/DesignSystem/{ColorPalette,SemanticColors,AppIcon}.swift`,
+  `Packages/Core/Sources/DesignSystem/Components/{DetentSheet,DetentSheetTracker,SheetDetent,SheetDetentHeights}.swift`,
+  `Packages/Core/Tests/CoreTests/DetentSheetTrackerTests.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`,
+  `Packages/Features/Sources/HomeMapFeature/{HomeMapView,HomeMapModel}.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/{HomeBottomSheet,HomeSheetActions,MapSearchBar}.swift`,
+  `Packages/Features/Tests/FeaturesTests/HomeMapModelTests.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/Models/Vehicle.swift`, `App/Composition/AppDependencies.swift`,
+  `App/RootView.swift`, `.swiftlint.yml`, `CLAUDE.md`, `PROGRESS.md`
+- Proje sahibi Xcode'dan uygulama hedefine `VehicleService` ürününü bağladı (`project.pbxproj`).
+
+**Kararlar ve açık noktalar**
+- K-25 ve K-22 ek notu kesinleşti. Kart **orta kademede** görünür; küçük kademede yalnızca arama
+  satırı vardır. Tahmini hesapla SE'de orta kademe kartın tamamını göstermeyebilir, içerik kayar;
+  proje sahibi cihazda onaylayacak.
+- **Eksik token:** tutamaç için iki temada beyaz bir token yok. Şimdilik `Theme.backgroundCard`
+  (açık temada beyaz, koyu temada ink2, gölgeli). İki temada beyaz istenirse `batteryThumb` eklenmeli.
+- `Theme.backgroundSubtleElevated` depoda yok (Adım 31'de belirtildi) ve hiçbir yerde kullanılmıyor.
+- Görsel `dynamicTypeSize >= .xxxLarge` iken gizlenir (uygulama kökü yazı boyutunu `xxxLarge`'da sınırlar).
+- **Açık nokta:** Release'de araç deposu boştur (uydurma veri yok). K-23 gereği ilk TestFlight
+  dağıtımından önce gerçek depo (backend) bağlanmalı; aksi halde TestFlight'ta kart "Araç ekle" halinde açılır.
+- Yükleme hatası kullanıcıya gösterilir ama loglanmaz; `HomeMapFeature` henüz loglama arayüzüne bağlı değil.
+
+**Doğrulama**
+- `Packages/Core`: `swift build` geçti; `swift test` 23/23 + 10/10 geçti.
+- `verify-ios.sh --package Core` ve `--package Features`: geçti.
+- `xcodebuild test -scheme Features-Package -only-testing:FeaturesTests` (iPhone SE 3. nesil simülatörü):
+  35/35 geçti (`VehicleCardModel` 9 test, bazıları parametreli).
+- `xcodebuild build -scheme Onsarj` Debug ve Release (genel iOS simülatörü): geçti.
+- `Packages/Domain` 10/10, `Packages/Services` 14/14 geçti.
+- `swiftlint lint --strict`: 0 ihlal. `swift format lint --strict --configuration .swift-format
+  --recursive App Packages/*/Sources Packages/*/Tests`: 0 ihlal.
+- `cd Packages/Features && swift build` macOS'ta çalışmaz (Mapbox xcframework'lerinde macOS yok); 6.8/K-18
+  gereği Features `verify-ios.sh` ile doğrulandı.
+- Sürükleme hissi, titreşim ve görsel denge cihazda denenecek.
+
+**Bilinen eksikler**
+- Araç görselli önizleme yok: gerçek görsel adresi backend'den gelecek (K-24).
+- `.github/workflows/lint.yml` swift-format adımı `--recursive App Packages` kullanıyor; CI temiz
+  checkout'ta çalıştığı için `.build` yok, değiştirilmedi.
+- Arama, araç değiştirme, araç ayarları, araç ekleme kapanışları `App/`'te boş; ekranları yazılınca bağlanacak.
+
+**Sıradaki adım**
+- Kartın cihazda onayı (kademe, SE yerleşimi, tutamaç rengi); ardından arama modalı (`SearchFeature`).
+
+---
+
+## Adım 32 — Araç veri katmanı (C1)
+
+**Tarih:** 2026-11-14
+
+**Ne yapıldı**
+- `OnsarjDomain`'e araç modeli eklendi: `Vehicle` (tip güvenli `Vehicle.ID`, `displayName`,
+  `estimatedRangeKm(at:)`, `activeVehicle(in:)`), `ConnectorType`, `BodyType`, `BatteryLevel`
+  (0…100'e sıkıştırma, bant eşikleri 20/50 yalnızca burada, `initial` = %30), `BatteryLevelBand`,
+  `StoredBatteryLevel`.
+- Protokoller: `VehicleRepository` (`vehicles()`) ve `BatteryLevelStoring` (`storedLevel(for:)`,
+  `save(_:for:at:)`).
+- `VehicleService`: `VehicleDTO` + `VehicleListDTO` (camelCase, `{"vehicles": [...]}`),
+  `VehicleMapper` (tanınmayan konektör atlanır, tanınmayan kasa `other`, geçersiz görsel adresi `nil`;
+  hatalı renk, aralık dışı batarya sağlığı veya eksik zorunlu alan `VehicleMappingError` fırlatır;
+  hata aracın kimliğini, alanın JSON adını ve sebebini taşır).
+- `FixtureVehicleRepository` (tamamı `#if DEBUG`): gömülü JSON'u gerçek yoldan
+  (`JSONDecoder` → DTO → `VehicleMapper`) geçirir. Tek araç: BYD Dolphin.
+- `UserDefaultsBatteryLevelStore`: her araç için `onsarj.batteryLevel.<id>` anahtarında JSON
+  kaydı (yüzde + tarih). Kayıt yoksa veya bozuksa `nil`; varsayılan değer vermez.
+- CLAUDE.md 9.1'e proje sahibinin metniyle **K-24** ve **K-23 ek notu** eklendi (proje
+  sahibinin bu görev için açık izniyle).
+
+**Dosyalar**
+- Eklenen: `Packages/Domain/Sources/OnsarjDomain/Models/{Vehicle,ConnectorType,BodyType,BatteryLevel}.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/Protocols/{VehicleRepository,BatteryLevelStoring}.swift`,
+  `Packages/Services/Sources/VehicleService/DTO/{VehicleDTO,VehicleMapper}.swift`,
+  `Packages/Services/Sources/VehicleService/Fixtures/FixtureVehicleRepository.swift`,
+  `Packages/Services/Sources/VehicleService/UserDefaultsBatteryLevelStore.swift`,
+  `Packages/Domain/Tests/DomainTests/{BatteryLevelTests,VehicleTests}.swift`,
+  `Packages/Services/Tests/ServicesTests/{VehicleMapperTests,BatteryStoreTests}.swift`
+- Silinen: `Packages/Services/Sources/VehicleService/VehicleService.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/{Models,Protocols}/.gitkeep`
+- Değişen: `CLAUDE.md` (yalnızca 9.1'e iki satır), `PROGRESS.md`
+
+**Kararlar (hepsi çözüldü)**
+- **K-24 eksikti:** proje sahibi metni verdi, karar defterine eklendi.
+- **K-23 ile fixture biçimi:** fixture JSON'u kaynak dosyası değil, `#if DEBUG` korumalı Swift
+  dosyasında dizge sabiti (K-23 ek notu). Klasör adı K-23'le uyumlu olarak `Fixtures/`.
+- **`OnsarjDomain.swift` yer tutucusu** zaten silinmişti; yalnızca `VehicleService.swift` ve iki
+  `.gitkeep` silindi.
+- **`UserDefaults` ve Swift 6:** `UserDefaults` bu SDK'da `Sendable` değil (derleyici hatası ile
+  doğrulandı). Depo yalnızca suite adını (`String?`) tutar ve `UserDefaults`'u her çağrıda açar;
+  `nil` standart depodur. `@unchecked Sendable` kullanılmadı.
+- **SwiftLint istisnaları (satır içi, gerekçeli):** `Vehicle.ID` için `type_name` (görev adı
+  şart koşuyor); fixture JSON'u ve mapper testindeki `#F2F2F2` için `no_hardcoded_hex_color` (araç
+  boya verisi, arayüz rengi değil). İleride `Station.ID` gibi tipler gelirse `.swiftlint.yml`'de
+  `type_name.excluded: [ID]` düşünülebilir.
+
+**Doğrulama**
+- `Packages/Domain`: `swift build` geçti, `swift test` 10/10 geçti.
+- `Packages/Services`: `swift build` geçti, `swift test` 14/14 geçti, `swift build -c release` geçti.
+- `FixtureVehicleRepository`'ye kaynak kodda başka başvuru yok; tek başvuru `VehicleMapperTests`
+  içinde ve o da `#if DEBUG` altında.
+- `swiftlint lint --strict`: 0 ihlal. `swift format lint --strict` (`App`, `Packages/*/Sources`,
+  `Packages/*/Tests`): 0 ihlal. Görevdeki `--recursive App Packages` biçimi `.build`
+  içindeki üçüncü parti kodu da taradığı için kaynak klasörleriyle sınırlandı.
+
+**Bilinen eksikler**
+- Gerçek (uzak) `VehicleRepository` yok: backend sözleşmesi (K-10) bekleniyor.
+- Fixture/gerçek seçimi `App/Composition`'a bağlanmadı (görev kapsamı dışında, C2 ile).
+- Görsel disk önbelleği ayrı görev (K-24).
+
+**Sıradaki adım**
+- C2: araç kartı arayüzü (`BatteryLevel.initial`, bant rengi, görselsiz kart durumu).
+
+---
+
+## Adım 31 — Mapbox bilgi butonu ve ölçek çubuğunun yeri, alt buton köşesi
+
+**Tarih:** 2026-11-14
+
+**Ne yapıldı**
+- Mapbox bilgi (attribution) butonu sağ üste taşındı; sol üstteki menü butonuyla aynı hizada
+  (üstten `Spacing.sm`, kenardan `Spacing.screenMargin`). Mapbox'ın kendi butonu kullanılıyor.
+- Pusula bilgi butonunun altına alındı (varsayılan yeri sağ üstteydi, bilgi butonuyla çakışırdı).
+  Ölçek çubuğu menü butonunun sağına alındı; artık menünün arkasında kalmıyor.
+- Yerleşim `MapEngine`'in yeni tipi `MapControlsLayout` ile veriliyor; dışarıya Mapbox tipi
+  açılmıyor. `HomeMapView` değerleri `Spacing` token'larından veriyor.
+- `ActionTileButton` köşesi `Radius.button` (20) → `Radius.field` (12): aynı yükseklikteki arama
+  alanıyla aynı. Bu bileşen yalnızca ana sayfada kullanılıyor.
+
+**Dosyalar**
+- Eklenen: `Packages/MapboxKit/Sources/MapEngine/MapControlsLayout.swift`
+- Değişen: `Packages/MapboxKit/Sources/MapEngine/MapView.swift`,
+  `Packages/Features/Sources/HomeMapFeature/HomeMapView.swift`,
+  `Packages/Core/Sources/DesignSystem/Components/ActionTileButton.swift`, `PROGRESS.md`
+
+**Kararlar ve açık noktalar**
+- **Logo opaklığı değiştirilmedi.** Mapbox: *"You may not style the Mapbox logo."* Bilgi butonunun
+  opaklığı için iOS'ta kural yok; belirsiz olduğu için tam opaklıkta.
+- **Logo varsayılan yerinde (sol alt) kaldı; proje sahibinin kararı.** Orta ve büyük kademede sayfanın
+  arkasında kalıyor. Mapbox'ın *"must stay visible on the map"* şartıyla çelişebilir; proje sahibi
+  ABRP'nin de böyle yaptığını, sorun çıkarsa düzeltileceğini belirtti. Açık risk.
+- **`Theme.backgroundSubtleElevated` — karar bekliyor.** Token depoda yok (`a0d8d7f`'de silinmiş);
+  `MapSearchBar` zaten `Theme.backgroundCard` kullanıyor. Alternatif değer `45f0288`'de: açık
+  `Palette.gray100`, koyu `Palette.ink2`. Seçilirse token geri eklenir ve `MapSearchBar`'da tek satır değişir.
+- Sayfa öğelerinin hepsi `Theme.backgroundCard`: arama alanı, asistan butonu, çipler, alt butonlar.
+- **Varsayım:** Yapay zekâ butonu daire kaldı (yükseklik/yarıçap oranı 2). Proje sahibi şekli
+  değiştirmeyi istemedi; istenirse `Radius.field` olur.
+
+**Doğrulama**
+- `verify-ios.sh --package MapboxKit`, `--package Features`, `--package Core`: geçti.
+- `swift test` (Core): 25/25 geçti.
+- `swiftlint lint --strict` ve `swift format lint --strict`: 0 ihlal.
+- Ornament yerleşimi cihazda denenecek; önizlemede harita (ve Mapbox öğeleri) çizilmeyebilir.
+
+**Bilinen eksikler**
+- `icon-assistant.imageset` `actool` ile derlenince hata veriyor: tek ölçekli ("Any") ve 1x girişleri
+  bir arada. Xcode'da "Single Scale" + "Preserve Vector Data" seçilmeli. `icon-category-mosque` henüz yok.
+
+**Sıradaki adım**
+- SVG'ler düzeltilince önizlemede görünmelerinin doğrulanması; ardından ana sayfa B parçası.
 
 ---
 

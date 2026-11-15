@@ -3,9 +3,10 @@ import SwiftUI
 /// Simge ve etiketi yatayda ortalayan, bulunduğu genişliği dolduran buton: ana sayfadaki
 /// "Seçenekler" ve "Kayıtlı planlar" gibi.
 ///
-/// Zemin `Theme.backgroundCard`, köşe `Radius.button`, etiket `Typography.buttonSmall` ve
-/// `Theme.textPrimary`. Dokunma alanı en az `Spacing.minTapTarget`'tır; yazı büyüyünce etiket
-/// alt satıra geçer ve buton uzar. Basılıyken soluklaşır. VoiceOver etiketi görünen metindir.
+/// Zemin `Theme.backgroundCard`, köşe `Radius.field` (aynı yükseklikteki arama alanıyla aynı),
+/// etiket `Typography.buttonSmall` ve `Theme.textPrimary`. Dokunma alanı en az
+/// `Spacing.minTapTarget`'tır; yazı büyüyünce etiket alt satıra geçer ve buton uzar.
+/// Basılıyken soluklaşır. VoiceOver etiketi görünen metindir.
 ///
 /// Yan yana dizilen butonların eşit yükseklikte kalması için dikey olarak genişleyebilir;
 /// kapsayıcı `.fixedSize(horizontal: false, vertical: true)` ile en uzununa eşitler.
@@ -59,7 +60,7 @@ private struct ActionTileButtonStyle: ButtonStyle {
     private static let pressedOpacity = 0.6
 
     func makeBody(configuration: Configuration) -> some View {
-        let shape = RoundedRectangle(cornerRadius: Radius.button)
+        let shape = RoundedRectangle(cornerRadius: Radius.field)
         return configuration.label
             .font(Typography.buttonSmall)
             .foregroundStyle(Theme.textPrimary)

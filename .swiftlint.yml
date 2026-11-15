@@ -91,6 +91,8 @@ nesting:
 type_name:
   min_length: 3
   max_length: 50
+  # `Vehicle.ID` gibi `Identifiable` kimlik tipleri.
+  excluded: [ID]
 
 identifier_name:
   min_length: 2
