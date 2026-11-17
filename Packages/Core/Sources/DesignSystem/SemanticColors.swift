@@ -134,6 +134,40 @@ public enum Theme {
 
     /// Pasif sayfa noktaları.
     public static let indicatorInactive = Color(light: Palette.gray300, dark: Palette.ink3)
+
+    // MARK: - Harita: istasyon pinleri ve kümeler
+
+    /// İstasyonun tüm soketleri boş. Pinin altındaki nokta ve halesi. İki temada aynı: harita stili
+    /// temaya göre değişse de müsaitlik renkleri sabit kalır.
+    public static let availabilityAvailable = Color(light: Palette.green500, dark: Palette.green500)
+
+    /// En az bir soket dolu, en az biri boş.
+    public static let availabilityPartial = Color(light: Palette.amber500, dark: Palette.amber500)
+
+    /// Tüm soketler dolu veya arızalı.
+    public static let availabilityUnavailable = Color(light: Palette.red500, dark: Palette.red500)
+
+    /// Canlı müsaitlik verisi yok.
+    public static let availabilityUnknown = Color(light: Palette.gray400, dark: Palette.gray400)
+
+    /// Pinin logo dairesi, sapı ve müsaitlik noktasının çerçevesi. İki temada beyaz: logolar beyaz
+    /// zemin için tasarlanır.
+    public static let mapPinSurface = Color(light: .white, dark: .white)
+
+    /// Pinin logo dairesinin ince çerçevesi; beyaz daireyi açık haritadan ayırır.
+    public static let mapPinBorder = Color(light: Palette.gray300, dark: Palette.gray300)
+
+    /// Seçili pinin çerçevesi ve sapı.
+    ///
+    /// `brandPrimary` ile aynı değil: o koyu temada bir basamak açılır, pin ise harita üzerinde iki
+    /// temada da aynı yeşille seçili görünür.
+    public static let mapPinSelected = Color(light: Palette.green500, dark: Palette.green500)
+
+    /// Küme dairesinin dolgusu.
+    public static let mapClusterFill = Color(light: Palette.gray950, dark: Palette.gray950)
+
+    /// Küme dairesinin üzerindeki sayı ve çerçeve.
+    public static let onMapCluster = Color(light: .white, dark: .white)
 }
 
 extension Color {

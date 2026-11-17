@@ -38,7 +38,11 @@ Proje sahibinin kararını bekleyenler: sayfa arka planının sürümler arası 
 
 **Backend sözleşme notları:** [Docs/Backend/README.md](Docs/Backend/README.md)
 
-**Sırada:** İstasyon katmanı (GeoJSON kaynağı + symbol layer + kaynak düzeyinde kümeleme, CLAUDE.md 5.4).
+**İstasyon katmanı (Adım 41):** Haritada şarj istasyonları pin ve küme olarak görünüyor (GeoJSON kaynağı,
+kaynak düzeyinde kümeleme, sembol katmanları; CLAUDE.md 5.4). Pine dokununca seçim ve ortalama var; detay sayfası
+yok. Veri Debug'da fixture'dan (`-onsarjStationScenario dense` ile 1000 istasyon), Release'de boş depodan.
+
+**Sırada:** İstasyon detayı (pine dokununca açılacak sayfa) ve şimşek listesi (haritanın erişilebilir karşılığı).
 Kayıt akışının ekranları tamam ve ana haritaya bağlı. Kodun doğrulanması,
 tekrar gönderilmesi, kayıtlı kullanıcının ayrılması ve ad-soyadın kaydı backend sözleşmesini
 (K-10) bekliyor. `WelcomeModel` ve `PhoneEntryModel` birim testleri ayrı görev olarak bekliyor.
@@ -51,6 +55,119 @@ diğerleri boş.
 
 **Tüm dosyası `#if canImport(UIKit)` ile korunan dosyalar (CLAUDE.md 6.8, eşik 5):** 3 —
 `UITypography.swift`, `FormTextField.swift`, `HiddenNavigationBar.swift`.
+
+---
+
+## Adım 41 — Haritada şarj istasyonu pinleri ve kümeleri
+
+**Tarih:** 2026-11-17
+
+**Ne yapıldı**
+- **Domain:** `GeoCoordinate`, `GeoBoundingBox` (içerme, ölçekleme; ters köşeli kutu çökmez), `StationAvailability`
+  (`available | partial | unavailable | unknown`), `Station` (`network: ChargingNetwork`), `StationRepository`.
+  Operatör ayrı tip değil: `ChargingNetwork`'e `logoURL` eklendi (proje sahibinin kararı).
+- **Servis:** `StationDTO` ve `StationMapper` (tanınmayan müsaitlik `unknown`, aralık dışı koordinat hatası);
+  `FixtureStationRepository` (tamamı `#if DEBUG`, JSON dizge → DTO → Domain, kutu süzmesi): elle yazılmış 49
+  istasyon (Antalya 40, İstanbul 5, Ankara 4) ve `-onsarjStationScenario dense` ile sabit tohumlu 1000 istasyon.
+  Ağ kimlikleri plan seçenekleri kataloğuyla aynı; katalog fixture'ına Shell Recharge (`net_shell`) eklendi.
+  Görsel adresi doğrulaması `OnsarjCore.MediaURL`'e taşındı (araç ve istasyon eşleyicileri ortak kullanıyor).
+- **Harita (`MapEngine`):** GeoJSON kaynağı + kaynak düzeyinde kümeleme + üç sembol katmanı (pinler, kümeler,
+  seçili pin). Pin ve küme görselleri SwiftUI ile (`StationPinView`, `StationClusterView`) bir kez çizilip stile
+  eklenir; ağ × müsaitlik × seçili ve küme yazısı başına önbellek, harita görseli ilk istediğinde üretilir. Logolar
+  bir kez yüklenir; gelince o ağın görselleri yeniden çizilir. `MapView` dışa yalnızca Domain tipleriyle konuşur
+  (`MapStations`: istasyonlar, seçili kimlik, kapanan alt şerit, `onStationTapped`, `onMapTapped`, `onCameraIdle`).
+  Kümeye dokununca kümenin açıldığı yakınlaşmaya yumuşak geçiş. Kullanıcının konum noktası pinlerin üstünde.
+- **Ana sayfa:** `StationFeed` (300 ms bekleme, önceki isteği iptal, görünen bölgenin 1,5 katını isteme, son 8 bölgeyi
+  hatırlama, 3° boylam eşiği, kimliğe göre birleştirme). `HomeMapModel` depoyu `init` ile alır; pine dokununca seçim,
+  harita pini alt sayfa ve butonların üstünde kalan alanın ortasına getirir, `onStationSelected` çağrılır (`App/`
+  boş geçiyor); boş haritaya dokununca seçim kalkar.
+- **Token:** `Palette.amber50…950`; `Theme.availabilityAvailable/Partial/Unavailable/Unknown`, `mapPinSurface`,
+  `mapPinBorder`, `mapPinSelected` (iki temada green500), `mapClusterFill`, `onMapCluster`. Şimşek için mevcut
+  `AppIcon.charger`.
+- **Bulunan ve düzeltilen iki hata:** (1) Küre görünümünde Mapbox sınırlarında batı boylamı doğudan büyük gelebiliyor;
+  `GeoBoundingBox.contains` aralık kurduğu için çöküyordu (karşılaştırmaya çevrildi, MapEngine kutuyu normalleştiriyor,
+  test eklendi). (2) Kamera kullanıcıyı izlerken harita hiç boşta kalmıyor ve `onMapIdle` gelmiyordu; istasyonlar
+  hiç yüklenmiyordu. İzleme sırasında görünen bölge kamera değiştikçe en sık saniyede bir bildiriliyor.
+
+**Dosyalar**
+- Eklenen: `Docs/Design/pin-taslak.png` (proje sahibi), `Docs/Backend/stations.md`,
+  `Packages/Core/Sources/OnsarjCore/MediaURL.swift`, `Packages/Core/Tests/CoreTests/MediaURLTests.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/Models/{GeoCoordinate,GeoBoundingBox,Station,StationAvailability}.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/Protocols/StationRepository.swift`,
+  `Packages/Domain/Tests/DomainTests/GeoBoundingBoxTests.swift`,
+  `Packages/Services/Sources/StationService/DTO/{StationDTO,StationMapper}.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/{FixtureStationRepository,FixtureStationJSON,
+  FixtureStationScenario,DenseStationGenerator}.swift`, `Packages/Services/Tests/ServicesTests/StationRepositoryTests.swift`,
+  `Packages/MapboxKit/Sources/MapEngine/{MapStations,MapView+Stations}.swift`,
+  `Packages/MapboxKit/Sources/MapEngine/Stations/{StationLayer,StationPinView,StationClusterView,StationImageFactory,
+  StationImageKey}.swift`, `Packages/Features/Sources/HomeMapFeature/StationFeed.swift`,
+  `Packages/Features/Tests/FeaturesTests/StationFeedTests.swift`, `OnsarjUITests/StationLayerPresentationTests.swift`
+- Değişen: `CLAUDE.md` (5.6'ya `Docs/Design/` satırı, proje sahibinin izniyle), `Docs/Backend/{README,charging-networks}.md`,
+  `Packages/Core/Sources/DesignSystem/{ColorPalette,SemanticColors}.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/Models/ChargingNetwork.swift`,
+  `Packages/Services/Sources/StationService/DTO/{ChargingNetworkDTO,ChargingNetworkMapper}.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/FixtureChargingNetworkCatalog.swift`,
+  `Packages/Services/Sources/VehicleService/DTO/VehicleMapper.swift`,
+  `Packages/Services/Tests/ServicesTests/ChargingNetworkCatalogTests.swift`,
+  `Packages/MapboxKit/Sources/MapEngine/MapView.swift`,
+  `Packages/Features/Sources/HomeMapFeature/{HomeMapModel,HomeMapView}.swift`,
+  `Packages/Features/Tests/FeaturesTests/HomeMapModelTests.swift`,
+  `App/Composition/{AppDependencies,FixtureImageExporter}.swift`, `App/RootView.swift`, `PROGRESS.md`
+
+**Kararlar**
+- **Kümeleme yaklaşımı (2.9):** GeoJSON kaynağı `cluster` + sembol katmanları, pin görselleri stile eklenmiş görsel.
+  View annotation seçilmedi: Mapbox belgesi görünüm ek açıklamalarını "genellikle 100'ün altında" görünüm için
+  öneriyor, üst üste binme açıkken 250'nin üstünde performansın düştüğünü yazıyor; yerleşik kümelemesi de yok. Kaynaklar:
+  docs.mapbox.com/ios/maps/guides/annotations/view-annotations/, docs.mapbox.com/ios/maps/examples/point-clustering/,
+  SDK 11.33.1 kaynağı (`PointClusteringExample.swift`, `GeoJSONSource.swift`, `MapboxMap.getGeoJsonClusterExpansionZoom`,
+  `TapInteraction`). CLAUDE.md 5.4 ile aynı.
+- **Kümeleme ayarı:** birleşme yarıçapı 50 pt, kümeleme en fazla 14. yakınlaşmaya kadar (15 = sokak düzeyi).
+- **Katman sırası:** Standard'ın `top` yuvası şehir ve semt adlarının altında kaldığı için katmanlar stilin en üstüne,
+  konum noktasının (`puck`) altına eklenir.
+- **İstek eşiği:** `StationFeed.maximumRequestSpanDegrees = 3` (boylam; ≈7. yakınlaşma). Bekleme 300 ms, istek kutusu
+  1,5 kat, hatırlanan bölge 8.
+- **Küme halesi** taslaktaki kaynak değerle %22 opaklık (onaylanan varsayımda %28 yazıyordu; proje sahibinin verdiği
+  ölçü esas alındı). Rengi `availabilityAvailable`.
+- **Küme yazısı:** taslakta 15 ve 18 pt kalın. 6.6 `Font.system(size:)`'ı yasakladığı için `Typography.buttonSmall`
+  (15) ve `Typography.headline` (17) kalın kullanıldı; büyük kümede 1 pt fark var. Görseller `large` yazı boyutunda ve
+  açık temada çizilir (pin renkleri iki temada aynı).
+- `MapView.accessibilityIdentifier` (`onsarj.map`): UI testleri harita hareketlerini bununla yapıyor.
+
+**Doğrulama**
+- `Packages/Domain`: `swift build`, `swift test` 36/36. `Packages/Core`: `swift build`, `swift test` 28 + 10.
+- `Packages/Services`: `swift build`, `swift test` 69/69, `swift build -c release` geçti.
+- `./Tooling/Scripts/verify-ios.sh --package MapboxKit` ve `--package Features`: geçti.
+- `xcodebuild test` Features (iPhone SE, iOS 18.3): 78/78 (yeni: `StationFeedTests` 4, seçim testi 1).
+- Tüm UI test paketi (iPhone 16 Pro Max, iOS 18.5, konum izni verili): 14/14. `StationLayerPresentationTests`
+  iOS 18.5 açık ve koyu temada 4/4; iOS 26.3 açık ve koyu temada sokak düzeyi testi geçti, uzaklaşma gerektiren 3 test
+  atlandı (bkz. açık noktalar). Ekran görüntüleri: dört müsaitlik rengi ve logolar, şimşekli pin, seçili pin ve
+  ortalama, seçimin kalkması, kümeler (2–9), kümeye dokununca yakınlaşma, `dense` senaryosunda kümeler ve kaydırma.
+- `dense` (1000 istasyon) kaydırma: simülatörde gözlemde takılma yok; ölçüm (`XCTHitchMetric`) yalnızca iOS 26'da var ve
+  orada hareketler haritaya ulaşmadığı için ölçülemedi. Cihazda Instruments ile ölçülmeli.
+- Release (simülatör): `FixtureStationRepository`, `DenseStationGenerator`, `handwrittenJSON`, `FixtureImageExporter`
+  sembolleri 0, fixture istasyon adları 0, `NoStationsRepository` mevcut. Logo kataloğu ayarsız Release'de
+  `Assets.car`'a giriyor (4 logo); `EXCLUDED_SOURCE_FILE_NAMES = */DebugFixtures/*` ile girmiyor (`Assets.car` hiç
+  oluşmuyor; uygulamanın kendi kataloğunda derlenen görsel yok). Satırı proje sahibi `Release.xcconfig`'e ekleyecek.
+- `swiftlint lint --strict`, `swift format lint --strict`: 0 ihlal.
+- Not: konum izni verili simülatörde harita kullanıcıyı izlerken sürekli hareket ettiği için XCUITest bazı adımlarda
+  uygulamanın boşa çıkmasını ~15 dk bekliyor (test geçiyor, süre uzuyor).
+
+**Bilinen eksikler ve açık noktalar**
+- **Erişilebilirlik:** pinler ve kümeler stil katmanında çizildiği için VoiceOver'da erişilemez; Mapbox stil
+  katmanlarına erişilebilirlik etiketi verilemiyor. Erişilebilir yol sonraki görevlerdeki **şimşek listesi** olacak.
+- **Hata:** istasyon isteği hata verirse haritada o bölgenin pinleri gösterilmez, kullanıcıya hata çıkmaz; kayıt
+  Telemetry bağlanınca eklenecek.
+- **Logo alanı:** taslakta logonun arkasında açık gri bir iç daire görünüyor; bunun için token yok, logo beyaz
+  dairenin içinde 34 pt'lik daireye kırpılıyor. İstenirse ayrı token eklenmeli.
+- **Pin gölgesi** açık tema değeriyle çiziliyor (görseller tek kez, açık temada çizilir).
+- **Konum noktası** izleme sırasında ekranın alt kısmında (y ≈ 700 pt / 956) duruyor; alt sayfa açıkken noktanın
+  hemen üstü sayfayla kapanıyor. Bu davranış bu görevden önce de vardı; izleme kamerasına alt sayfa payı verilmesi
+  ayrı iş.
+- **iOS 26 UI testi:** XCUITest'in iki parmakla dokunuş, kıstırma ve sürükleme hareketleri iOS 26.3 simülatöründe
+  Mapbox haritasına ulaşmıyor; uzaklaşma gerektiren üç test orada atlanıyor (sokak düzeyi testi iki sürümde koşuyor).
+- `onStationSelected` `App/`'te boş; istasyon detayı sonraki görev.
+
+**Sıradaki adım:** İstasyon detayı sayfası (pine dokununca) ve şimşek listesi.
 
 ---
 

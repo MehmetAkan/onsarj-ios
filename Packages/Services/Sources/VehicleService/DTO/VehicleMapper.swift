@@ -1,4 +1,5 @@
 import Foundation
+import OnsarjCore
 import OnsarjDomain
 
 /// Bir araç kaydı Domain modeline eşlenemedi.
@@ -67,7 +68,7 @@ enum VehicleMapper {
             maxDcPowerKw: dto.maxDcPowerKw,
             colorHex: colorHex,
             bodyType: BodyType(rawValue: bodyType) ?? .other,
-            imageURL: imageURL(from: dto.imageUrl, acceptsFile: acceptsFileImageURLs),
+            imageURL: MediaURL.parse(dto.imageUrl, acceptsFile: acceptsFileImageURLs),
             batteryHealthPercent: health,
             isDefault: try required(dto.isDefault, .isDefault, in: dto),
             drivingProfiles: profiles,
@@ -118,23 +119,5 @@ enum VehicleMapper {
             throw VehicleMappingError(vehicleID: dto.id, field: field, reason: .missing)
         }
         return value
-    }
-
-    /// Sunucusu olan http(s) adresleri kabul edilir; `acceptsFile` ise yolu olan `file` adresleri de.
-    /// `URL(string:)` geçersiz karakterleri kodlayıp yine de adres döndürebildiği için şema, sunucu
-    /// ve yol ayrıca denetlenir.
-    private static func imageURL(from string: String?, acceptsFile: Bool) -> URL? {
-        guard let string, let url = URL(string: string), let scheme = url.scheme?.lowercased() else {
-            return nil
-        }
-        switch scheme {
-        case "https", "http":
-            guard let host = url.host, !host.isEmpty else { return nil }
-            return url
-        case "file" where acceptsFile:
-            return url.path.isEmpty ? nil : url
-        default:
-            return nil
-        }
     }
 }

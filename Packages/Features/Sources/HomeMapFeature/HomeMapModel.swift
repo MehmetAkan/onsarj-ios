@@ -4,6 +4,7 @@ import Foundation
 import LocationKit
 import MapEngine
 import Observation
+import OnsarjDomain
 
 /// Ana harita ekranının durumu: kamera, konum izni ve kullanıcının konumu.
 ///
@@ -11,6 +12,9 @@ import Observation
 /// (CLAUDE.md bölüm 7). İzin daha önce verilmişse kamera açılışta kullanıcının konumuna gider.
 /// Konum bilinmezken harita cihazın bölge ayarındaki ülkenin üzerinde açılır; bölge
 /// belirlenemezse `CountryBounds.fallbackRegionCode` ülkesinde.
+///
+/// Haritadaki istasyonlar `StationFeed`'den gelir. Pine dokununca istasyon seçilir; boş haritaya
+/// dokununca seçim kalkar.
 @MainActor
 @Observable
 final class HomeMapModel {
@@ -20,6 +24,12 @@ final class HomeMapModel {
     let camera: MapCamera
     private(set) var authorization: LocationAuthorization
     private(set) var userLocation: CLLocation?
+
+    /// Haritadaki istasyonlar.
+    let stationFeed: StationFeed
+
+    /// Haritada seçili istasyon.
+    private(set) var selectedStationID: Station.ID?
 
     /// Alt sayfanın kademesi. Ekran orta kademede açılır.
     var sheetDetent: SheetDetent = .medium
@@ -32,8 +42,14 @@ final class HomeMapModel {
     /// İzin penceresi butona dokunularak açıldıysa, izin verilince kamera konuma gider.
     @ObservationIgnored private var followsUserWhenAuthorized = false
 
-    init(locationSource: any LocationSource, locale: Locale = .current) {
+    init(
+        locationSource: any LocationSource,
+        stationRepository: any StationRepository,
+        stationDebounce: Duration = StationFeed.defaultDebounce,
+        locale: Locale = .current
+    ) {
         self.locationSource = locationSource
+        stationFeed = StationFeed(repository: stationRepository, debounce: stationDebounce)
         authorization = locationSource.authorization
         camera = MapCamera(initialRegion: CountryBounds.forRegion(of: locale).map(Self.region))
         if authorization == .authorized {
@@ -52,6 +68,16 @@ final class HomeMapModel {
         case .denied:
             isLocationDeniedAlertPresented = true
         }
+    }
+
+    /// Pine dokunuldu: istasyon seçilir.
+    func selectStation(_ id: Station.ID) {
+        selectedStationID = id
+    }
+
+    /// Boş haritaya dokunuldu: seçim kalkar.
+    func clearStationSelection() {
+        selectedStationID = nil
     }
 
     /// İzin değişikliklerini dinler. Ekran görünür kaldıkça çalışır.

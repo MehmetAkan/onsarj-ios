@@ -16,12 +16,19 @@ import UIKit
 ///   parmakla birlikte izler. Sayfa yalnızca kendi alanındaki dokunuşları alır. Alt sayfada araç
 ///   kartı (`VehicleCard`) durur.
 ///
+/// Haritada şarj istasyonları kümelenerek gösterilir (`StationFeed`). Pine dokununca pin seçilir, harita
+/// onu alt sayfanın ve butonların üstünde kalan alanın ortasına getirir ve `onStationSelected` çağrılır.
+///
 /// Ekran kendi geçişini yapmaz (CLAUDE.md 5.3 kural 1); kullanıcının isteklerini kapanışlarla
 /// dışarı bildirir. Harita stili cihazın temasını izler.
 public struct HomeMapView: View {
     @State private var model: HomeMapModel
     @State private var vehicleCard: VehicleCardModel
     @Environment(\.openURL) private var openURL
+    /// Haritanın alt kenarı ve sayfanın üstündeki butonların üst kenarı (global); aradaki şerit haritanın
+    /// kapanan kısmıdır.
+    @State private var mapBottom: CGFloat = 0
+    @State private var bottomButtonsTop: CGFloat = 0
 
     private let onMenu: () -> Void
     private let onSearchTapped: () -> Void
@@ -35,11 +42,13 @@ public struct HomeMapView: View {
     private let onVehicleSettings: (Vehicle.ID) -> Void
     private let vehicleRevision: Int
     private let onAddVehicle: () -> Void
+    private let onStationSelected: (Station.ID) -> Void
 
     /// - Parameters:
     ///   - locationSource: Uygulama boyunca paylaşılan konum kaynağı.
     ///   - vehicleRepository: Kullanıcının araçları; araç kartı etkin aracı buradan alır.
     ///   - batteryLevelStore: Araç kartındaki batarya yüzdesinin deposu.
+    ///   - stationRepository: Haritadaki şarj istasyonlarının kaynağı.
     ///   - onMenu: Sol üstteki menü butonuna dokunulduğunda çağrılır.
     ///   - onSearchTapped: Arama alanına dokunulduğunda çağrılır; arama ayrı bir ekranda açılır.
     ///   - onAssistant: Arama alanının yanındaki yapay zekâ asistanı butonuna dokunulduğunda çağrılır.
@@ -51,12 +60,14 @@ public struct HomeMapView: View {
     ///   - onSwitchVehicle: Araç kartında araç adına dokunulduğunda çağrılır.
     ///   - onVehicleSettings: Araç kartında ayarlar simgesine dokunulduğunda, kartın aracıyla çağrılır.
     ///   - onAddVehicle: Araç yokken kartta "Araç ekle"ye dokunulduğunda çağrılır.
+    ///   - onStationSelected: Haritada bir istasyon pinine dokunulduğunda, istasyonun kimliğiyle çağrılır.
     ///   - vehicleRevision: Araç verisinin sürümü. Değiştiğinde (ör. araç ayarları kapandığında) kart
     ///     aracı yeniden yükler; araç silindiyse "Araç ekle" haline geçer.
     public init(
         locationSource: any LocationSource,
         vehicleRepository: any VehicleRepository,
         batteryLevelStore: any BatteryLevelStoring,
+        stationRepository: any StationRepository,
         onMenu: @escaping () -> Void,
         onSearchTapped: @escaping () -> Void,
         onAssistant: @escaping () -> Void,
@@ -68,10 +79,11 @@ public struct HomeMapView: View {
         onSwitchVehicle: @escaping () -> Void,
         onVehicleSettings: @escaping (Vehicle.ID) -> Void,
         onAddVehicle: @escaping () -> Void,
+        onStationSelected: @escaping (Station.ID) -> Void,
         vehicleRevision: Int
     ) {
         self.init(
-            model: HomeMapModel(locationSource: locationSource),
+            model: HomeMapModel(locationSource: locationSource, stationRepository: stationRepository),
             vehicleCard: VehicleCardModel(repository: vehicleRepository, batteryStore: batteryLevelStore),
             onMenu: onMenu,
             onSearchTapped: onSearchTapped,
@@ -84,6 +96,7 @@ public struct HomeMapView: View {
             onSwitchVehicle: onSwitchVehicle,
             onVehicleSettings: onVehicleSettings,
             onAddVehicle: onAddVehicle,
+            onStationSelected: onStationSelected,
             vehicleRevision: vehicleRevision
         )
     }
@@ -102,6 +115,7 @@ public struct HomeMapView: View {
         onSwitchVehicle: @escaping () -> Void = {},
         onVehicleSettings: @escaping (Vehicle.ID) -> Void = { _ in },
         onAddVehicle: @escaping () -> Void = {},
+        onStationSelected: @escaping (Station.ID) -> Void = { _ in },
         vehicleRevision: Int = 0
     ) {
         _model = State(initialValue: model)
@@ -117,18 +131,34 @@ public struct HomeMapView: View {
         self.onSwitchVehicle = onSwitchVehicle
         self.onVehicleSettings = onVehicleSettings
         self.onAddVehicle = onAddVehicle
+        self.onStationSelected = onStationSelected
         self.vehicleRevision = vehicleRevision
     }
 
     public var body: some View {
         ZStack {
-            MapView(camera: model.camera, userLocation: model.userLocation, controlsLayout: Self.mapControlsLayout)
-                .ignoresSafeArea()
+            MapView(
+                camera: model.camera,
+                userLocation: model.userLocation,
+                controlsLayout: Self.mapControlsLayout,
+                stations: mapStations
+            )
+            .ignoresSafeArea()
+            .onGeometryChange(for: CGFloat.self) {
+                $0.frame(in: .global).maxY
+            } action: {
+                mapBottom = $0
+            }
 
             menuButton
 
             HomeBottomSheet(detent: $model.sheetDetent, actions: sheetActions, vehicleCard: vehicleCard) {
                 bottomButtons
+                    .onGeometryChange(for: CGFloat.self) {
+                        $0.frame(in: .global).minY
+                    } action: {
+                        bottomButtonsTop = $0
+                    }
             }
         }
         .task { await model.observeAuthorization() }
@@ -151,6 +181,22 @@ public struct HomeMapView: View {
         } message: {
             Text("home.map.locationDenied.message", bundle: .onsarj)
         }
+    }
+
+    // MARK: - İstasyonlar
+
+    private var mapStations: MapStations {
+        MapStations(
+            stations: model.stationFeed.stations,
+            selectedID: model.selectedStationID,
+            obscuredBottom: max(0, mapBottom - bottomButtonsTop),
+            onStationTapped: { id in
+                model.selectStation(id)
+                onStationSelected(id)
+            },
+            onMapTapped: model.clearStationSelection,
+            onCameraIdle: model.stationFeed.cameraDidIdle
+        )
     }
 
     // MARK: - Yüzen butonlar
@@ -251,7 +297,7 @@ struct HomeMapViewPreviews: PreviewProvider {
 
     @MainActor
     private static func screen(detent: HomeMapModel.SheetDetent) -> some View {
-        let model = HomeMapModel(locationSource: PreviewLocationSource())
+        let model = HomeMapModel(locationSource: PreviewLocationSource(), stationRepository: PreviewStationRepository())
         model.sheetDetent = detent
         let vehicleCard = VehicleCardModel(
             repository: PreviewVehicleRepository(content: .vehicle(PreviewVehicleRepository.dolphin)),
@@ -259,6 +305,11 @@ struct HomeMapViewPreviews: PreviewProvider {
         )
         return HomeMapView(model: model, vehicleCard: vehicleCard)
     }
+}
+
+/// Önizleme için istasyon deposu: önizlemede harita çizilmediği için boş.
+private struct PreviewStationRepository: StationRepository {
+    func stations(in box: GeoBoundingBox) async throws -> [Station] { [] }
 }
 
 /// Önizleme için konum kaynağı: izin sorulmamış, konum yok.

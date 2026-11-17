@@ -23,7 +23,7 @@ final class AppDependencies {
     /// depo: uydurma veri dağıtıma girmez. İlk TestFlight dağıtımından önce gerçek depo gelir.
     /// Debug'da kartın hali başlatma argümanıyla seçilir: `-onsarjFixtureScenario <değer>`
     /// (`default`, `noImage`, `noVehicles`, `failure`).
-    private(set) lazy var vehicleRepository: any VehicleRepository = Self.makeVehicleRepository()
+    private(set) lazy var vehicleRepository: any VehicleRepository = makeVehicleRepository()
 
     /// Arama sayfasının geçmişi ve önerileri. Arama kaynağı henüz kararlaştırılmadı: Debug'da geçici
     /// tasarım verisi (`SearchDesignFixtures`), Release'de boş liste; uydurma veri dağıtıma girmez.
@@ -65,10 +65,30 @@ final class AppDependencies {
         #endif
     }
 
-    private static func makeVehicleRepository() -> any VehicleRepository {
+    /// Haritadaki şarj istasyonları. Debug'da fixture (K-23, K-26), Release'de boş liste: uydurma veri
+    /// dağıtıma girmez. Debug'da yoğunluk başlatma argümanıyla seçilir: `-onsarjStationScenario dense`
+    /// (1000 istasyon); varsayılan elle yazılmış liste.
+    private(set) lazy var stationRepository: any StationRepository = makeStationRepository()
+
+    #if DEBUG
+    /// Fixture görselleri (araç görseli, ağ logoları); ilk ihtiyaçta bir kez yazılır.
+    private lazy var fixtureImages = FixtureImageExporter.exportImages()
+    #endif
+
+    private func makeStationRepository() -> any StationRepository {
+        #if DEBUG
+        let value = UserDefaults.standard.string(forKey: FixtureStationScenario.userDefaultsKey)
+        let images = fixtureImages
+        return FixtureStationRepository(scenario: FixtureStationScenario(value: value)) { images[$0] }
+        #else
+        return NoStationsRepository()
+        #endif
+    }
+
+    private func makeVehicleRepository() -> any VehicleRepository {
         #if DEBUG
         let scenario = FixtureScenario(value: UserDefaults.standard.string(forKey: FixtureScenario.userDefaultsKey))
-        let images = FixtureImageExporter.exportImages()
+        let images = fixtureImages
         return FixtureVehicleRepository(scenario: scenario) { images[$0] }
         #else
         return NoVehiclesRepository()
@@ -110,6 +130,11 @@ private struct NoVehiclesRepository: VehicleRepository {
     func setDefaultVehicle(_ id: Vehicle.ID) async throws -> Vehicle {
         throw VehicleRepositoryError.vehicleNotFound
     }
+}
+
+/// Release'de, backend bağlanana kadar haritada istasyon yoktur.
+private struct NoStationsRepository: StationRepository {
+    func stations(in box: GeoBoundingBox) async throws -> [Station] { [] }
 }
 
 /// Release'de, backend bağlanana kadar araç kataloğu boştur.

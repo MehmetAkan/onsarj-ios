@@ -1,6 +1,7 @@
 import CoreLocation
 import Foundation
 import LocationKit
+import OnsarjDomain
 import Testing
 
 @testable import HomeMapFeature
@@ -10,7 +11,9 @@ import Testing
 struct HomeMapModelTests {
     @Test("İzin daha önce verilmişse açılışta kamera kullanıcının konumuna gider")
     func followsUserWhenAlreadyAuthorized() {
-        let model = HomeMapModel(locationSource: FakeLocationSource(authorization: .authorized))
+        let model = HomeMapModel(
+            locationSource: FakeLocationSource(authorization: .authorized),
+            stationRepository: RecordingStationRepository())
 
         #expect(model.camera.isFollowingUser)
     }
@@ -18,7 +21,7 @@ struct HomeMapModelTests {
     @Test("İzin sorulmamışsa açılışta izin istenmez, kamera başlangıç konumunda kalır")
     func doesNotRequestOnLaunch() {
         let source = FakeLocationSource(authorization: .notDetermined)
-        let model = HomeMapModel(locationSource: source)
+        let model = HomeMapModel(locationSource: source, stationRepository: RecordingStationRepository())
 
         #expect(source.requestCount == 0)
         #expect(!model.camera.isFollowingUser)
@@ -27,7 +30,7 @@ struct HomeMapModelTests {
     @Test("Butona ilk dokunuşta izin istenir; izin verilince kamera konuma gider")
     func requestsOnFirstTapThenFollows() {
         let source = FakeLocationSource(authorization: .notDetermined)
-        let model = HomeMapModel(locationSource: source)
+        let model = HomeMapModel(locationSource: source, stationRepository: RecordingStationRepository())
 
         model.recenter()
         #expect(source.requestCount == 1)
@@ -39,7 +42,9 @@ struct HomeMapModelTests {
 
     @Test("Butona dokunulmadan gelen izin kamerayı hareket ettirmez")
     func authorizationWithoutTapDoesNotFollow() {
-        let model = HomeMapModel(locationSource: FakeLocationSource(authorization: .notDetermined))
+        let model = HomeMapModel(
+            locationSource: FakeLocationSource(authorization: .notDetermined),
+            stationRepository: RecordingStationRepository())
 
         model.apply(.authorized)
 
@@ -48,7 +53,9 @@ struct HomeMapModelTests {
 
     @Test("Alt sayfa orta kademede açılır")
     func sheetStartsAtMedium() {
-        let model = HomeMapModel(locationSource: FakeLocationSource(authorization: .notDetermined))
+        let model = HomeMapModel(
+            locationSource: FakeLocationSource(authorization: .notDetermined),
+            stationRepository: RecordingStationRepository())
 
         #expect(model.sheetDetent == .medium)
     }
@@ -57,6 +64,7 @@ struct HomeMapModelTests {
     func initialRegionFollowsLocale() {
         let model = HomeMapModel(
             locationSource: FakeLocationSource(authorization: .notDetermined),
+            stationRepository: RecordingStationRepository(),
             locale: Locale(identifier: "de_DE")
         )
         let germany = CountryBounds.forRegionCode("DE")
@@ -69,6 +77,7 @@ struct HomeMapModelTests {
     func initialRegionFallsBack() {
         let model = HomeMapModel(
             locationSource: FakeLocationSource(authorization: .notDetermined),
+            stationRepository: RecordingStationRepository(),
             locale: Locale(identifier: "en")
         )
         let fallback = CountryBounds.forRegionCode(CountryBounds.fallbackRegionCode)
@@ -80,7 +89,7 @@ struct HomeMapModelTests {
     @Test("İzin reddedilmişse buton izin istemez, Ayarlar uyarısını açar")
     func deniedShowsSettingsAlert() {
         let source = FakeLocationSource(authorization: .denied)
-        let model = HomeMapModel(locationSource: source)
+        let model = HomeMapModel(locationSource: source, stationRepository: RecordingStationRepository())
 
         model.recenter()
 
@@ -91,7 +100,7 @@ struct HomeMapModelTests {
     @Test("İzin sonradan geri alınırsa konum göstergesi kaldırılır")
     func revokedAuthorizationClearsLocation() async {
         let source = FakeLocationSource(authorization: .authorized)
-        let model = HomeMapModel(locationSource: source)
+        let model = HomeMapModel(locationSource: source, stationRepository: RecordingStationRepository())
         let observation = Task { await model.observeLocation() }
         while !source.hasLocationSubscriber {
             await Task.yield()
@@ -105,6 +114,20 @@ struct HomeMapModelTests {
 
         #expect(model.userLocation == nil)
         observation.cancel()
+    }
+
+    @Test("Pine dokununca seçilir, boş haritaya dokununca seçim kalkar")
+    func selection() {
+        let model = HomeMapModel(
+            locationSource: FakeLocationSource(authorization: .notDetermined),
+            stationRepository: RecordingStationRepository()
+        )
+        model.selectStation(Station.ID("a"))
+        #expect(model.selectedStationID == Station.ID("a"))
+        model.selectStation(Station.ID("b"))
+        #expect(model.selectedStationID == Station.ID("b"))
+        model.clearStationSelection()
+        #expect(model.selectedStationID == nil)
     }
 }
 

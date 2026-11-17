@@ -97,6 +97,21 @@ public enum Palette {
     public static let yellow900 = Color(hex: 0x733E0A)
     public static let yellow950 = Color(hex: 0x432004)
 
+    // MARK: - Amber
+
+    /// Amber — turuncuya çalan sarı. Harita pinindeki "kısmen dolu" müsaitliği taşır.
+    public static let amber50 = Color(hex: 0xFFFBEB)
+    public static let amber100 = Color(hex: 0xFEF3C6)
+    public static let amber200 = Color(hex: 0xFEE685)
+    public static let amber300 = Color(hex: 0xFFD230)
+    public static let amber400 = Color(hex: 0xFFB900)
+    public static let amber500 = Color(hex: 0xFE9A00)
+    public static let amber600 = Color(hex: 0xE17100)
+    public static let amber700 = Color(hex: 0xBB4D00)
+    public static let amber800 = Color(hex: 0x973C00)
+    public static let amber900 = Color(hex: 0x7B3306)
+    public static let amber950 = Color(hex: 0x461901)
+
     // MARK: - Blue
 
     /// Blue — Tailwind v4.

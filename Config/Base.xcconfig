@@ -30,7 +30,7 @@ CLANG_WARN_DOCUMENTATION_COMMENTS = YES
 // yeni klonlayan biri önce derleyip sonra token'ı ekleyebilir.
 // Şablon: Config/Secrets.xcconfig.template
 #include? "Secrets.xcconfig"
-
+CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES
 // NOT: Bundle identifier bilerek burada tanımlanmadı.
 // Uygulama, widget eklentisi ve test hedefleri farklı kimlikler taşır;
 // bu yüzden hedef düzeyinde kalır. Widget hedefini eklediğimizde

@@ -36,6 +36,7 @@ public struct FixtureChargingNetworkCatalog: ChargingNetworkCatalog {
           "networks": [
             { "id": "net_zes", "name": "ZES" },
             { "id": "net_trugo", "name": "Trugo" },
+            { "id": "net_shell", "name": "Shell Recharge" },
             { "id": "net_esarj", "name": "Eşarj" },
             { "id": "net_voltrun", "name": "Voltrun" },
             { "id": "net_sharz", "name": "Sharz.net" },

@@ -10,7 +10,7 @@ struct ChargingNetworkCatalogTests {
     @Test("Fixture JSON eşleme yolundan geçer ve yaklaşık 15 ağ içerir")
     func fixtureMaps() async throws {
         let all = try await catalog.networks(matching: "")
-        #expect(all.count == 15)
+        #expect(all.count == 16)
         #expect(Set(all.map(\.id)).count == all.count)
     }
 
@@ -41,7 +41,7 @@ struct ChargingNetworkCatalogTests {
     @Test("İçerir eşleşmesi: kelimenin ortası da bulunur")
     func containsMatch() async throws {
         let names = try await catalog.networks(matching: "charg").map(\.name)
-        #expect(names == ["CHARGING TOGETHER SL", "Tesla Supercharger"])
+        #expect(names == ["CHARGING TOGETHER SL", "Shell Recharge", "Tesla Supercharger"])
     }
 
     @Test("withIDs verilen sırayı korur, bilinmeyeni atlar")
@@ -53,7 +53,7 @@ struct ChargingNetworkCatalogTests {
 
     @Test("Eşleme: boş ad hata verir")
     func mapperRejectsEmptyName() {
-        let list = ChargingNetworkListDTO(networks: [ChargingNetworkDTO(id: "x", name: "  ")])
+        let list = ChargingNetworkListDTO(networks: [ChargingNetworkDTO(id: "x", name: "  ", logoUrl: nil)])
         #expect(throws: ChargingNetworkMappingError.missingField(index: 0, field: "name")) {
             try ChargingNetworkMapper.networks(from: list)
         }

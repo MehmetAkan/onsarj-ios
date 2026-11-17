@@ -2,6 +2,7 @@ import Combine
 import CoreLocation
 import DesignSystem
 import MapboxMaps
+import OnsarjDomain
 import SwiftUI
 
 /// Mapbox haritasının SwiftUI sarmalayıcısı.
@@ -16,28 +17,39 @@ import SwiftUI
 /// - **Kaynak gösterimi:** Mapbox logosu ve bilgi butonu görünür kalır (CLAUDE.md bölüm 7).
 ///   `controlsLayout` verilirse bilgi butonu, pusula ve ölçek çubuğu ekranın üst buton
 ///   sırasına göre dizilir (`MapControlsLayout`); verilmezse Mapbox'ın varsayılan yerlerindedir.
+/// - **İstasyonlar:** `stations` (`MapStations`) stil katmanı olarak, kümelenerek çizilir (CLAUDE.md 5.4).
+///   Seçim dışarıdan verilir; seçim değişince harita seçili pini, `obscuredBottom` ile kapanan alt şeridin
+///   üstünde kalan alanın ortasına yumuşakça getirir.
 public struct MapView: UIViewRepresentable {
     private let style: MapStyle
     private let camera: MapCamera
     private let userLocation: CLLocation?
     private let controlsLayout: MapControlsLayout?
+    private let stations: MapStations
 
     /// - Parameters:
     ///   - style: Haritanın stili.
     ///   - camera: Başlangıç konumu ve kamera istekleri.
     ///   - userLocation: Kullanıcının son konumu; bilinmiyorsa veya izin yoksa `nil`.
     ///   - controlsLayout: Ekranın üst buton sırası; Mapbox öğeleri ona göre dizilir.
+    ///   - stations: Haritadaki istasyonlar, seçim ve dokunma bildirimleri.
     public init(
         style: MapStyle = .standard,
         camera: MapCamera,
         userLocation: CLLocation?,
-        controlsLayout: MapControlsLayout? = nil
+        controlsLayout: MapControlsLayout? = nil,
+        stations: MapStations = MapStations()
     ) {
         self.style = style
         self.camera = camera
         self.userLocation = userLocation
         self.controlsLayout = controlsLayout
+        self.stations = stations
     }
+
+    /// Haritanın erişilebilirlik kimliği; UI testleri haritaya yakınlaştırma ve kaydırma hareketlerini bununla
+    /// yapar.
+    public static let accessibilityIdentifier = "onsarj.map"
 
     public func makeCoordinator() -> Coordinator {
         Coordinator(camera: camera)
@@ -50,13 +62,15 @@ public struct MapView: UIViewRepresentable {
         )
         let mapView = MapboxMaps.MapView(frame: .zero, mapInitOptions: options)
         mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        mapView.accessibilityIdentifier = Self.accessibilityIdentifier
 
         let container = LayoutReportingView()
         container.addSubview(mapView)
         let coordinator = context.coordinator
         container.onLayout = { coordinator.applyInitialCameraIfNeeded() }
-        coordinator.attach(to: mapView)
+        coordinator.attach(to: mapView, displayScale: context.environment.displayScale)
         coordinator.apply(controlsLayout)
+        coordinator.apply(stations)
         return container
     }
 
@@ -64,6 +78,7 @@ public struct MapView: UIViewRepresentable {
         context.coordinator.apply(style.mapboxStyle(for: context.environment.colorScheme))
         context.coordinator.show(userLocation)
         context.coordinator.apply(controlsLayout)
+        context.coordinator.apply(stations)
     }
 
     /// `MapView` ile harita arasındaki köprü. Dışarıdan kullanılmaz.
@@ -74,7 +89,13 @@ public struct MapView: UIViewRepresentable {
         let locations = CurrentValueSubject<[Location], Never>([])
 
         private let camera: MapCamera
-        private weak var mapView: MapboxMaps.MapView?
+        private(set) weak var mapView: MapboxMaps.MapView?
+        /// İstasyon katmanı ve son verilen istasyon içeriği (`MapView+Stations`).
+        var stationLayer: StationLayer?
+        var stations = MapStations()
+        var lastIdleBox: GeoBoundingBox?
+        var lastFollowingReport: Date?
+        var cancelables: [AnyCancelable] = []
         private var appliedStyle: MapboxMaps.MapStyle?
         private var appliedControlsLayout: MapControlsLayout?
 
@@ -86,11 +107,12 @@ public struct MapView: UIViewRepresentable {
             self.camera = camera
         }
 
-        func attach(to mapView: MapboxMaps.MapView) {
+        func attach(to mapView: MapboxMaps.MapView, displayScale: CGFloat) {
             self.mapView = mapView
             appliedStyle = mapView.mapboxMap.mapStyle
             mapView.viewport.addStatusObserver(self)
             camera.driver = self
+            attachStations(to: mapView, displayScale: displayScale)
         }
 
         /// Kullanıcı izlenecekse kamera doğrudan konuma gider; bölgeye uğrayıp atlamaz.

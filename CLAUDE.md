@@ -401,6 +401,7 @@ onsarj-ios/
 └── Docs/
     ├── Architecture.md
     ├── Backend/                       backend'e iletilecek sözleşme notları (K-26): uç noktalar, JSON, doğrulama
+    ├── Design/                        onaylanmış tasarım referansları (ör. pin-taslak.png)
     └── Decisions/                     ADR-0001-....md (kararların gerekçeleri)
 ```
 

@@ -8,4 +8,6 @@ struct ChargingNetworkListDTO: Decodable {
 struct ChargingNetworkDTO: Decodable {
     let id: String?
     let name: String?
+    /// Logo adresi (`https`); yoksa `null`.
+    let logoUrl: String?
 }

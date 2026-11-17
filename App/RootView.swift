@@ -35,6 +35,7 @@ struct RootView: View {
                     locationSource: dependencies.locationSource,
                     vehicleRepository: dependencies.vehicleRepository,
                     batteryLevelStore: dependencies.batteryLevelStore,
+                    stationRepository: dependencies.stationRepository,
                     onMenu: {},
                     onSearchTapped: { router.isSearchPresented = true },
                     onAssistant: {},
@@ -46,6 +47,8 @@ struct RootView: View {
                     onSwitchVehicle: { router.garage = .vehicles },
                     onVehicleSettings: { router.vehicleSettings = VehicleSettingsPresentation(vehicleID: $0) },
                     onAddVehicle: { router.garage = .addVehicle },
+                    // İstasyon detayı henüz yazılmadı; seçim yalnızca haritada görünür.
+                    onStationSelected: { _ in },
                     vehicleRevision: router.vehicleRevision
                 )
                 .sheet(isPresented: $router.isSearchPresented) {
