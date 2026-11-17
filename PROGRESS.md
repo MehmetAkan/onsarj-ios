@@ -39,10 +39,14 @@ Proje sahibinin kararını bekleyenler: sayfa arka planının sürümler arası 
 **Backend sözleşme notları:** [Docs/Backend/README.md](Docs/Backend/README.md)
 
 **İstasyon katmanı (Adım 41):** Haritada şarj istasyonları pin ve küme olarak görünüyor (GeoJSON kaynağı,
-kaynak düzeyinde kümeleme, sembol katmanları; CLAUDE.md 5.4). Pine dokununca seçim ve ortalama var; detay sayfası
-yok. Veri Debug'da fixture'dan (`-onsarjStationScenario dense` ile 1000 istasyon), Release'de boş depodan.
+kaynak düzeyinde kümeleme, sembol katmanları; CLAUDE.md 5.4). Veri Debug'da fixture'dan
+(`-onsarjStationScenario dense` ile 1000 istasyon), Release'de boş depodan.
 
-**Sırada:** İstasyon detayı (pine dokununca açılacak sayfa) ve şimşek listesi (haritanın erişilebilir karşılığı).
+**İstasyon detayı (Adım 42):** Pine dokununca sistem `.sheet` orta kademede açılıyor (orta/büyük); harita orta
+kademede etkileşime açık, başka pine dokununca sayfa o istasyonla yenileniyor; sayfa kapanınca pin seçimi kalkıyor.
+"Yol tarifi al" ve "Oyları göster" `App/`'te boş (rota planlama ve oylar yazılmadı).
+
+**Sırada:** Rota planlama ("Yol tarifi al"), şimşek listesi (haritanın erişilebilir karşılığı), oylar.
 Kayıt akışının ekranları tamam ve ana haritaya bağlı. Kodun doğrulanması,
 tekrar gönderilmesi, kayıtlı kullanıcının ayrılması ve ad-soyadın kaydı backend sözleşmesini
 (K-10) bekliyor. `WelcomeModel` ve `PhoneEntryModel` birim testleri ayrı görev olarak bekliyor.
@@ -55,6 +59,111 @@ diğerleri boş.
 
 **Tüm dosyası `#if canImport(UIKit)` ile korunan dosyalar (CLAUDE.md 6.8, eşik 5):** 3 —
 `UITypography.swift`, `FormTextField.swift`, `HiddenNavigationBar.swift`.
+
+---
+
+## Adım 42 — İstasyon detayı (StationDetailFeature)
+
+**Tarih:** 2026-11-17
+
+**Ne yapıldı**
+- **Domain:** `StationDetail` (özet + adres, saatler, erişim, son başarılı şarj, soket grupları, tarifeler, olanaklar,
+  puan; hesaplanan en yüksek güç, toplamlar, müsaitlik), `OpeningHours` (24 saat / haftalık aralıklar, IANA saat
+  dilimi, "şu an açık mı" ve sonraki açılış/kapanış; gece yarısını geçen aralık, `24:00`), `StationAccess`,
+  `ConnectorGroup`, `Tariff` (`Decimal` fiyatlar), `PaymentMethod`, `Amenity`, `RatingSummary`, `ChargingSpeed`
+  (eşikler yalnızca Domain'de: `fastThresholdKw` 50, `ultraFastThresholdKw` 150), `StationRepositoryError`.
+  `StationRepository.stationDetail(_:)`.
+- **Servis:** `StationDetailDTO` (özet alanları ile detay alanları aynı nesnede) ve `StationDetailMapper`; fiyatlar
+  dizgeden `Decimal`'e kayıpsız (`^\d+(\.\d+)?$`, geçersiz fiyat yanıtı geçersiz kılar); tanınmayan olanak, ödeme
+  yöntemi ve konnektör türü atlanır. Fixture: 5 elle yazılmış zengin detay (`st_001`–`st_004`, `st_012`), diğer
+  tüm istasyonlar (`dense` dahil) için kimlikten türetilen sabit tohumlu detay; tarihler şimdiye kaydırılır;
+  detayın müsaitliği özettekiyle tutarlı. `SplitMix64` ortak dosyaya alındı.
+- **Ekran:** `StationDetailView` + `StationDetailModel`: paylaş (`ShareLink`, ad/ağ/adres/Apple Haritalar bağlantısı)
+  ve kapat, başlık, özet satırı (1–3 şimşek, en yüksek güç, müsaitlik noktası ve boş/toplam, en çok 3 olanak),
+  "Yol tarifi al", bilgi kartı (çalışma durumu, erişim rozeti, göreli son şarj, adres + kopyala; kopyalanınca satır
+  içi "Adres kopyalandı" ve hafif titreşim), soketler, tarifeler, olanaklar ("Oyları göster"), derecelendirme.
+  Yükleniyor halinde başlık özetle hemen, gövde `.redacted(.placeholder)` iskelet; hata ve "Tekrar dene".
+- **Sunum (`App/`):** `AppRouter.selectedStation`; `HomeMapView` seçimi `Binding<Station?>` ile dışarı verir
+  (model içindeki seçim kaldırıldı). Detay sistem `.sheet`, `[.medium, .large]`, sürükleme göstergesi,
+  `presentationBackgroundInteraction(.enabled(upThrough: .medium))`; içerik `.id(station.id)` ile başka pine
+  dokununca kapanmadan yenilenir; boş haritaya dokunmak veya kapatmak seçimi kaldırır.
+- **Ortak bileşenler (onaylı):** `PrimaryButton`'a isteğe bağlı `icon: AppIcon?`; `FloatingMapButton` artık yalnızca
+  `AppIcon` alıyor (`systemImage` başlatıcısı kullanıcısı kalmadığı için kaldırıldı; ana sayfadaki profil, şimşek,
+  yer imi ve konum düğmeleri taşındı, görünüm aynı). Düğmenin yüzeyi `floatingMapButtonSurface()` olarak açıldı;
+  paylaş düğmesi (`ShareLink`) aynı görünümü bununla alıyor.
+- **Metinler:** `vehicleSettings.connector.*` → `common.connector.*` (garaj da çevrildi, eski anahtarlar silindi);
+  `stationDetail.*` Türkçe ve İngilizce.
+
+**Dosyalar**
+- Eklenen: `Docs/Design/istasyon-detay-referans.png` (proje sahibi),
+  `Packages/Domain/Sources/OnsarjDomain/Models/{StationDetail,OpeningHours,ConnectorGroup,Tariff,Amenity,
+  ChargingSpeed,StationRepositoryError}.swift`, `Packages/Domain/Tests/DomainTests/StationDetailTests.swift`,
+  `Packages/Services/Sources/StationService/DTO/{StationDetailDTO,StationDetailMapper}.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/{FixtureStationDetailJSON,StationDetailGenerator,
+  SplitMix64}.swift`, `Packages/Services/Tests/ServicesTests/StationDetailTests.swift`,
+  `Packages/Features/Sources/StationDetailFeature/{StationDetailView,StationDetailModel,StationShareText,
+  StationDetail+Presentation,StationDetailPreviews}.swift`,
+  `Packages/Features/Sources/StationDetailFeature/Components/{DetailCard,StationSummaryRow,StationInfoCard,
+  ConnectorsSection,TariffsSection,AmenitiesSection,StationDetailMetrics,StationDetailPlaceholder,
+  PreviewStationDetails}.swift`, `Packages/Features/Tests/FeaturesTests/StationDetailModelTests.swift`,
+  `OnsarjUITests/StationDetailPresentationTests.swift`
+- Silinen: `Packages/Features/Sources/StationDetailFeature/StationDetailFeature.swift` (yer tutucu)
+- Değişen: `Packages/Domain/Sources/OnsarjDomain/Protocols/StationRepository.swift`,
+  `Packages/Services/Sources/StationService/DTO/{StationDTO,ChargingNetworkDTO}.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/{FixtureStationRepository,DenseStationGenerator}.swift`,
+  `Packages/Core/Sources/DesignSystem/{AppIcon,SemanticColors}.swift`,
+  `Packages/Core/Sources/DesignSystem/Components/{FloatingMapButton,PrimaryButton}.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`,
+  `Packages/Features/Sources/HomeMapFeature/{HomeMapModel,HomeMapView}.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/RecenterButton.swift`,
+  `Packages/Features/Sources/GarageFeature/Vehicle+Presentation.swift`,
+  `Packages/Features/Tests/FeaturesTests/{HomeMapModelTests,StationFeedTests}.swift`,
+  `App/{RootView,Navigation/AppRouter,Composition/AppDependencies}.swift`, `Docs/Backend/{stations,README}.md`,
+  `PROGRESS.md`. (`Onsarj.xcodeproj`: `StationDetailFeature` ürününü proje sahibi bağladı.)
+
+**Kararlar**
+- **Sunum (2.9):** sistem `.sheet`, orta ve büyük kademe; orta kademede arka plan etkileşimi açık. iOS 18.5'te tam
+  genişlik, iOS 26.3'te orta kademede kenarlardan içeride ("yüzen") çiziliyor; büyük kademede ikisi de tam genişlik
+  (K-22'de bilinen sistem farkı, araç sayfalarında da kabul edildi). Sayfa açıkken başka pine dokununca sayfa
+  kapanmadan yenileniyor (iki sürümde de doğrulandı).
+- **Saat metni:** "Açık · Kapanış 22:00" / "Kapalı · Açılış 08:00" (proje sahibinin kararı; Türkçe ek hesaplanmaz).
+  Saat istasyonun saat diliminde ve yerel biçimde; açılış/kapanış 12 saatten uzak ve başka bir gündeyse kısa gün adıyla
+  ("Kapalı · Açılış Pzt 08:00").
+- **Konnektör adları** `common.connector.*`; CCS1/CCS2 korunur (referanstaki "CCS" belirsiz).
+- **Seçim** uygulama katmanında (`AppRouter.selectedStation`); detay sayfası kapanınca pin seçimi kalkar.
+- **Yeni token'lar:** `positiveSubtle` (green50 / green950), `onPositiveSubtle` (green800 / green300),
+  `cautionSubtle` (amber50 / amber950), `onCautionSubtle` (amber800 / amber300).
+- **Soket rozeti** zemini müsaitlik renginin `StationDetailMetrics.availabilityBadgeOpacity` (0,16) tonu.
+
+**Doğrulama**
+- `Packages/Domain`: `swift build`, `swift test` 45/45 (yeni: hız eşikleri 49,9/50/149/150; grup müsaitliği 4/4,
+  1/4, 0/4, bilinmiyor; toplamlar; "şu an açık mı": 24 saat, gün içi, gece yarısını geçen, kapalı gün, `24:00`).
+- `Packages/Services`: `swift build`, `swift test` 76/76 (detay eşlemesi, `Decimal` kayıpsız, geçersiz fiyat, tanınmayan
+  olanak, tarih kaydırma, özetle tutarlı müsaitlik, sabit tohumlu detay deterministik, bulunamayan istasyon),
+  `swift build -c release` geçti. `Packages/Core`: `swift build`, `swift test` geçti.
+- `./Tooling/Scripts/verify-ios.sh --package Features`: geçti. Uygulama Debug ve Release derlemesi geçti.
+- `xcodebuild test` Features (iPhone SE, iOS 18.3): 82/82 (yeni `StationDetailModelTests` 4: başlık hemen,
+  hata → tekrar dene, kopyalama panoya yazar, paylaşım metni ve URL kodlaması).
+- UI: `StationDetailPresentationTests` iOS 18.5 ve 26.3, açık ve koyu temada geçti: pine dokununca orta kademe →
+  sayfa açıkken diğer pine dokununca sayfa yenilenir → sürükleme göstergesinden büyük kademe → kapat (pin seçimi
+  kalkar). Tüm UI test paketi (iOS 18.5): 15/15.
+- Release (simülatör): `FixtureStationRepository`, `StationDetailGenerator`, `FixtureStationDetailJSON`, `SplitMix64`,
+  `PreviewStationRepository`, `PreviewStationDetails` sembolleri 0; fixture adres dizgesi 0; `NoStationsRepository`
+  ve `StationDetailView` mevcut.
+- `swiftlint lint --strict`, `swift format lint --strict`: 0 ihlal.
+
+**Bilinen eksikler ve açık noktalar**
+- **Derin bağlantı yok:** paylaşım bağlantısı Apple Haritalar adresi; uygulama içi bağlantı (istasyonu uygulamada
+  açan) ayrı iş.
+- "Yol tarifi al" (`onDirections`) ve "Oyları göster" (`onShowReviews`) `App/`'te boş.
+- **Seçili pin ve sayfa:** seçili pin, ana sayfanın alt sayfasının üstündeki alana göre ortalanıyor; detay sayfası
+  büyük kademedeyken pin sayfanın altında kalıyor (orta kademede görünür).
+- **Müsaitlik rengi eşlemesi** (`StationAvailability` → `Theme`) MapEngine ve StationDetailFeature'da ayrı ayrı
+  duruyor; iki modülün ortak bağımlılığı Domain'i bilmeyen DesignSystem olduğu için ortak yere alınamadı.
+- Kopyala ve "Oyları göster" bağlantıları `brandPrimary` (yeşil) renginde; referanstaki mavi bizim token'larımızda yok.
+- Konum noktası, iOS 26 XCUITest hareket sınırı ve uzun UI test süresi: Adım 41'deki açık noktalar sürüyor.
+
+**Sıradaki adım:** Rota planlama ("Yol tarifi al") ya da şimşek listesi.
 
 ---
 

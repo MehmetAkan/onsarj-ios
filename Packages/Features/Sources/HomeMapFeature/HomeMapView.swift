@@ -17,7 +17,8 @@ import UIKit
 ///   kartı (`VehicleCard`) durur.
 ///
 /// Haritada şarj istasyonları kümelenerek gösterilir (`StationFeed`). Pine dokununca pin seçilir, harita
-/// onu alt sayfanın ve butonların üstünde kalan alanın ortasına getirir ve `onStationSelected` çağrılır.
+/// onu alt sayfanın ve butonların üstünde kalan alanın ortasına getirir; seçim `selectedStation` bağına yazılır.
+/// Boş haritaya dokununca seçim kalkar. Seçimin ne açacağına uygulama katmanı karar verir.
 ///
 /// Ekran kendi geçişini yapmaz (CLAUDE.md 5.3 kural 1); kullanıcının isteklerini kapanışlarla
 /// dışarı bildirir. Harita stili cihazın temasını izler.
@@ -42,7 +43,7 @@ public struct HomeMapView: View {
     private let onVehicleSettings: (Vehicle.ID) -> Void
     private let vehicleRevision: Int
     private let onAddVehicle: () -> Void
-    private let onStationSelected: (Station.ID) -> Void
+    @Binding private var selectedStation: Station?
 
     /// - Parameters:
     ///   - locationSource: Uygulama boyunca paylaşılan konum kaynağı.
@@ -60,7 +61,8 @@ public struct HomeMapView: View {
     ///   - onSwitchVehicle: Araç kartında araç adına dokunulduğunda çağrılır.
     ///   - onVehicleSettings: Araç kartında ayarlar simgesine dokunulduğunda, kartın aracıyla çağrılır.
     ///   - onAddVehicle: Araç yokken kartta "Araç ekle"ye dokunulduğunda çağrılır.
-    ///   - onStationSelected: Haritada bir istasyon pinine dokunulduğunda, istasyonun kimliğiyle çağrılır.
+    ///   - selectedStation: Haritada seçili istasyon. Pine dokununca yazılır, boş haritaya dokununca `nil` olur;
+    ///     dışarıdan `nil` yapılınca pin seçimi kalkar.
     ///   - vehicleRevision: Araç verisinin sürümü. Değiştiğinde (ör. araç ayarları kapandığında) kart
     ///     aracı yeniden yükler; araç silindiyse "Araç ekle" haline geçer.
     public init(
@@ -79,7 +81,7 @@ public struct HomeMapView: View {
         onSwitchVehicle: @escaping () -> Void,
         onVehicleSettings: @escaping (Vehicle.ID) -> Void,
         onAddVehicle: @escaping () -> Void,
-        onStationSelected: @escaping (Station.ID) -> Void,
+        selectedStation: Binding<Station?>,
         vehicleRevision: Int
     ) {
         self.init(
@@ -96,7 +98,7 @@ public struct HomeMapView: View {
             onSwitchVehicle: onSwitchVehicle,
             onVehicleSettings: onVehicleSettings,
             onAddVehicle: onAddVehicle,
-            onStationSelected: onStationSelected,
+            selectedStation: selectedStation,
             vehicleRevision: vehicleRevision
         )
     }
@@ -115,7 +117,7 @@ public struct HomeMapView: View {
         onSwitchVehicle: @escaping () -> Void = {},
         onVehicleSettings: @escaping (Vehicle.ID) -> Void = { _ in },
         onAddVehicle: @escaping () -> Void = {},
-        onStationSelected: @escaping (Station.ID) -> Void = { _ in },
+        selectedStation: Binding<Station?> = .constant(nil),
         vehicleRevision: Int = 0
     ) {
         _model = State(initialValue: model)
@@ -131,7 +133,7 @@ public struct HomeMapView: View {
         self.onSwitchVehicle = onSwitchVehicle
         self.onVehicleSettings = onVehicleSettings
         self.onAddVehicle = onAddVehicle
-        self.onStationSelected = onStationSelected
+        _selectedStation = selectedStation
         self.vehicleRevision = vehicleRevision
     }
 
@@ -188,13 +190,12 @@ public struct HomeMapView: View {
     private var mapStations: MapStations {
         MapStations(
             stations: model.stationFeed.stations,
-            selectedID: model.selectedStationID,
+            selectedID: selectedStation?.id,
             obscuredBottom: max(0, mapBottom - bottomButtonsTop),
             onStationTapped: { id in
-                model.selectStation(id)
-                onStationSelected(id)
+                selectedStation = model.station(withID: id)
             },
-            onMapTapped: model.clearStationSelection,
+            onMapTapped: { selectedStation = nil },
             onCameraIdle: model.stationFeed.cameraDidIdle
         )
     }
@@ -212,7 +213,7 @@ public struct HomeMapView: View {
 
     private var menuButton: some View {
         FloatingMapButton(
-            systemImage: "person.fill",
+            icon: .profile,
             accessibilityLabel: "home.accessibility.menu",
             bundle: .onsarj,
             action: onMenu
@@ -226,7 +227,7 @@ public struct HomeMapView: View {
     private var bottomButtons: some View {
         HStack(spacing: Spacing.md) {
             FloatingMapButton(
-                systemImage: "bolt.fill",
+                icon: .charger,
                 accessibilityLabel: "home.accessibility.nearbyChargers",
                 bundle: .onsarj,
                 action: onNearbyChargers
@@ -234,7 +235,7 @@ public struct HomeMapView: View {
             RecenterButton(isFollowingUser: model.camera.isFollowingUser, action: model.recenter)
             Spacer()
             FloatingMapButton(
-                systemImage: "bookmark.fill",
+                icon: .savedPlaces,
                 accessibilityLabel: "home.accessibility.savedPlaces",
                 bundle: .onsarj,
                 action: onSavedPlaces
@@ -310,6 +311,10 @@ struct HomeMapViewPreviews: PreviewProvider {
 /// Önizleme için istasyon deposu: önizlemede harita çizilmediği için boş.
 private struct PreviewStationRepository: StationRepository {
     func stations(in box: GeoBoundingBox) async throws -> [Station] { [] }
+
+    func stationDetail(_ id: Station.ID) async throws -> StationDetail {
+        throw StationRepositoryError.stationNotFound
+    }
 }
 
 /// Önizleme için konum kaynağı: izin sorulmamış, konum yok.

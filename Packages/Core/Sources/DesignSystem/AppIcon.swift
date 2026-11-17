@@ -83,6 +83,61 @@ public enum AppIcon: Sendable, Hashable {
     /// `banknote` (iOS 14)
     case categoryATM
 
+    /// Profil ve menü. `person.fill` (iOS 13)
+    case profile
+    /// Kayıtlı yerler. `bookmark.fill` (iOS 13)
+    case savedPlaces
+    /// Konumuma dön, izleme kapalı. `location` (iOS 13)
+    case locate
+    /// Konumuma dön, kamera konumu izliyor. `location.fill` (iOS 13)
+    case locateActive
+
+    /// Paylaşma. `square.and.arrow.up` (iOS 13)
+    case share
+    /// Panoya kopyalama. `doc.on.doc` (iOS 13)
+    case copy
+    /// Çalışma saatleri, zaman bilgisi. `clock` (iOS 13)
+    case time
+    /// Adres. `mappin` (iOS 13)
+    case address
+    /// Yol tarifi. `location.north.fill` (iOS 13)
+    case directions
+    /// Uyarı, kısıtlama. `exclamationmark.triangle` (iOS 13)
+    case warning
+    /// Puan yıldızı. `star.fill` (iOS 13)
+    case rating
+
+    /// Type 1 soketi. `ev.plug.ac.type.1` (iOS 17)
+    case connectorType1
+    /// Type 2 soketi. `ev.plug.ac.type.2` (iOS 17)
+    case connectorType2
+    /// CCS1 soketi. `ev.plug.dc.ccs1` (iOS 17)
+    case connectorCCS1
+    /// CCS2 soketi. `ev.plug.dc.ccs2` (iOS 17)
+    case connectorCCS2
+    /// CHAdeMO soketi. `ev.plug.dc.chademo` (iOS 17)
+    case connectorCHAdeMO
+    /// NACS soketi. `ev.plug.dc.nacs` (iOS 17)
+    case connectorNACS
+
+    /// Temassız ödeme. `wave.3.right.circle` (iOS 14)
+    case paymentContactless
+    /// Kartla ödeme. `creditcard` (iOS 13)
+    case paymentCard
+    /// Uygulamayla ödeme. `iphone` (iOS 14)
+    case paymentApp
+    /// RFID kartıyla ödeme. `person.text.rectangle` (iOS 15)
+    case paymentRFID
+
+    /// Tuvalet. `toilet` (iOS 16)
+    case amenityRestroom
+    /// Kablosuz internet. `wifi` (iOS 13)
+    case amenityWifi
+    /// Otopark. `parkingsign` (iOS 15)
+    case amenityParking
+    /// Oyun alanı. `figure.play` (iOS 16)
+    case amenityPlayground
+
     fileprivate enum Source {
         case symbol(String)
         case asset(String, Image.TemplateRenderingMode)
@@ -120,6 +175,31 @@ public enum AppIcon: Sendable, Hashable {
         case .categoryPharmacy: .symbol("cross.case")
         case .categoryHotel: .symbol("bed.double")
         case .categoryATM: .symbol("banknote")
+        case .profile: .symbol("person.fill")
+        case .savedPlaces: .symbol("bookmark.fill")
+        case .locate: .symbol("location")
+        case .locateActive: .symbol("location.fill")
+        case .share: .symbol("square.and.arrow.up")
+        case .copy: .symbol("doc.on.doc")
+        case .time: .symbol("clock")
+        case .address: .symbol("mappin")
+        case .directions: .symbol("location.north.fill")
+        case .warning: .symbol("exclamationmark.triangle")
+        case .rating: .symbol("star.fill")
+        case .connectorType1: .symbol("ev.plug.ac.type.1")
+        case .connectorType2: .symbol("ev.plug.ac.type.2")
+        case .connectorCCS1: .symbol("ev.plug.dc.ccs1")
+        case .connectorCCS2: .symbol("ev.plug.dc.ccs2")
+        case .connectorCHAdeMO: .symbol("ev.plug.dc.chademo")
+        case .connectorNACS: .symbol("ev.plug.dc.nacs")
+        case .paymentContactless: .symbol("wave.3.right.circle")
+        case .paymentCard: .symbol("creditcard")
+        case .paymentApp: .symbol("iphone")
+        case .paymentRFID: .symbol("person.text.rectangle")
+        case .amenityRestroom: .symbol("toilet")
+        case .amenityWifi: .symbol("wifi")
+        case .amenityParking: .symbol("parkingsign")
+        case .amenityPlayground: .symbol("figure.play")
         }
     }
 }
@@ -171,6 +251,10 @@ private struct AssetIcon: View {
         .avoidTolls, .avoidHighways, .avoidFerries, .avoidBorders,
         .categoryRestaurant, .categoryCafe, .categoryMosque, .categoryMarket,
         .categoryPharmacy, .categoryHotel, .categoryATM,
+        .profile, .savedPlaces, .locate, .locateActive, .share, .copy, .time, .address, .directions, .warning,
+        .rating, .connectorType1, .connectorType2, .connectorCCS1, .connectorCCS2, .connectorCHAdeMO,
+        .connectorNACS, .paymentContactless, .paymentCard, .paymentApp, .paymentRFID, .amenityRestroom,
+        .amenityWifi, .amenityParking, .amenityPlayground,
     ]
     return HStack(spacing: Spacing.md) {
         ForEach(icons, id: \.self) { $0 }

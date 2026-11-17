@@ -116,18 +116,20 @@ struct HomeMapModelTests {
         observation.cancel()
     }
 
-    @Test("Pine dokununca seçilir, boş haritaya dokununca seçim kalkar")
-    func selection() {
+    @Test("Dokunulan pinin istasyonu akıştaki özettir; bilinmeyen kimlik nil")
+    func stationLookup() async {
         let model = HomeMapModel(
             locationSource: FakeLocationSource(authorization: .notDetermined),
-            stationRepository: RecordingStationRepository()
+            stationRepository: RecordingStationRepository(stations: [station("a", 36.9, 30.7)]),
+            stationDebounce: .zero
         )
-        model.selectStation(Station.ID("a"))
-        #expect(model.selectedStationID == Station.ID("a"))
-        model.selectStation(Station.ID("b"))
-        #expect(model.selectedStationID == Station.ID("b"))
-        model.clearStationSelection()
-        #expect(model.selectedStationID == nil)
+        model.stationFeed.cameraDidIdle(
+            GeoBoundingBox(
+                southWest: GeoCoordinate(latitude: 36.85, longitude: 30.65),
+                northEast: GeoCoordinate(latitude: 36.95, longitude: 30.75)))
+        await model.stationFeed.pendingLoad?.value
+        #expect(model.station(withID: Station.ID("a"))?.name == "a")
+        #expect(model.station(withID: Station.ID("b")) == nil)
     }
 }
 

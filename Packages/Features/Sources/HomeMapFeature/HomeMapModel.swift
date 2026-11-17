@@ -13,8 +13,8 @@ import OnsarjDomain
 /// Konum bilinmezken harita cihazın bölge ayarındaki ülkenin üzerinde açılır; bölge
 /// belirlenemezse `CountryBounds.fallbackRegionCode` ülkesinde.
 ///
-/// Haritadaki istasyonlar `StationFeed`'den gelir. Pine dokununca istasyon seçilir; boş haritaya
-/// dokununca seçim kalkar.
+/// Haritadaki istasyonlar `StationFeed`'den gelir. Seçili istasyon ekranın dışında tutulur (`HomeMapView`'un
+/// `selectedStation` bağı): detay sayfası kapanınca seçimi uygulama katmanı kaldırır.
 @MainActor
 @Observable
 final class HomeMapModel {
@@ -27,9 +27,6 @@ final class HomeMapModel {
 
     /// Haritadaki istasyonlar.
     let stationFeed: StationFeed
-
-    /// Haritada seçili istasyon.
-    private(set) var selectedStationID: Station.ID?
 
     /// Alt sayfanın kademesi. Ekran orta kademede açılır.
     var sheetDetent: SheetDetent = .medium
@@ -70,14 +67,9 @@ final class HomeMapModel {
         }
     }
 
-    /// Pine dokunuldu: istasyon seçilir.
-    func selectStation(_ id: Station.ID) {
-        selectedStationID = id
-    }
-
-    /// Boş haritaya dokunuldu: seçim kalkar.
-    func clearStationSelection() {
-        selectedStationID = nil
+    /// Dokunulan pinin istasyonu; haritada yoksa `nil`.
+    func station(withID id: Station.ID) -> Station? {
+        stationFeed.stations.first { $0.id == id }
     }
 
     /// İzin değişikliklerini dinler. Ekran görünür kaldıkça çalışır.

@@ -93,7 +93,7 @@ enum GarageText {
 extension ConnectorType {
     /// Kısa adın katalog anahtarı ("Type 2", "CCS2").
     var nameKey: String {
-        "vehicleSettings.connector.\(rawValue)"
+        "common.connector.\(rawValue)"
     }
 
     var name: String {

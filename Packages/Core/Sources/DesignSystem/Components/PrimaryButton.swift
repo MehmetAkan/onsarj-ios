@@ -6,28 +6,43 @@ import SwiftUI
 /// Devre dışıyken buton gizlenmez, yalnızca vurgusu düşer (`Theme.actionPrimaryDisabled`
 /// zemin, `Theme.onActionPrimaryDisabled` metin).
 ///
+/// Metnin solunda isteğe bağlı bir simge durabilir (`icon`).
+///
 /// ```swift
 /// PrimaryButton("signup.phone.action.continue", bundle: .onsarj, action: submit)
 ///     .disabled(!model.isValid)
+/// PrimaryButton("stationDetail.directions", icon: .directions, bundle: .onsarj, action: directions)
 /// ```
 public struct PrimaryButton: View {
     private let titleKey: LocalizedStringKey
+    private let icon: AppIcon?
     private let bundle: Bundle?
     private let action: () -> Void
 
     /// - Parameters:
     ///   - titleKey: Buton metninin String Catalog anahtarı.
+    ///   - icon: Metnin solundaki simge; `nil` ise yalnızca metin.
     ///   - bundle: Metnin bulunduğu paket; özellik modülleri `.onsarj` verir.
     ///   - action: Dokunulduğunda çağrılır.
-    public init(_ titleKey: LocalizedStringKey, bundle: Bundle? = nil, action: @escaping () -> Void) {
+    public init(
+        _ titleKey: LocalizedStringKey,
+        icon: AppIcon? = nil,
+        bundle: Bundle? = nil,
+        action: @escaping () -> Void
+    ) {
         self.titleKey = titleKey
+        self.icon = icon
         self.bundle = bundle
         self.action = action
     }
 
     public var body: some View {
         Button(action: action) {
-            Text(titleKey, bundle: bundle)
+            if let icon {
+                Label(title: { Text(titleKey, bundle: bundle) }, icon: { icon })
+            } else {
+                Text(titleKey, bundle: bundle)
+            }
         }
         .buttonStyle(PrimaryButtonStyle())
     }

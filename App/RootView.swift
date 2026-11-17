@@ -2,8 +2,10 @@ import AuthFeature
 import DesignSystem
 import GarageFeature
 import HomeMapFeature
+import OnsarjDomain
 import RoutePlanningFeature
 import SearchFeature
+import StationDetailFeature
 import SwiftUI
 
 /// Uygulamanın kök görünümü: gezinme yığını ve ekranların `Route` karşılıkları.
@@ -47,8 +49,7 @@ struct RootView: View {
                     onSwitchVehicle: { router.garage = .vehicles },
                     onVehicleSettings: { router.vehicleSettings = VehicleSettingsPresentation(vehicleID: $0) },
                     onAddVehicle: { router.garage = .addVehicle },
-                    // İstasyon detayı henüz yazılmadı; seçim yalnızca haritada görünür.
-                    onStationSelected: { _ in },
+                    selectedStation: $router.selectedStation,
                     vehicleRevision: router.vehicleRevision
                 )
                 .sheet(isPresented: $router.isSearchPresented) {
@@ -63,9 +64,43 @@ struct RootView: View {
                 .sheet(item: $router.garage, onDismiss: router.vehiclesDidChange) { presentation in
                     garageSheet(presentation)
                 }
+                .sheet(isPresented: isStationDetailPresented) {
+                    stationDetailSheet
+                }
             }
         }
         .onsarjDynamicTypeRange()
+    }
+
+    /// İstasyon detayı, haritada bir pin seçiliyken açık. Sayfa kapanınca (X, aşağı çekme) seçim kalkar.
+    private var isStationDetailPresented: Binding<Bool> {
+        Binding(
+            get: { router.selectedStation != nil },
+            set: { isPresented in
+                if !isPresented { router.selectedStation = nil }
+            }
+        )
+    }
+
+    /// İstasyon detay sayfası (2.9: sistem `.sheet`, orta ve büyük kademe). Orta kademede arkadaki harita
+    /// etkileşime açıktır: başka bir pine dokununca seçim değişir ve sayfa kapanmadan o istasyonla yenilenir
+    /// (`.id`); boş haritaya dokununca seçim kalkar ve sayfa kapanır. Yol tarifi (rota planlama) ve oylar
+    /// henüz yazılmadı; o istekler boş.
+    @ViewBuilder
+    private var stationDetailSheet: some View {
+        if let station = router.selectedStation {
+            StationDetailView(
+                station: station,
+                repository: dependencies.stationRepository,
+                onClose: { router.selectedStation = nil },
+                onDirections: { _ in },
+                onShowReviews: { _ in }
+            )
+            .id(station.id)
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+            .presentationBackgroundInteraction(.enabled(upThrough: .medium))
+        }
     }
 
     /// Arama sayfası. Sonuç listesi ve kayıtlı yer ekranları henüz yazılmadı; o istekler boş.

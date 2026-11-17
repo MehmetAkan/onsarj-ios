@@ -110,4 +110,8 @@ actor RecordingStationRepository: StationRepository {
         }
         return stations.filter { box.contains($0.coordinate) }
     }
+
+    func stationDetail(_ id: Station.ID) async throws -> StationDetail {
+        throw StationRepositoryError.stationNotFound
+    }
 }

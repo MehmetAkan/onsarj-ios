@@ -181,6 +181,114 @@
         }
       }
     },
+    "common.connector.ccs1" : {
+      "comment" : "Ortak: konnektör (soket) türünün kısa adı; çevrilmez.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CCS1"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CCS1"
+          }
+        }
+      }
+    },
+    "common.connector.ccs2" : {
+      "comment" : "Ortak: konnektör (soket) türünün kısa adı; çevrilmez.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CCS2"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CCS2"
+          }
+        }
+      }
+    },
+    "common.connector.chademo" : {
+      "comment" : "Ortak: konnektör (soket) türünün kısa adı; çevrilmez.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CHAdeMO"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CHAdeMO"
+          }
+        }
+      }
+    },
+    "common.connector.nacs" : {
+      "comment" : "Ortak: konnektör (soket) türünün kısa adı; çevrilmez.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NACS"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NACS"
+          }
+        }
+      }
+    },
+    "common.connector.type1" : {
+      "comment" : "Ortak: konnektör (soket) türünün kısa adı; çevrilmez.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type 1"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type 1"
+          }
+        }
+      }
+    },
+    "common.connector.type2" : {
+      "comment" : "Ortak: konnektör (soket) türünün kısa adı; çevrilmez.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type 2"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type 2"
+          }
+        }
+      }
+    },
     "common.delete" : {
       "comment" : "Ortak: silme düğmesi ve kaydırma eylemi.",
       "extractionState" : "manual",
@@ -1897,6 +2005,816 @@
         }
       }
     },
+    "stationDetail.access.public" : {
+      "comment" : "İstasyon detayı: erişim rozeti.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open to all EVs"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tüm EV'lere açık"
+          }
+        }
+      }
+    },
+    "stationDetail.access.restricted" : {
+      "comment" : "İstasyon detayı: kısıtlı erişim rozetinin VoiceOver etiketi; %@ backend notu.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restricted access: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kısıtlı erişim: %@"
+          }
+        }
+      }
+    },
+    "stationDetail.addressCopied" : {
+      "comment" : "İstasyon detayı: adres kopyalanınca kısa geri bildirim.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Address copied"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adres kopyalandı"
+          }
+        }
+      }
+    },
+    "stationDetail.amenities" : {
+      "comment" : "İstasyon detayı: bölüm başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amenities"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Olanaklar"
+          }
+        }
+      }
+    },
+    "stationDetail.amenity.cafe" : {
+      "comment" : "İstasyon detayı: olanak.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Café"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kafe"
+          }
+        }
+      }
+    },
+    "stationDetail.amenity.food" : {
+      "comment" : "İstasyon detayı: olanak.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Food"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yemek"
+          }
+        }
+      }
+    },
+    "stationDetail.amenity.hotel" : {
+      "comment" : "İstasyon detayı: olanak.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hotel"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otel"
+          }
+        }
+      }
+    },
+    "stationDetail.amenity.parking" : {
+      "comment" : "İstasyon detayı: olanak.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parking"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otopark"
+          }
+        }
+      }
+    },
+    "stationDetail.amenity.playground" : {
+      "comment" : "İstasyon detayı: olanak.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Playground"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oyun alanı"
+          }
+        }
+      }
+    },
+    "stationDetail.amenity.restroom" : {
+      "comment" : "İstasyon detayı: olanak.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restroom"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tuvalet"
+          }
+        }
+      }
+    },
+    "stationDetail.amenity.shopping" : {
+      "comment" : "İstasyon detayı: olanak.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shopping"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alışveriş"
+          }
+        }
+      }
+    },
+    "stationDetail.amenity.wifi" : {
+      "comment" : "İstasyon detayı: olanak.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wi-Fi"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wi-Fi"
+          }
+        }
+      }
+    },
+    "stationDetail.availability.accessibility" : {
+      "comment" : "İstasyon detayı: müsaitliğin VoiceOver etiketi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld connectors available"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%2$lld soketin %1$lld tanesi müsait"
+          }
+        }
+      }
+    },
+    "stationDetail.availability.ratio" : {
+      "comment" : "İstasyon detayı: müsait soket / toplam soket.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld/%2$lld"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "stationDetail.availability.unknownAccessibility" : {
+      "comment" : "İstasyon detayı: canlı veri yokken VoiceOver etiketi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld connectors, availability unknown"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld soket, müsaitlik bilgisi yok"
+          }
+        }
+      }
+    },
+    "stationDetail.availability.unknownRatio" : {
+      "comment" : "İstasyon detayı: canlı veri yokken toplam soket.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "–/%lld"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "–/%lld"
+          }
+        }
+      }
+    },
+    "stationDetail.connector.speedPower" : {
+      "comment" : "İstasyon detayı: soket satırı: hız sınıfı ve güç (\"Çok hızlı (160 kW)\").",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@)"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "stationDetail.connectors" : {
+      "comment" : "İstasyon detayı: bölüm başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connectors"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soketler"
+          }
+        }
+      }
+    },
+    "stationDetail.copyAddress" : {
+      "comment" : "İstasyon detayı: kopyala düğmesinin VoiceOver etiketi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy address"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adresi kopyala"
+          }
+        }
+      }
+    },
+    "stationDetail.directions" : {
+      "comment" : "İstasyon detayı: birincil düğme.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get directions"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yol tarifi al"
+          }
+        }
+      }
+    },
+    "stationDetail.hours.alwaysOpen" : {
+      "comment" : "İstasyon detayı: çalışma durumu.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open 24 hours"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "24 saat açık"
+          }
+        }
+      }
+    },
+    "stationDetail.hours.closed" : {
+      "comment" : "İstasyon detayı: çalışma durumu; yakın bir açılış yok.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closed"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapalı"
+          }
+        }
+      }
+    },
+    "stationDetail.hours.closedOpens" : {
+      "comment" : "İstasyon detayı: çalışma durumu; %@ yerel biçimde açılış saati (gerekirse günüyle).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closed · Opens %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapalı · Açılış %@"
+          }
+        }
+      }
+    },
+    "stationDetail.hours.open" : {
+      "comment" : "İstasyon detayı: çalışma durumu; %@ yerel biçimde kapanış saati.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open · Closes %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Açık · Kapanış %@"
+          }
+        }
+      }
+    },
+    "stationDetail.lastCharge" : {
+      "comment" : "İstasyon detayı: %@ göreli zaman (\"5 saat önce\").",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last successful charge: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son başarılı şarj: %@"
+          }
+        }
+      }
+    },
+    "stationDetail.loadFailed" : {
+      "comment" : "İstasyon detayı: detay yüklenemedi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t load station information"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İstasyon bilgisi yüklenemedi"
+          }
+        }
+      }
+    },
+    "stationDetail.noPrice" : {
+      "comment" : "İstasyon detayı: tarife yokken.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No price information"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fiyat bilgisi yok"
+          }
+        }
+      }
+    },
+    "stationDetail.noRating" : {
+      "comment" : "İstasyon detayı: puan yokken.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No reviews yet"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Değerlendirme yok"
+          }
+        }
+      }
+    },
+    "stationDetail.payment.app" : {
+      "comment" : "İstasyon detayı: ödeme yöntemi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama"
+          }
+        }
+      }
+    },
+    "stationDetail.payment.card" : {
+      "comment" : "İstasyon detayı: ödeme yöntemi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Card"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kart"
+          }
+        }
+      }
+    },
+    "stationDetail.payment.contactless" : {
+      "comment" : "İstasyon detayı: ödeme yöntemi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contactless"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temassız"
+          }
+        }
+      }
+    },
+    "stationDetail.payment.rfid" : {
+      "comment" : "İstasyon detayı: ödeme yöntemi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RFID card"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RFID kart"
+          }
+        }
+      }
+    },
+    "stationDetail.power" : {
+      "comment" : "İstasyon detayı: güç; %@ yerel biçimde sayı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kW"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kW"
+          }
+        }
+      }
+    },
+    "stationDetail.price.perKwh" : {
+      "comment" : "İstasyon detayı: kWh fiyatı; %@ para birimiyle biçimlenmiş tutar.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/kWh"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/kWh"
+          }
+        }
+      }
+    },
+    "stationDetail.price.perMinute" : {
+      "comment" : "İstasyon detayı: dakika ücreti; %@ para birimiyle biçimlenmiş tutar.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/min"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/dk"
+          }
+        }
+      }
+    },
+    "stationDetail.pricing" : {
+      "comment" : "İstasyon detayı: bölüm başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memberships and pricing"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Üyelikler ve fiyatlandırma"
+          }
+        }
+      }
+    },
+    "stationDetail.rating" : {
+      "comment" : "İstasyon detayı: bölüm başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rating"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Derecelendirme"
+          }
+        }
+      }
+    },
+    "stationDetail.rating.accessibility" : {
+      "comment" : "İstasyon detayı: puanın VoiceOver etiketi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ out of 5, %2$lld reviews"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 üzerinden %1$@, %2$lld değerlendirme"
+          }
+        }
+      }
+    },
+    "stationDetail.share" : {
+      "comment" : "İstasyon detayı: paylaş düğmesinin VoiceOver etiketi.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paylaş"
+          }
+        }
+      }
+    },
+    "stationDetail.showReviews" : {
+      "comment" : "İstasyon detayı: olanaklar başlığının yanındaki bağlantı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show reviews"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oyları göster"
+          }
+        }
+      }
+    },
+    "stationDetail.speed.accessibility" : {
+      "comment" : "İstasyon detayı: şimşeklerin VoiceOver etiketi; %@ hız sınıfı (\"Çok hızlı şarj\").",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ charging"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ şarj"
+          }
+        }
+      }
+    },
+    "stationDetail.speed.fast" : {
+      "comment" : "İstasyon detayı: hız sınıfı, 50–149 kW.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fast"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hızlı"
+          }
+        }
+      }
+    },
+    "stationDetail.speed.normal" : {
+      "comment" : "İstasyon detayı: hız sınıfı, 50 kW altı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        }
+      }
+    },
+    "stationDetail.speed.ultraFast" : {
+      "comment" : "İstasyon detayı: hız sınıfı, 150 kW ve üstü.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ultra-fast"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Çok hızlı"
+          }
+        }
+      }
+    },
+    "stationDetail.tariffs" : {
+      "comment" : "İstasyon detayı: fiyat kartının başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tariffs"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarifeler"
+          }
+        }
+      }
+    },
     "vehicleCard.addVehicle" : {
       "comment" : "Ana sayfa araç kartı, araç yokken: araç ekleme butonu.",
       "extractionState" : "manual",
@@ -2019,114 +2937,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Batarya bozulması"
-          }
-        }
-      }
-    },
-    "vehicleSettings.connector.ccs1" : {
-      "comment" : "Araç ayarları: konnektör kısa adı.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CCS1"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CCS1"
-          }
-        }
-      }
-    },
-    "vehicleSettings.connector.ccs2" : {
-      "comment" : "Araç ayarları: konnektör kısa adı.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CCS2"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CCS2"
-          }
-        }
-      }
-    },
-    "vehicleSettings.connector.chademo" : {
-      "comment" : "Araç ayarları: konnektör kısa adı.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CHAdeMO"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CHAdeMO"
-          }
-        }
-      }
-    },
-    "vehicleSettings.connector.nacs" : {
-      "comment" : "Araç ayarları: konnektör kısa adı.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NACS"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NACS"
-          }
-        }
-      }
-    },
-    "vehicleSettings.connector.type1" : {
-      "comment" : "Araç ayarları: konnektör kısa adı.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Type 1"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Type 1"
-          }
-        }
-      }
-    },
-    "vehicleSettings.connector.type2" : {
-      "comment" : "Araç ayarları: konnektör kısa adı.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Type 2"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Type 2"
           }
         }
       }

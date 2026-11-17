@@ -1,11 +1,11 @@
 /// İstasyon listesi yanıtı: `{"stations": [ ... ]}`.
-struct StationListDTO: Decodable {
+struct StationListDTO: Codable {
     var stations: [StationDTO]
 }
 
 /// Backend'in istasyon kaydı, JSON'daki haliyle. Alanlar isteğe bağlı çözülür; eksik alan eşlemede
 /// (`StationMapper`) yakalanır.
-struct StationDTO: Decodable {
+struct StationDTO: Codable {
     let id: String?
     let name: String?
     var network: ChargingNetworkDTO?
@@ -15,7 +15,7 @@ struct StationDTO: Decodable {
 }
 
 /// Enlem ve boylam, derece.
-struct CoordinateDTO: Decodable {
+struct CoordinateDTO: Codable {
     let latitude: Double?
     let longitude: Double?
 }

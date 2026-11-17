@@ -5,7 +5,7 @@ struct ChargingNetworkListDTO: Decodable {
 
 /// Backend'in şarj ağı kaydı, JSON'daki haliyle. Alanlar isteğe bağlı çözülür; eksik alan
 /// eşlemede (`ChargingNetworkMapper`) yakalanır.
-struct ChargingNetworkDTO: Decodable {
+struct ChargingNetworkDTO: Codable {
     let id: String?
     let name: String?
     /// Logo adresi (`https`); yoksa `null`.

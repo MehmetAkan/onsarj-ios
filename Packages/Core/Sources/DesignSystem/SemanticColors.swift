@@ -135,6 +135,21 @@ public enum Theme {
     /// Pasif sayfa noktaları.
     public static let indicatorInactive = Color(light: Palette.gray300, dark: Palette.ink3)
 
+    // MARK: - Rozetler
+
+    /// Olumlu bilgi rozetinin zemini (ör. "Tüm EV'lere açık"). Açık temada yeşilin en açık tonu, koyu temada
+    /// en koyu tonu: rozet zeminden ayrılır ama göz yormaz.
+    public static let positiveSubtle = Color(light: Palette.green50, dark: Palette.green950)
+
+    /// `positiveSubtle` üzerindeki yazı ve simge.
+    public static let onPositiveSubtle = Color(light: Palette.green800, dark: Palette.green300)
+
+    /// Dikkat rozetinin zemini (ör. kısıtlı erişim notu).
+    public static let cautionSubtle = Color(light: Palette.amber50, dark: Palette.amber950)
+
+    /// `cautionSubtle` üzerindeki yazı ve simge.
+    public static let onCautionSubtle = Color(light: Palette.amber800, dark: Palette.amber300)
+
     // MARK: - Harita: istasyon pinleri ve kümeler
 
     /// İstasyonun tüm soketleri boş. Pinin altındaki nokta ve halesi. İki temada aynı: harita stili

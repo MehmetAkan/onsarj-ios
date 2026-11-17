@@ -34,6 +34,10 @@ final class AppRouter {
     /// "Araçlarınız" / "Araç ekle" modalı; `nil` ise kapalı.
     var garage: GaragePresentation?
 
+    /// Haritada seçili istasyon; seçiliyken istasyon detay sayfası açıktır. Sayfa kapanınca `nil` olur ve
+    /// haritadaki pin seçimi kalkar.
+    var selectedStation: Station?
+
     /// Araç verisinin sürümü. Araç ayarları veya garaj modalı kapanınca artar; ana sayfadaki kart aracı
     /// yeniden yükler.
     private(set) var vehicleRevision = 0

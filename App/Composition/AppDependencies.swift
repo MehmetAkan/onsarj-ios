@@ -135,6 +135,10 @@ private struct NoVehiclesRepository: VehicleRepository {
 /// Release'de, backend bağlanana kadar haritada istasyon yoktur.
 private struct NoStationsRepository: StationRepository {
     func stations(in box: GeoBoundingBox) async throws -> [Station] { [] }
+
+    func stationDetail(_ id: Station.ID) async throws -> StationDetail {
+        throw StationRepositoryError.stationNotFound
+    }
 }
 
 /// Release'de, backend bağlanana kadar araç kataloğu boştur.
