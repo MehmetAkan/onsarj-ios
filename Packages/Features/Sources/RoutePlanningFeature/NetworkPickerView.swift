@@ -21,14 +21,22 @@ struct NetworkPickerView: View {
 
     var body: some View {
         VStack(spacing: Spacing.md) {
-            NetworkSearchField(query: $model.query, isFocused: $isFieldFocused)
-                .padding(.horizontal, Spacing.screenMargin)
+            SearchField(
+                query: $model.query, placeholder: Text("common.search", bundle: .onsarj), isFocused: $isFieldFocused
+            )
+            .padding(.horizontal, Spacing.screenMargin)
             results
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .safeAreaInset(edge: .top, spacing: 0) {
-            ModalHeader(model.mode.titleKey, onBack: onBack) { ModalCloseButton(action: onClose) }
-                .background(Theme.backgroundSheet)
+            ModalHeader(
+                Text(model.mode.titleKey, bundle: .onsarj),
+                backLabel: Text("common.back", bundle: .onsarj),
+                onBack: onBack,
+                closeLabel: Text("common.close", bundle: .onsarj),
+                onClose: onClose
+            )
+            .background(Theme.backgroundSheet)
         }
         .background(Theme.backgroundSheet.ignoresSafeArea())
         .hidesNavigationBar()
@@ -44,7 +52,7 @@ struct NetworkPickerView: View {
         case .failed:
             failure
         case .loaded(let networks) where networks.isEmpty:
-            message("networks.noResults")
+            message("common.noResults")
         case .loaded(let networks):
             list(networks)
         }
@@ -60,7 +68,7 @@ struct NetworkPickerView: View {
                         status: model.status(of: network)
                     ) { model.toggle(network) }
                     if network.id != networks.last?.id {
-                        RowDivider()
+                        InsetDivider()
                     }
                 }
             }
@@ -75,7 +83,7 @@ struct NetworkPickerView: View {
         VStack(spacing: Spacing.md) {
             message("networks.loadFailed")
             Button(action: model.retry) {
-                Text("vehicleCard.retry", bundle: .onsarj)
+                Text("common.retry", bundle: .onsarj)
                     .font(Typography.buttonSmall)
                     .foregroundStyle(Theme.onActionPrimary)
                     .padding(.horizontal, Spacing.lg)

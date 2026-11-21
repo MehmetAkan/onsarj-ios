@@ -18,8 +18,10 @@ struct PlanOptionsPage: View {
             }
         }
         .safeAreaInset(edge: .top, spacing: 0) {
-            ModalHeader("plan.title") { ModalCloseButton(action: onClose) }
-                .background(Theme.backgroundSheet)
+            ModalHeader(
+                Text("plan.title", bundle: .onsarj), closeLabel: Text("common.close", bundle: .onsarj), onClose: onClose
+            )
+            .background(Theme.backgroundSheet)
         }
         .background(Theme.backgroundSheet.ignoresSafeArea())
         .hidesNavigationBar()

@@ -120,7 +120,7 @@ public struct SearchView: View {
                         Button(role: .destructive) {
                             model.deleteHistory(row.id)
                         } label: {
-                            Text("search.delete", bundle: .onsarj)
+                            Text("common.delete", bundle: .onsarj)
                         }
                     }
             }

@@ -10,30 +10,30 @@ import SwiftUI
 ///
 /// ```swift
 /// FloatingMapButton(
-///     systemImage: "bolt.fill",
+///     icon: .charger,
 ///     accessibilityLabel: "home.accessibility.nearbyChargers",
 ///     bundle: .onsarj,
 ///     action: onNearbyChargers
 /// )
 /// ```
 public struct FloatingMapButton: View {
-    private let systemImage: String
+    private let icon: AppIcon
     private let accessibilityLabel: LocalizedStringKey
     private let bundle: Bundle?
     private let action: () -> Void
 
     /// - Parameters:
-    ///   - systemImage: SF Symbols simge adı.
+    ///   - icon: Simge (CLAUDE.md 6.9).
     ///   - accessibilityLabel: VoiceOver etiketinin String Catalog anahtarı.
     ///   - bundle: Metnin bulunduğu paket; özellik modülleri `.onsarj` verir.
     ///   - action: Dokunulduğunda çağrılır.
     public init(
-        systemImage: String,
+        icon: AppIcon,
         accessibilityLabel: LocalizedStringKey,
         bundle: Bundle? = nil,
         action: @escaping () -> Void
     ) {
-        self.systemImage = systemImage
+        self.icon = icon
         self.accessibilityLabel = accessibilityLabel
         self.bundle = bundle
         self.action = action
@@ -41,31 +41,43 @@ public struct FloatingMapButton: View {
 
     public var body: some View {
         Button(action: action) {
-            Image(systemName: systemImage)
-                .font(Typography.button)
-                .foregroundStyle(Theme.textPrimary)
-                .frame(width: Spacing.minTapTarget, height: Spacing.minTapTarget)
-                .background(Theme.backgroundElevated, in: Circle())
-                // Gölgenin yayılımı ve aşağı kayması boşluk ölçeğinden alınır; ayrı bir gölge
-                // ölçeği tanımlanana kadar tek kaynak budur.
-                .shadow(color: Theme.shadowFloating, radius: Spacing.sm, y: Spacing.xs)
-                .contentShape(Circle())
+            icon.floatingMapButtonSurface()
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text(accessibilityLabel, bundle: bundle))
     }
 }
 
+extension View {
+    /// `FloatingMapButton`'ın görünümü: yükseltilmiş yüzeyde dairesel simge, `Spacing.minTapTarget` dokunma
+    /// alanı. Kendi düğmesini çizen sistem bileşenleri (ör. `ShareLink`) aynı görünümü bununla alır:
+    ///
+    /// ```swift
+    /// ShareLink(item: text) { AppIcon.share.floatingMapButtonSurface() }
+    ///     .buttonStyle(.plain)
+    /// ```
+    public func floatingMapButtonSurface() -> some View {
+        font(Typography.button)
+            .foregroundStyle(Theme.textPrimary)
+            .frame(width: Spacing.minTapTarget, height: Spacing.minTapTarget)
+            .background(Theme.backgroundElevated, in: Circle())
+            // Gölgenin yayılımı ve aşağı kayması boşluk ölçeğinden alınır; ayrı bir gölge
+            // ölçeği tanımlanana kadar tek kaynak budur.
+            .shadow(color: Theme.shadowFloating, radius: Spacing.sm, y: Spacing.xs)
+            .contentShape(Circle())
+    }
+}
+
 #if DEBUG
 #Preview("FloatingMapButton · açık") {
-    FloatingMapButton(systemImage: "bolt.fill", accessibilityLabel: "Preview", action: {})
+    FloatingMapButton(icon: .charger, accessibilityLabel: "Preview", action: {})
         .padding(Spacing.xl)
         .background(Theme.backgroundSubtle)
         .preferredColorScheme(.light)
 }
 
 #Preview("FloatingMapButton · koyu") {
-    FloatingMapButton(systemImage: "bolt.fill", accessibilityLabel: "Preview", action: {})
+    FloatingMapButton(icon: .charger, accessibilityLabel: "Preview", action: {})
         .padding(Spacing.xl)
         .background(Theme.backgroundSubtle)
         .preferredColorScheme(.dark)

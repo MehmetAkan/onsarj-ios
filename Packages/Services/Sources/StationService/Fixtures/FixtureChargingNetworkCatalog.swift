@@ -2,20 +2,19 @@
 // bağlanınca dosya silinir. JSON, K-23 ek notu gereği kaynak dosyası değil dizge sabitidir.
 #if DEBUG
 import Foundation
+import OnsarjCore
 import OnsarjDomain
 
 /// Şarj ağlarını gömülü JSON'dan veren katalog. Gerçek yanıtla aynı yoldan geçer:
 /// `JSONDecoder` → `ChargingNetworkListDTO` → `ChargingNetworkMapper`.
 ///
 /// Arama büyük/küçük harf ve aksan duyarsız, Türkçe kurallarıyla "içerir" eşleşmesidir
-/// (`NetworkSearchKey`). Sonuçlar Türkçe alfabe sırasıyla ada göre sıralanır.
+/// (`SearchText`, OnsarjCore). Sonuçlar Türkçe alfabe sırasıyla ada göre sıralanır.
 public struct FixtureChargingNetworkCatalog: ChargingNetworkCatalog {
     public init() {}
 
     public func networks(matching query: String) async throws -> [ChargingNetwork] {
-        let key = NetworkSearchKey.make(query.trimmingCharacters(in: .whitespacesAndNewlines))
-        let all = try Self.all()
-        let matches = key.isEmpty ? all : all.filter { NetworkSearchKey.make($0.name).contains(key) }
+        let matches = try Self.all().filter { SearchText.matches($0.name, query: query) }
         let turkish = Locale(identifier: "tr_TR")
         return matches.sorted {
             $0.name.compare($1.name, options: [.caseInsensitive], locale: turkish) == .orderedAscending
@@ -37,6 +36,7 @@ public struct FixtureChargingNetworkCatalog: ChargingNetworkCatalog {
           "networks": [
             { "id": "net_zes", "name": "ZES" },
             { "id": "net_trugo", "name": "Trugo" },
+            { "id": "net_shell", "name": "Shell Recharge" },
             { "id": "net_esarj", "name": "Eşarj" },
             { "id": "net_voltrun", "name": "Voltrun" },
             { "id": "net_sharz", "name": "Sharz.net" },

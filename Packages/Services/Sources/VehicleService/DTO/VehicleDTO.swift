@@ -5,29 +5,30 @@ struct VehicleListDTO: Decodable {
     var vehicles: [VehicleDTO]
 }
 
-/// Backend'in araç kaydı, JSON'daki haliyle.
+/// Backend'in araç kaydı, JSON'daki haliyle (`Docs/Backend/vehicles.md`).
 ///
 /// Zorunlu alanlar da isteğe bağlı çözülür: eksik alan çözümleme sırasında değil, eşlemede
 /// (`VehicleMapper`) yakalanır. Böylece hata hangi aracın hangi alanında olduğunu söyler.
+/// Değişebilen alanlar `var`'dır: fixture yazma isteklerini bir backend gibi bu kayda uygular.
 struct VehicleDTO: Decodable {
     let id: String?
     let make: String?
     let model: String?
     let variant: String?
     let modelYear: Int?
-    let nickname: String?
+    var nickname: String?
     let batteryCapacityKwh: Double?
-    let rangeKm: Int?
-    let consumptionWhPerKm: Int?
-    let connectors: [String]?
+    var connectors: [String]?
     let maxAcPowerKw: Double?
     let maxDcPowerKw: Double?
-    let colorHex: String?
+    var colorHex: String?
     let bodyType: String?
-    /// Değişkendir: fixture, görsel adını eşlemeden önce yerel dosya adresine çevirir.
+    /// Fixture, görsel adını eşlemeden önce yerel dosya adresine çevirir.
     var imageUrl: String?
-    let batteryHealthPercent: Int?
-    let isDefault: Bool?
+    var batteryHealthPercent: Int?
+    var isDefault: Bool?
+    var drivingProfiles: [DrivingProfileDTO]?
+    var activeProfileId: String?
 
     /// JSON alan adları; eşleme hatası hangi alanın hatalı olduğunu bunlarla bildirir.
     enum CodingKeys: String, CodingKey {
@@ -38,8 +39,6 @@ struct VehicleDTO: Decodable {
         case modelYear
         case nickname
         case batteryCapacityKwh
-        case rangeKm
-        case consumptionWhPerKm
         case connectors
         case maxAcPowerKw
         case maxDcPowerKw
@@ -48,5 +47,16 @@ struct VehicleDTO: Decodable {
         case imageUrl
         case batteryHealthPercent
         case isDefault
+        case drivingProfiles
+        case activeProfileId
     }
+}
+
+/// Aracın bir sürüş profili, JSON'daki haliyle.
+struct DrivingProfileDTO: Decodable {
+    var id: String?
+    var name: String?
+    var consumptionKwhPer100Km: Double?
+    var maxSpeedKmh: Int?
+    var isStandard: Bool?
 }

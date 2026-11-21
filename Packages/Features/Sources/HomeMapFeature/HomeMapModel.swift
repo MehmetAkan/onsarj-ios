@@ -4,6 +4,7 @@ import Foundation
 import LocationKit
 import MapEngine
 import Observation
+import OnsarjDomain
 
 /// Ana harita ekranının durumu: kamera, konum izni ve kullanıcının konumu.
 ///
@@ -11,6 +12,9 @@ import Observation
 /// (CLAUDE.md bölüm 7). İzin daha önce verilmişse kamera açılışta kullanıcının konumuna gider.
 /// Konum bilinmezken harita cihazın bölge ayarındaki ülkenin üzerinde açılır; bölge
 /// belirlenemezse `CountryBounds.fallbackRegionCode` ülkesinde.
+///
+/// Haritadaki istasyonlar `StationFeed`'den gelir. Seçili istasyon ekranın dışında tutulur (`HomeMapView`'un
+/// `selectedStation` bağı): detay sayfası kapanınca seçimi uygulama katmanı kaldırır.
 @MainActor
 @Observable
 final class HomeMapModel {
@@ -21,8 +25,14 @@ final class HomeMapModel {
     private(set) var authorization: LocationAuthorization
     private(set) var userLocation: CLLocation?
 
+    /// Haritadaki istasyonlar.
+    let stationFeed: StationFeed
+
     /// Alt sayfanın kademesi. Ekran orta kademede açılır.
     var sheetDetent: SheetDetent = .medium
+
+    /// Haritada en son görünen bölgenin merkezi; harita henüz durmadıysa `nil`.
+    @ObservationIgnored private var visibleCenter: GeoCoordinate?
 
     /// İzin reddedilmişken butona dokunulunca Ayarlar'a yönlendiren uyarı.
     var isLocationDeniedAlertPresented = false
@@ -32,8 +42,14 @@ final class HomeMapModel {
     /// İzin penceresi butona dokunularak açıldıysa, izin verilince kamera konuma gider.
     @ObservationIgnored private var followsUserWhenAuthorized = false
 
-    init(locationSource: any LocationSource, locale: Locale = .current) {
+    init(
+        locationSource: any LocationSource,
+        stationRepository: any StationRepository,
+        stationDebounce: Duration = StationFeed.defaultDebounce,
+        locale: Locale = .current
+    ) {
         self.locationSource = locationSource
+        stationFeed = StationFeed(repository: stationRepository, debounce: stationDebounce)
         authorization = locationSource.authorization
         camera = MapCamera(initialRegion: CountryBounds.forRegion(of: locale).map(Self.region))
         if authorization == .authorized {
@@ -52,6 +68,33 @@ final class HomeMapModel {
         case .denied:
             isLocationDeniedAlertPresented = true
         }
+    }
+
+    /// Kamera durdu; görünen bölge `visible`. Bölgenin merkezi saklanır, istasyonlar istenir.
+    func cameraDidIdle(_ visible: GeoBoundingBox) {
+        visibleCenter = GeoCoordinate(
+            latitude: (visible.southWest.latitude + visible.northEast.latitude) / 2,
+            longitude: (visible.southWest.longitude + visible.northEast.longitude) / 2)
+        stationFeed.cameraDidIdle(visible)
+    }
+
+    /// Yakındaki istasyonların merkezi için konum bilgisi. Harita henüz hiç durmadıysa açılış bölgesinin merkezi;
+    /// açılış bölgesi de yoksa harita dünyanın tamamıyla açılmıştır ve merkezi (0, 0) noktasıdır.
+    var nearbyOrigin: NearbyStationsOrigin {
+        let initialCenter = camera.initialRegion.map {
+            GeoCoordinate(latitude: ($0.south + $0.north) / 2, longitude: ($0.west + $0.east) / 2)
+        }
+        return NearbyStationsOrigin(
+            userLocation: userLocation.map {
+                GeoCoordinate(latitude: $0.coordinate.latitude, longitude: $0.coordinate.longitude)
+            },
+            mapCenter: visibleCenter ?? initialCenter ?? GeoCoordinate(latitude: 0, longitude: 0)
+        )
+    }
+
+    /// Dokunulan pinin istasyonu; haritada yoksa `nil`.
+    func station(withID id: Station.ID) -> Station? {
+        stationFeed.stations.first { $0.id == id }
     }
 
     /// İzin değişikliklerini dinler. Ekran görünür kaldıkça çalışır.

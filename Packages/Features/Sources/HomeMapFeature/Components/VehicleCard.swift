@@ -21,7 +21,7 @@ import SwiftUI
 struct VehicleCard: View {
     let model: VehicleCardModel
     let onSwitchVehicle: () -> Void
-    let onVehicleSettings: () -> Void
+    let onVehicleSettings: (Vehicle.ID) -> Void
     let onAddVehicle: () -> Void
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -105,7 +105,9 @@ struct VehicleCard: View {
             switchVehicleButton(vehicle)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            Button(action: onVehicleSettings) {
+            Button {
+                onVehicleSettings(vehicle.id)
+            } label: {
                 AppIcon.settings
                     .font(Typography.headline)
                     .foregroundStyle(Theme.textSecondary)
@@ -117,8 +119,13 @@ struct VehicleCard: View {
         }
     }
 
-    /// Araç adı, aşağı ok ve hemen altındaki donanım paketi tek düğmedir. İki satır birlikte dokunma
-    /// alanını sağlar; donanım paketi yoksa ad satırı en az `Spacing.minTapTarget` yüksekliğindedir.
+    /// Araç adının altındaki satır: etkin sürüş profilinin adı. Donanım paketi araç ayarlarında görünür.
+    static func subtitle(for vehicle: Vehicle) -> String {
+        vehicle.activeProfile.name
+    }
+
+    /// Araç adı, aşağı ok ve hemen altındaki etkin profil adı tek düğmedir; iki satır birlikte dokunma
+    /// alanını sağlar.
     private func switchVehicleButton(_ vehicle: Vehicle) -> some View {
         Button(action: onSwitchVehicle) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -131,12 +138,10 @@ struct VehicleCard: View {
                         .font(Typography.secondary)
                         .foregroundStyle(Theme.textSecondary)
                 }
-                if let variant = vehicle.variant {
-                    Text(variant)
-                        .font(Typography.secondary)
-                        .foregroundStyle(Theme.textSecondary)
-                        .multilineTextAlignment(.leading)
-                }
+                Text(Self.subtitle(for: vehicle))
+                    .font(Typography.secondary)
+                    .foregroundStyle(Theme.textSecondary)
+                    .multilineTextAlignment(.leading)
             }
             .frame(minHeight: Spacing.minTapTarget, alignment: .leading)
             .contentShape(Rectangle())
@@ -212,7 +217,7 @@ struct VehicleCard: View {
                 .font(Typography.body)
                 .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
-            PrimaryButton("vehicleCard.retry", bundle: .onsarj) {
+            PrimaryButton("common.retry", bundle: .onsarj) {
                 Task { await model.reload() }
             }
         }
@@ -268,7 +273,7 @@ struct VehicleCardPreviews: PreviewProvider {
             repository: PreviewVehicleRepository(content: item.content),
             batteryStore: PreviewBatteryLevelStore(percent: item.percent)
         )
-        return VehicleCard(model: model, onSwitchVehicle: {}, onVehicleSettings: {}, onAddVehicle: {})
+        return VehicleCard(model: model, onSwitchVehicle: {}, onVehicleSettings: { _ in }, onAddVehicle: {})
             .task { await model.load() }
             .padding(Spacing.screenMargin)
             .frame(maxHeight: .infinity)

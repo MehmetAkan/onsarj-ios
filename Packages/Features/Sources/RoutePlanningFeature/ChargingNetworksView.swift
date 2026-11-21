@@ -16,24 +16,30 @@ struct ChargingNetworksView: View {
                 section(title: "networks.preferred", note: "networks.preferred.note") {
                     ForEach(model.preferences.preferredNetworks, id: \.self) { networkID in
                         NetworkRow(name: model.name(for: networkID)) { model.remove(networkID) }
-                        RowDivider()
+                        InsetDivider()
                     }
-                    AddNetworkRow(titleKey: "networks.addPreferred") { onAdd(.prefer) }
+                    AddRowButton(Text("networks.addPreferred", bundle: .onsarj)) { onAdd(.prefer) }
                 }
                 section(title: "networks.avoided", note: "networks.avoided.note") {
                     ForEach(model.preferences.avoidedNetworks, id: \.self) { networkID in
                         NetworkRow(name: model.name(for: networkID)) { model.remove(networkID) }
-                        RowDivider()
+                        InsetDivider()
                     }
-                    AddNetworkRow(titleKey: "networks.addAvoided") { onAdd(.avoid) }
+                    AddRowButton(Text("networks.addAvoided", bundle: .onsarj)) { onAdd(.avoid) }
                 }
             }
             .padding(.horizontal, Spacing.screenMargin)
             .padding(.vertical, Spacing.lg)
         }
         .safeAreaInset(edge: .top, spacing: 0) {
-            ModalHeader("networks.title", onBack: onBack) { ModalCloseButton(action: onClose) }
-                .background(Theme.backgroundSheet)
+            ModalHeader(
+                Text("networks.title", bundle: .onsarj),
+                backLabel: Text("common.back", bundle: .onsarj),
+                onBack: onBack,
+                closeLabel: Text("common.close", bundle: .onsarj),
+                onClose: onClose
+            )
+            .background(Theme.backgroundSheet)
         }
         .background(Theme.backgroundSheet.ignoresSafeArea())
         .hidesNavigationBar()

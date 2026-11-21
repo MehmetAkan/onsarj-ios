@@ -13,9 +13,11 @@
 		0127FF83309882DE00879EF9 /* LocationKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0127FF82309882DE00879EF9 /* LocationKit */; };
 		0141738A30A8EC7600E77955 /* VehicleService in Frameworks */ = {isa = PBXBuildFile; productRef = 0141738930A8EC7600E77955 /* VehicleService */; };
 		0141738E30A90B9400E77955 /* SearchFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0141738D30A90B9400E77955 /* SearchFeature */; };
+		0146ED6230AC458700B9EDAC /* StationDetailFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0146ED6130AC458700B9EDAC /* StationDetailFeature */; };
 		0199C4D830A9D14500FCD31E /* RoutePlanningFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0199C4D730A9D14500FCD31E /* RoutePlanningFeature */; };
 		0199C4DA30A9D14500FCD31E /* RoutePlanningService in Frameworks */ = {isa = PBXBuildFile; productRef = 0199C4D930A9D14500FCD31E /* RoutePlanningService */; };
 		0199C4DC30A9D14F00FCD31E /* StationService in Frameworks */ = {isa = PBXBuildFile; productRef = 0199C4DB30A9D14F00FCD31E /* StationService */; };
+		0199C4E030AA094400FCD31E /* GarageFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0199C4DF30AA094400FCD31E /* GarageFeature */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -82,12 +84,14 @@
 			files = (
 				0199C4D830A9D14500FCD31E /* RoutePlanningFeature in Frameworks */,
 				0127FF83309882DE00879EF9 /* LocationKit in Frameworks */,
+				0199C4E030AA094400FCD31E /* GarageFeature in Frameworks */,
 				01224337307D649C00C5DF77 /* DesignSystem in Frameworks */,
 				0199C4DC30A9D14F00FCD31E /* StationService in Frameworks */,
 				0199C4DA30A9D14500FCD31E /* RoutePlanningService in Frameworks */,
 				0127FF81309882D300879EF9 /* HomeMapFeature in Frameworks */,
 				0141738A30A8EC7600E77955 /* VehicleService in Frameworks */,
 				01224339307D649C00C5DF77 /* AuthFeature in Frameworks */,
+				0146ED6230AC458700B9EDAC /* StationDetailFeature in Frameworks */,
 				0141738E30A90B9400E77955 /* SearchFeature in Frameworks */,
 			);
 		};
@@ -171,6 +175,8 @@
 				0199C4D730A9D14500FCD31E /* RoutePlanningFeature */,
 				0199C4D930A9D14500FCD31E /* RoutePlanningService */,
 				0199C4DB30A9D14F00FCD31E /* StationService */,
+				0199C4DF30AA094400FCD31E /* GarageFeature */,
+				0146ED6130AC458700B9EDAC /* StationDetailFeature */,
 			);
 			productName = Onsarj;
 			productReference = 018CDE9A306EE71D0021EF7D /* Onsarj.app */;
@@ -678,6 +684,11 @@
 			package = 0150A4DD3072504B00D86AAB /* XCLocalSwiftPackageReference "Packages/Features" */;
 			productName = SearchFeature;
 		};
+		0146ED6130AC458700B9EDAC /* StationDetailFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0150A4DD3072504B00D86AAB /* XCLocalSwiftPackageReference "Packages/Features" */;
+			productName = StationDetailFeature;
+		};
 		0199C4D730A9D14500FCD31E /* RoutePlanningFeature */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 0150A4DD3072504B00D86AAB /* XCLocalSwiftPackageReference "Packages/Features" */;
@@ -692,6 +703,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0150A4DE3072506100D86AAB /* XCLocalSwiftPackageReference "Packages/Services" */;
 			productName = StationService;
+		};
+		0199C4DF30AA094400FCD31E /* GarageFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0150A4DD3072504B00D86AAB /* XCLocalSwiftPackageReference "Packages/Features" */;
+			productName = GarageFeature;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

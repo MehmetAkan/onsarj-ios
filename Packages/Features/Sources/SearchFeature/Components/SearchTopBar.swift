@@ -87,12 +87,12 @@ struct SearchTopBar: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(Text("search.close", bundle: .onsarj))
+        .accessibilityLabel(Text("common.close", bundle: .onsarj))
     }
 
     private var submitButton: some View {
         Button(action: onSubmit) {
-            Text("search.submit", bundle: .onsarj)
+            Text("common.search", bundle: .onsarj)
                 .font(Typography.button)
                 .foregroundStyle(Theme.onActionPrimary)
                 .padding(.horizontal, Spacing.lg)

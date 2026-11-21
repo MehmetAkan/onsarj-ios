@@ -1,8 +1,11 @@
 import AuthFeature
 import DesignSystem
+import GarageFeature
 import HomeMapFeature
+import OnsarjDomain
 import RoutePlanningFeature
 import SearchFeature
+import StationDetailFeature
 import SwiftUI
 
 /// Uygulamanın kök görünümü: gezinme yığını ve ekranların `Route` karşılıkları.
@@ -21,6 +24,8 @@ struct RootView: View {
     private static let opensMapOnLaunch = true
 
     @State private var router = AppRouter(flow: Self.opensMapOnLaunch ? .home : .signUp)
+    /// İstasyon sayfasının kademesi; sayfanın üst kenarı yalnızca orta kademedeyken haritaya bildirilir.
+    @State private var stationSheetDetent: PresentationDetent = .medium
 
     var body: some View {
         Group {
@@ -34,17 +39,25 @@ struct RootView: View {
                     locationSource: dependencies.locationSource,
                     vehicleRepository: dependencies.vehicleRepository,
                     batteryLevelStore: dependencies.batteryLevelStore,
+                    stationRepository: dependencies.stationRepository,
                     onMenu: {},
                     onSearchTapped: { router.isSearchPresented = true },
                     onAssistant: {},
                     onCategory: { _ in },
                     onOptions: { router.isPlanOptionsPresented = true },
                     onSavedPlans: {},
-                    onNearbyChargers: {},
+                    onNearbyChargers: { origin in
+                        router.openNearbyStations(
+                            from: origin.userLocation.map(StationListOrigin.userLocation)
+                                ?? .mapCenter(origin.mapCenter))
+                    },
                     onSavedPlaces: {},
-                    onSwitchVehicle: {},
-                    onVehicleSettings: {},
-                    onAddVehicle: {}
+                    onSwitchVehicle: { router.garage = .vehicles },
+                    onVehicleSettings: { router.vehicleSettings = VehicleSettingsPresentation(vehicleID: $0) },
+                    onAddVehicle: { router.garage = .addVehicle },
+                    selectedStation: Binding(get: { router.selectedStation }, set: router.mapSelectionChanged),
+                    stationSheetTop: router.stationSheet == nil ? nil : router.stationSheetTop,
+                    vehicleRevision: router.vehicleRevision
                 )
                 .sheet(isPresented: $router.isSearchPresented) {
                     searchSheet
@@ -52,8 +65,76 @@ struct RootView: View {
                 .sheet(isPresented: $router.isPlanOptionsPresented) {
                     planOptionsSheet
                 }
+                .sheet(item: $router.vehicleSettings, onDismiss: router.vehiclesDidChange) { presentation in
+                    vehicleSettingsSheet(presentation)
+                }
+                .sheet(item: $router.garage, onDismiss: router.vehiclesDidChange) { presentation in
+                    garageSheet(presentation)
+                }
+                .sheet(
+                    isPresented: isStationSheetPresented,
+                    onDismiss: { stationSheetDetent = .medium },
+                    content: { stationSheet }
+                )
             }
         }
+        .onsarjDynamicTypeRange()
+    }
+
+    /// İstasyon sayfası (detay veya liste) açık mı. Sayfa kapanınca (X, aşağı çekme) seçim kalkar.
+    private var isStationSheetPresented: Binding<Bool> {
+        Binding(
+            get: { router.stationSheet != nil },
+            set: { isPresented in
+                if !isPresented { router.closeStationSheet() }
+            }
+        )
+    }
+
+    /// İstasyon sayfası (2.9: sistem `.sheet`, orta ve büyük kademe). Pinden açılan detayda orta kademede arkadaki
+    /// harita etkileşime açıktır: başka bir pine dokununca seçim değişir ve sayfa kapanmadan o istasyonla yenilenir
+    /// (`.id`); boş haritaya dokununca sayfa kapanır. Şimşekten açılan liste odaklı bir ekrandır; harita dokunmaya
+    /// kapalıdır. Sayfanın orta kademedeki üst kenarı haritaya bildirilir; seçili pin onun üstünde kalan alanın
+    /// ortasına gelir. Yol tarifi (rota planlama) ve oylar henüz yazılmadı; o istekler boş.
+    private var stationSheet: some View {
+        Group {
+            switch router.stationSheet {
+            case .detail:
+                if let station = router.selectedStation {
+                    StationDetailView(
+                        station: station,
+                        repository: dependencies.stationRepository,
+                        onClose: router.closeStationSheet,
+                        onDirections: { _ in },
+                        onShowReviews: { _ in }
+                    )
+                    .id(station.id)
+                }
+            case .list(let origin):
+                StationListView(
+                    origin: origin,
+                    filters: router.stationListFilters,
+                    stationRepository: dependencies.stationRepository,
+                    vehicleRepository: dependencies.vehicleRepository,
+                    networkCatalog: dependencies.chargingNetworkCatalog,
+                    onFiltersChange: { router.stationListFilters = $0 },
+                    onSelectionChange: router.listSelectionChanged,
+                    onClose: router.closeStationSheet,
+                    onDirections: { _ in },
+                    onShowReviews: { _ in }
+                )
+            case nil:
+                EmptyView()
+            }
+        }
+        .onGeometryChange(for: CGFloat.self) {
+            $0.frame(in: .global).minY
+        } action: { top in
+            if stationSheetDetent == .medium { router.stationSheetTop = top }
+        }
+        .presentationDetents([.medium, .large], selection: $stationSheetDetent)
+        .presentationDragIndicator(.visible)
+        .presentationBackgroundInteraction(router.stationSheet == .detail ? .enabled(upThrough: .medium) : .disabled)
         .onsarjDynamicTypeRange()
     }
 
@@ -81,6 +162,30 @@ struct RootView: View {
             preferencesStore: dependencies.routePreferencesStore,
             networkCatalog: dependencies.chargingNetworkCatalog,
             onClose: { router.isPlanOptionsPresented = false }
+        )
+        .presentationDragIndicator(.visible)
+        .onsarjDynamicTypeRange()
+    }
+
+    /// Araç ayarları; plan seçenekleriyle aynı sunum. Kapanınca ana sayfadaki kart yeniden yüklenir.
+    private func vehicleSettingsSheet(_ presentation: VehicleSettingsPresentation) -> some View {
+        VehicleSettingsView(
+            repository: dependencies.vehicleRepository,
+            vehicleID: presentation.vehicleID,
+            onClose: { router.vehicleSettings = nil }
+        )
+        .presentationDragIndicator(.visible)
+        .onsarjDynamicTypeRange()
+    }
+
+    /// "Araçlarınız" (içerik yüksekliğinde) veya "Araç ekle" (tam yükseklik). Kademeleri `GarageView`
+    /// yönetir. Kapanınca ana sayfadaki kart yeniden yüklenir.
+    private func garageSheet(_ presentation: GaragePresentation) -> some View {
+        GarageView(
+            repository: dependencies.vehicleRepository,
+            catalog: dependencies.vehicleCatalog,
+            start: presentation == .vehicles ? .vehicles : .addVehicle,
+            onClose: { router.garage = nil }
         )
         .presentationDragIndicator(.visible)
         .onsarjDynamicTypeRange()

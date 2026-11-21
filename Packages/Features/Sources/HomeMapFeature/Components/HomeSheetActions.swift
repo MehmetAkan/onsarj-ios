@@ -17,8 +17,8 @@ struct HomeSheetActions {
     var savedPlans: () -> Void
     /// Araç kartında araç adına dokunuldu.
     var switchVehicle: () -> Void
-    /// Araç kartında ayarlar simgesine dokunuldu.
-    var vehicleSettings: () -> Void
+    /// Araç kartında ayarlar simgesine dokunuldu; kartın aracıyla.
+    var vehicleSettings: (Vehicle.ID) -> Void
     /// Araç yokken "Araç ekle"ye dokunuldu.
     var addVehicle: () -> Void
 }

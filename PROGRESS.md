@@ -36,7 +36,21 @@ Proje sahibinin kararını bekleyenler: sayfa arka planının sürümler arası 
 `UserDefaults`'a yazılıyor (`RoutePreferencesStoring` arkasında; ileride backend). Şarj ağları Debug'da fixture'dan
 (`FixtureChargingNetworkCatalog`, K-23), Release'de boş katalog.
 
-**Sırada:** İstasyon katmanı (GeoJSON kaynağı + symbol layer + kaynak düzeyinde kümeleme, CLAUDE.md 5.4).
+**Backend sözleşme notları:** [Docs/Backend/README.md](Docs/Backend/README.md)
+
+**İstasyon katmanı (Adım 41):** Haritada şarj istasyonları pin ve küme olarak görünüyor (GeoJSON kaynağı,
+kaynak düzeyinde kümeleme, sembol katmanları; CLAUDE.md 5.4). Veri Debug'da fixture'dan
+(`-onsarjStationScenario dense` ile 1000 istasyon), Release'de boş depodan.
+
+**İstasyon detayı (Adım 42):** Pine dokununca sistem `.sheet` orta kademede açılıyor (orta/büyük); harita orta
+kademede etkileşime açık, başka pine dokununca sayfa o istasyonla yenileniyor; sayfa kapanınca pin seçimi kalkıyor.
+"Yol tarifi al" ve "Oyları göster" `App/`'te boş (rota planlama ve oylar yazılmadı).
+
+**Yakındaki istasyonlar (Adım 43):** Şimşek düğmesi aynı istasyon sayfasında listeyi açar (süzgeç çipleri, ek
+filtreler, kartlar); karta dokununca detay listenin içinde itilir ve harita o pine gider. VoiceOver kullanıcılarının
+istasyon bulma yoludur. Liste ve detay aynı modülde (`StationDetailFeature`, artık "istasyon ekranları").
+
+**Sırada:** Rota planlama ("Yol tarifi al"), oylar.
 Kayıt akışının ekranları tamam ve ana haritaya bağlı. Kodun doğrulanması,
 tekrar gönderilmesi, kayıtlı kullanıcının ayrılması ve ad-soyadın kaydı backend sözleşmesini
 (K-10) bekliyor. `WelcomeModel` ve `PhoneEntryModel` birim testleri ayrı görev olarak bekliyor.
@@ -49,6 +63,522 @@ diğerleri boş.
 
 **Tüm dosyası `#if canImport(UIKit)` ile korunan dosyalar (CLAUDE.md 6.8, eşik 5):** 3 —
 `UITypography.swift`, `FormTextField.swift`, `HiddenNavigationBar.swift`.
+
+---
+
+## Adım 43 — Yakındaki istasyonlar listesi (şimşek düğmesi)
+
+**Tarih:** 2026-11-18
+
+**Ne yapıldı**
+- **Önceki adımdan iki düzeltme:** Seçili pin artık açık istasyon sayfasının (detay/liste) orta kademesinin üstünde
+  kalan alanın ortasına gelir. App sayfanın üst kenarını yalnızca orta kademedeyken ölçer; `HomeMapView` değeri
+  300 ms durulunca kullanır, harita seçim sürerken kapanan alan değişince pini yeniden ortalar. `MapStations`
+  seçili istasyonun konumunu da taşır: haritada yüklü olmayan (listeden uzaktaki) istasyona da gider ve pin, bölge
+  yüklenmeyi beklemeden görünür. Şablon testi `testLaunchPerformance` silindi.
+- **Domain:** `StationListItem`, `StationSort` (mesafe / güç / müsaitlik; eşitlikte mesafe, sonra kimlik),
+  `StationQuery` (merkez, yarıçap 25 km, limit 50, süzgeçler; `matches` ve `arranged` backend kuralıdır),
+  `GeoDistance` (haversine, adlandırılmış Dünya yarıçapı), `StationRepository.nearbyStations(_:)`.
+- **Servis:** `NearbyStationsRequest` (sorgu → `GET /stations/nearby` parametreleri; varsayılan süzgeç parametre
+  üretmez, kümeler sıralı), `NearbyStationDTO` (özet + liste alanları aynı nesnede), `NearbyStationMapper`.
+  Fixture backend gibi: yarıçap içindeki istasyonların detayını alır, süzer, sıralar, sınırlar; liste öğesi detayla
+  aynı kaynaktan (güç, sayılar, olanaklar tutarlı), `photoUrl` her zaman `null`, sonuç JSON → DTO → eşleme yolundan
+  geçer. Release'de boş liste.
+- **Ekran (`StationDetailFeature`):** `StationListView` (`NavigationStack`: kök liste, karta dokununca detay itilir,
+  geri ile dönülür), `StationListModel` (süzgeç değişince 300 ms bekleme, önceki istek iptal), `StationListFilters`
+  (uygulama katmanında oturum boyunca bellekte), `StationListOrigin` (konum / harita merkezi + not). Kart, ek
+  filtreler sayfası (yalnızca müsait, aracımla uyumlu — araç yoksa pasif ve açıklamalı), süzgeç çipleri (sistem
+  `Menu`'sü), iskelet / boş ("Filtreleri temizle") / hata ("Tekrar dene") halleri. Detay listeden itilince solda
+  geri, sağda paylaş ve X. **Modül adı artık "istasyon ekranları" anlamına geliyor** (detay + liste).
+- **Ortak bileşenler (proje sahibinin onayıyla):** `ModalHeader`'a solda yuvarlak eylem düğmesi
+  (`LeadingAction`: simge, etiket, nokta işareti); `SelectableChip`'in görünümü `selectableChipSurface(isSelected:)`
+  değiştiricisi olarak dışa açıldı (menü etiketleri bunu kullanır). Yeni renk token'ı ve simge eklenmedi
+  (`options`, `dropdown`, `directions`, `back` mevcuttu).
+- **App:** `AppRouter` haritadaki seçimi (`selectedStation`) ve açık istasyon sayfasını (`stationSheet`: detay /
+  liste) ayırır; detay ve liste aynı anda açılamaz. Şimşek düğmesi konumu ve harita merkezini verir
+  (`NearbyStationsOrigin`).
+
+**Dosyalar**
+- Eklenen: `Packages/Domain/Sources/OnsarjDomain/Models/{StationListItem,StationSort,StationQuery,GeoDistance}.swift`,
+  `Packages/Domain/Tests/DomainTests/StationQueryTests.swift`,
+  `Packages/Services/Sources/StationService/DTO/{NearbyStationsRequest,NearbyStationDTO,NearbyStationMapper}.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/FixtureStationRepository+Nearby.swift`,
+  `Packages/Services/Tests/ServicesTests/NearbyStationsTests.swift`,
+  `Packages/Features/Sources/StationDetailFeature/{StationListView,StationListModel,StationListFilters,StationList+Presentation,StationListPreviews}.swift`,
+  `Packages/Features/Sources/StationDetailFeature/Components/{StationListCard,StationFilterBar,ExtraFiltersSheet,StationListPlaceholder,PreviewStationList}.swift`,
+  `Packages/Features/Sources/HomeMapFeature/NearbyStationsOrigin.swift`,
+  `Packages/Features/Tests/FeaturesTests/StationListModelTests.swift`, `OnsarjUITests/StationListPresentationTests.swift`.
+- Değişen: `Packages/Domain/Sources/OnsarjDomain/Protocols/StationRepository.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/FixtureStationRepository.swift`,
+  `Packages/Core/Sources/DesignSystem/Components/{ModalHeader,SelectableChip}.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings` (`stationList.*`, `common.all`),
+  `Packages/MapboxKit/Sources/MapEngine/{MapStations,MapView+Stations}.swift`,
+  `Packages/Features/Sources/HomeMapFeature/{HomeMapView,HomeMapModel}.swift`,
+  `Packages/Features/Sources/StationDetailFeature/{StationDetailView}.swift`,
+  `Packages/Features/Sources/StationDetailFeature/Components/{StationSummaryRow,StationDetailMetrics,PreviewStationDetails}.swift`,
+  `Packages/Features/Tests/FeaturesTests/{StationFeedTests,StationDetailModelTests}.swift`,
+  `App/Navigation/AppRouter.swift`, `App/RootView.swift`, `App/Composition/AppDependencies.swift`,
+  `OnsarjUITests/OnsarjUITests.swift` (`testLaunchPerformance` silindi), `Docs/Backend/stations.md`,
+  `Docs/Backend/README.md`.
+
+**Kararlar**
+- Sunum (2.9): sistem `.sheet`, orta ve büyük kademe; detayla aynı sayfa. Liste açıkken arkadaki harita dokunmaya
+  kapalı (`presentationBackgroundInteraction(.disabled)`). Sistem davranışı: sayfanın üstündeki haritaya dokunmak
+  pin seçmez, sayfayı kapatır (iOS 18.5 ve 26.3'te doğrulandı).
+- Süzgeç çipleri sistem `Menu`'sü (proje sahibinin onayı): iOS 17–18'de klasik menü, iOS 26'da cam görünümlü;
+  içerik ve onay işaretleri aynı. Ağlar menüsü çoklu seçimde açık kalır.
+- Seçili çip "Ad: değer" yazar ("Sırala: Güç", "Hız: Hızlı ve üstü", "Soket: 4+"); ağlar "Ağlar · 2".
+- Uzaklık: 1 km altı 10 m'ye yuvarlanır, 10 km altı bir ondalık, üstü tam sayı; birim yerel ayarla mile dönmez.
+- `minSpeed` sözleşme değerleri `normal` / `fast` / `ultrafast` (öneri; backend onaylamalı).
+- Konum yoksa merkez, haritanın en son durduğu bölgenin merkezi; harita hiç durmadıysa açılış bölgesinin merkezi.
+
+**Doğrulama**
+DOGRULAMA_43
+
+**Bilinen eksikler ve açık noktalar**
+- Yol tarifi düğmeleri (kart ve detay) ve "Oyları göster" `App/`'te boş.
+- Fotoğraf (`photoUrl`) için önbellek yok (`AsyncImage`); backend fotoğraf verince disk önbelleği ayrı iş.
+- Sayfa büyük kademeye sürüklenirken yakalanan ara üst kenar değeri, nadiren pini bir kez gereksiz kaydırabilir
+  (büyük kademede pinin örtülmesi kabul edildi).
+- Liste açıkken haritaya dokunmak listeyi kapatır (sistem davranışı); istenmiyorsa ayrı karar gerekir.
+
+**Sıradaki adım:** Rota planlama ("Yol tarifi al") ve oylar.
+
+---
+
+## Adım 42 — İstasyon detayı (StationDetailFeature)
+
+**Tarih:** 2026-11-17
+
+**Ne yapıldı**
+- **Domain:** `StationDetail` (özet + adres, saatler, erişim, son başarılı şarj, soket grupları, tarifeler, olanaklar,
+  puan; hesaplanan en yüksek güç, toplamlar, müsaitlik), `OpeningHours` (24 saat / haftalık aralıklar, IANA saat
+  dilimi, "şu an açık mı" ve sonraki açılış/kapanış; gece yarısını geçen aralık, `24:00`), `StationAccess`,
+  `ConnectorGroup`, `Tariff` (`Decimal` fiyatlar), `PaymentMethod`, `Amenity`, `RatingSummary`, `ChargingSpeed`
+  (eşikler yalnızca Domain'de: `fastThresholdKw` 50, `ultraFastThresholdKw` 150), `StationRepositoryError`.
+  `StationRepository.stationDetail(_:)`.
+- **Servis:** `StationDetailDTO` (özet alanları ile detay alanları aynı nesnede) ve `StationDetailMapper`; fiyatlar
+  dizgeden `Decimal`'e kayıpsız (`^\d+(\.\d+)?$`, geçersiz fiyat yanıtı geçersiz kılar); tanınmayan olanak, ödeme
+  yöntemi ve konnektör türü atlanır. Fixture: 5 elle yazılmış zengin detay (`st_001`–`st_004`, `st_012`), diğer
+  tüm istasyonlar (`dense` dahil) için kimlikten türetilen sabit tohumlu detay; tarihler şimdiye kaydırılır;
+  detayın müsaitliği özettekiyle tutarlı. `SplitMix64` ortak dosyaya alındı.
+- **Ekran:** `StationDetailView` + `StationDetailModel`: paylaş (`ShareLink`, ad/ağ/adres/Apple Haritalar bağlantısı)
+  ve kapat, başlık, özet satırı (1–3 şimşek, en yüksek güç, müsaitlik noktası ve boş/toplam, en çok 3 olanak),
+  "Yol tarifi al", bilgi kartı (çalışma durumu, erişim rozeti, göreli son şarj, adres + kopyala; kopyalanınca satır
+  içi "Adres kopyalandı" ve hafif titreşim), soketler, tarifeler, olanaklar ("Oyları göster"), derecelendirme.
+  Yükleniyor halinde başlık özetle hemen, gövde `.redacted(.placeholder)` iskelet; hata ve "Tekrar dene".
+- **Sunum (`App/`):** `AppRouter.selectedStation`; `HomeMapView` seçimi `Binding<Station?>` ile dışarı verir
+  (model içindeki seçim kaldırıldı). Detay sistem `.sheet`, `[.medium, .large]`, sürükleme göstergesi,
+  `presentationBackgroundInteraction(.enabled(upThrough: .medium))`; içerik `.id(station.id)` ile başka pine
+  dokununca kapanmadan yenilenir; boş haritaya dokunmak veya kapatmak seçimi kaldırır.
+- **Ortak bileşenler (onaylı):** `PrimaryButton`'a isteğe bağlı `icon: AppIcon?`; `FloatingMapButton` artık yalnızca
+  `AppIcon` alıyor (`systemImage` başlatıcısı kullanıcısı kalmadığı için kaldırıldı; ana sayfadaki profil, şimşek,
+  yer imi ve konum düğmeleri taşındı, görünüm aynı). Düğmenin yüzeyi `floatingMapButtonSurface()` olarak açıldı;
+  paylaş düğmesi (`ShareLink`) aynı görünümü bununla alıyor.
+- **Metinler:** `vehicleSettings.connector.*` → `common.connector.*` (garaj da çevrildi, eski anahtarlar silindi);
+  `stationDetail.*` Türkçe ve İngilizce.
+
+**Dosyalar**
+- Eklenen: `Docs/Design/istasyon-detay-referans.png` (proje sahibi),
+  `Packages/Domain/Sources/OnsarjDomain/Models/{StationDetail,OpeningHours,ConnectorGroup,Tariff,Amenity,
+  ChargingSpeed,StationRepositoryError}.swift`, `Packages/Domain/Tests/DomainTests/StationDetailTests.swift`,
+  `Packages/Services/Sources/StationService/DTO/{StationDetailDTO,StationDetailMapper}.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/{FixtureStationDetailJSON,StationDetailGenerator,
+  SplitMix64}.swift`, `Packages/Services/Tests/ServicesTests/StationDetailTests.swift`,
+  `Packages/Features/Sources/StationDetailFeature/{StationDetailView,StationDetailModel,StationShareText,
+  StationDetail+Presentation,StationDetailPreviews}.swift`,
+  `Packages/Features/Sources/StationDetailFeature/Components/{DetailCard,StationSummaryRow,StationInfoCard,
+  ConnectorsSection,TariffsSection,AmenitiesSection,StationDetailMetrics,StationDetailPlaceholder,
+  PreviewStationDetails}.swift`, `Packages/Features/Tests/FeaturesTests/StationDetailModelTests.swift`,
+  `OnsarjUITests/StationDetailPresentationTests.swift`
+- Silinen: `Packages/Features/Sources/StationDetailFeature/StationDetailFeature.swift` (yer tutucu)
+- Değişen: `Packages/Domain/Sources/OnsarjDomain/Protocols/StationRepository.swift`,
+  `Packages/Services/Sources/StationService/DTO/{StationDTO,ChargingNetworkDTO}.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/{FixtureStationRepository,DenseStationGenerator}.swift`,
+  `Packages/Core/Sources/DesignSystem/{AppIcon,SemanticColors}.swift`,
+  `Packages/Core/Sources/DesignSystem/Components/{FloatingMapButton,PrimaryButton}.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`,
+  `Packages/Features/Sources/HomeMapFeature/{HomeMapModel,HomeMapView}.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/RecenterButton.swift`,
+  `Packages/Features/Sources/GarageFeature/Vehicle+Presentation.swift`,
+  `Packages/Features/Tests/FeaturesTests/{HomeMapModelTests,StationFeedTests}.swift`,
+  `App/{RootView,Navigation/AppRouter,Composition/AppDependencies}.swift`, `Docs/Backend/{stations,README}.md`,
+  `PROGRESS.md`. (`Onsarj.xcodeproj`: `StationDetailFeature` ürününü proje sahibi bağladı.)
+
+**Kararlar**
+- **Sunum (2.9):** sistem `.sheet`, orta ve büyük kademe; orta kademede arka plan etkileşimi açık. iOS 18.5'te tam
+  genişlik, iOS 26.3'te orta kademede kenarlardan içeride ("yüzen") çiziliyor; büyük kademede ikisi de tam genişlik
+  (K-22'de bilinen sistem farkı, araç sayfalarında da kabul edildi). Sayfa açıkken başka pine dokununca sayfa
+  kapanmadan yenileniyor (iki sürümde de doğrulandı).
+- **Saat metni:** "Açık · Kapanış 22:00" / "Kapalı · Açılış 08:00" (proje sahibinin kararı; Türkçe ek hesaplanmaz).
+  Saat istasyonun saat diliminde ve yerel biçimde; açılış/kapanış 12 saatten uzak ve başka bir gündeyse kısa gün adıyla
+  ("Kapalı · Açılış Pzt 08:00").
+- **Konnektör adları** `common.connector.*`; CCS1/CCS2 korunur (referanstaki "CCS" belirsiz).
+- **Seçim** uygulama katmanında (`AppRouter.selectedStation`); detay sayfası kapanınca pin seçimi kalkar.
+- **Yeni token'lar:** `positiveSubtle` (green50 / green950), `onPositiveSubtle` (green800 / green300),
+  `cautionSubtle` (amber50 / amber950), `onCautionSubtle` (amber800 / amber300).
+- **Soket rozeti** zemini müsaitlik renginin `StationDetailMetrics.availabilityBadgeOpacity` (0,16) tonu.
+
+**Doğrulama**
+- `Packages/Domain`: `swift build`, `swift test` 45/45 (yeni: hız eşikleri 49,9/50/149/150; grup müsaitliği 4/4,
+  1/4, 0/4, bilinmiyor; toplamlar; "şu an açık mı": 24 saat, gün içi, gece yarısını geçen, kapalı gün, `24:00`).
+- `Packages/Services`: `swift build`, `swift test` 76/76 (detay eşlemesi, `Decimal` kayıpsız, geçersiz fiyat, tanınmayan
+  olanak, tarih kaydırma, özetle tutarlı müsaitlik, sabit tohumlu detay deterministik, bulunamayan istasyon),
+  `swift build -c release` geçti. `Packages/Core`: `swift build`, `swift test` geçti.
+- `./Tooling/Scripts/verify-ios.sh --package Features`: geçti. Uygulama Debug ve Release derlemesi geçti.
+- `xcodebuild test` Features (iPhone SE, iOS 18.3): 82/82 (yeni `StationDetailModelTests` 4: başlık hemen,
+  hata → tekrar dene, kopyalama panoya yazar, paylaşım metni ve URL kodlaması).
+- UI: `StationDetailPresentationTests` iOS 18.5 ve 26.3, açık ve koyu temada geçti: pine dokununca orta kademe →
+  sayfa açıkken diğer pine dokununca sayfa yenilenir → sürükleme göstergesinden büyük kademe → kapat (pin seçimi
+  kalkar). Tüm UI test paketi (iOS 18.5): 15/15.
+- Release (simülatör): `FixtureStationRepository`, `StationDetailGenerator`, `FixtureStationDetailJSON`, `SplitMix64`,
+  `PreviewStationRepository`, `PreviewStationDetails` sembolleri 0; fixture adres dizgesi 0; `NoStationsRepository`
+  ve `StationDetailView` mevcut.
+- `swiftlint lint --strict`, `swift format lint --strict`: 0 ihlal.
+
+**Bilinen eksikler ve açık noktalar**
+- **Derin bağlantı yok:** paylaşım bağlantısı Apple Haritalar adresi; uygulama içi bağlantı (istasyonu uygulamada
+  açan) ayrı iş.
+- "Yol tarifi al" (`onDirections`) ve "Oyları göster" (`onShowReviews`) `App/`'te boş.
+- **Seçili pin ve sayfa:** seçili pin, ana sayfanın alt sayfasının üstündeki alana göre ortalanıyor; detay sayfası
+  büyük kademedeyken pin sayfanın altında kalıyor (orta kademede görünür).
+- **Müsaitlik rengi eşlemesi** (`StationAvailability` → `Theme`) MapEngine ve StationDetailFeature'da ayrı ayrı
+  duruyor; iki modülün ortak bağımlılığı Domain'i bilmeyen DesignSystem olduğu için ortak yere alınamadı.
+- Kopyala ve "Oyları göster" bağlantıları `brandPrimary` (yeşil) renginde; referanstaki mavi bizim token'larımızda yok.
+- Konum noktası, iOS 26 XCUITest hareket sınırı ve uzun UI test süresi: Adım 41'deki açık noktalar sürüyor.
+
+**Sıradaki adım:** Rota planlama ("Yol tarifi al") ya da şimşek listesi.
+
+---
+
+## Adım 41 — Haritada şarj istasyonu pinleri ve kümeleri
+
+**Tarih:** 2026-11-17
+
+**Ne yapıldı**
+- **Domain:** `GeoCoordinate`, `GeoBoundingBox` (içerme, ölçekleme; ters köşeli kutu çökmez), `StationAvailability`
+  (`available | partial | unavailable | unknown`), `Station` (`network: ChargingNetwork`), `StationRepository`.
+  Operatör ayrı tip değil: `ChargingNetwork`'e `logoURL` eklendi (proje sahibinin kararı).
+- **Servis:** `StationDTO` ve `StationMapper` (tanınmayan müsaitlik `unknown`, aralık dışı koordinat hatası);
+  `FixtureStationRepository` (tamamı `#if DEBUG`, JSON dizge → DTO → Domain, kutu süzmesi): elle yazılmış 49
+  istasyon (Antalya 40, İstanbul 5, Ankara 4) ve `-onsarjStationScenario dense` ile sabit tohumlu 1000 istasyon.
+  Ağ kimlikleri plan seçenekleri kataloğuyla aynı; katalog fixture'ına Shell Recharge (`net_shell`) eklendi.
+  Görsel adresi doğrulaması `OnsarjCore.MediaURL`'e taşındı (araç ve istasyon eşleyicileri ortak kullanıyor).
+- **Harita (`MapEngine`):** GeoJSON kaynağı + kaynak düzeyinde kümeleme + üç sembol katmanı (pinler, kümeler,
+  seçili pin). Pin ve küme görselleri SwiftUI ile (`StationPinView`, `StationClusterView`) bir kez çizilip stile
+  eklenir; ağ × müsaitlik × seçili ve küme yazısı başına önbellek, harita görseli ilk istediğinde üretilir. Logolar
+  bir kez yüklenir; gelince o ağın görselleri yeniden çizilir. `MapView` dışa yalnızca Domain tipleriyle konuşur
+  (`MapStations`: istasyonlar, seçili kimlik, kapanan alt şerit, `onStationTapped`, `onMapTapped`, `onCameraIdle`).
+  Kümeye dokununca kümenin açıldığı yakınlaşmaya yumuşak geçiş. Kullanıcının konum noktası pinlerin üstünde.
+- **Ana sayfa:** `StationFeed` (300 ms bekleme, önceki isteği iptal, görünen bölgenin 1,5 katını isteme, son 8 bölgeyi
+  hatırlama, 3° boylam eşiği, kimliğe göre birleştirme). `HomeMapModel` depoyu `init` ile alır; pine dokununca seçim,
+  harita pini alt sayfa ve butonların üstünde kalan alanın ortasına getirir, `onStationSelected` çağrılır (`App/`
+  boş geçiyor); boş haritaya dokununca seçim kalkar.
+- **Token:** `Palette.amber50…950`; `Theme.availabilityAvailable/Partial/Unavailable/Unknown`, `mapPinSurface`,
+  `mapPinBorder`, `mapPinSelected` (iki temada green500), `mapClusterFill`, `onMapCluster`. Şimşek için mevcut
+  `AppIcon.charger`.
+- **Bulunan ve düzeltilen iki hata:** (1) Küre görünümünde Mapbox sınırlarında batı boylamı doğudan büyük gelebiliyor;
+  `GeoBoundingBox.contains` aralık kurduğu için çöküyordu (karşılaştırmaya çevrildi, MapEngine kutuyu normalleştiriyor,
+  test eklendi). (2) Kamera kullanıcıyı izlerken harita hiç boşta kalmıyor ve `onMapIdle` gelmiyordu; istasyonlar
+  hiç yüklenmiyordu. İzleme sırasında görünen bölge kamera değiştikçe en sık saniyede bir bildiriliyor.
+
+**Dosyalar**
+- Eklenen: `Docs/Design/pin-taslak.png` (proje sahibi), `Docs/Backend/stations.md`,
+  `Packages/Core/Sources/OnsarjCore/MediaURL.swift`, `Packages/Core/Tests/CoreTests/MediaURLTests.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/Models/{GeoCoordinate,GeoBoundingBox,Station,StationAvailability}.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/Protocols/StationRepository.swift`,
+  `Packages/Domain/Tests/DomainTests/GeoBoundingBoxTests.swift`,
+  `Packages/Services/Sources/StationService/DTO/{StationDTO,StationMapper}.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/{FixtureStationRepository,FixtureStationJSON,
+  FixtureStationScenario,DenseStationGenerator}.swift`, `Packages/Services/Tests/ServicesTests/StationRepositoryTests.swift`,
+  `Packages/MapboxKit/Sources/MapEngine/{MapStations,MapView+Stations}.swift`,
+  `Packages/MapboxKit/Sources/MapEngine/Stations/{StationLayer,StationPinView,StationClusterView,StationImageFactory,
+  StationImageKey}.swift`, `Packages/Features/Sources/HomeMapFeature/StationFeed.swift`,
+  `Packages/Features/Tests/FeaturesTests/StationFeedTests.swift`, `OnsarjUITests/StationLayerPresentationTests.swift`
+- Değişen: `CLAUDE.md` (5.6'ya `Docs/Design/` satırı, proje sahibinin izniyle), `Docs/Backend/{README,charging-networks}.md`,
+  `Packages/Core/Sources/DesignSystem/{ColorPalette,SemanticColors}.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/Models/ChargingNetwork.swift`,
+  `Packages/Services/Sources/StationService/DTO/{ChargingNetworkDTO,ChargingNetworkMapper}.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/FixtureChargingNetworkCatalog.swift`,
+  `Packages/Services/Sources/VehicleService/DTO/VehicleMapper.swift`,
+  `Packages/Services/Tests/ServicesTests/ChargingNetworkCatalogTests.swift`,
+  `Packages/MapboxKit/Sources/MapEngine/MapView.swift`,
+  `Packages/Features/Sources/HomeMapFeature/{HomeMapModel,HomeMapView}.swift`,
+  `Packages/Features/Tests/FeaturesTests/HomeMapModelTests.swift`,
+  `App/Composition/{AppDependencies,FixtureImageExporter}.swift`, `App/RootView.swift`, `PROGRESS.md`
+
+**Kararlar**
+- **Kümeleme yaklaşımı (2.9):** GeoJSON kaynağı `cluster` + sembol katmanları, pin görselleri stile eklenmiş görsel.
+  View annotation seçilmedi: Mapbox belgesi görünüm ek açıklamalarını "genellikle 100'ün altında" görünüm için
+  öneriyor, üst üste binme açıkken 250'nin üstünde performansın düştüğünü yazıyor; yerleşik kümelemesi de yok. Kaynaklar:
+  docs.mapbox.com/ios/maps/guides/annotations/view-annotations/, docs.mapbox.com/ios/maps/examples/point-clustering/,
+  SDK 11.33.1 kaynağı (`PointClusteringExample.swift`, `GeoJSONSource.swift`, `MapboxMap.getGeoJsonClusterExpansionZoom`,
+  `TapInteraction`). CLAUDE.md 5.4 ile aynı.
+- **Kümeleme ayarı:** birleşme yarıçapı 50 pt, kümeleme en fazla 14. yakınlaşmaya kadar (15 = sokak düzeyi).
+- **Katman sırası:** Standard'ın `top` yuvası şehir ve semt adlarının altında kaldığı için katmanlar stilin en üstüne,
+  konum noktasının (`puck`) altına eklenir.
+- **İstek eşiği:** `StationFeed.maximumRequestSpanDegrees = 3` (boylam; ≈7. yakınlaşma). Bekleme 300 ms, istek kutusu
+  1,5 kat, hatırlanan bölge 8.
+- **Küme halesi** taslaktaki kaynak değerle %22 opaklık (onaylanan varsayımda %28 yazıyordu; proje sahibinin verdiği
+  ölçü esas alındı). Rengi `availabilityAvailable`.
+- **Küme yazısı:** taslakta 15 ve 18 pt kalın. 6.6 `Font.system(size:)`'ı yasakladığı için `Typography.buttonSmall`
+  (15) ve `Typography.headline` (17) kalın kullanıldı; büyük kümede 1 pt fark var. Görseller `large` yazı boyutunda ve
+  açık temada çizilir (pin renkleri iki temada aynı).
+- `MapView.accessibilityIdentifier` (`onsarj.map`): UI testleri harita hareketlerini bununla yapıyor.
+
+**Doğrulama**
+- `Packages/Domain`: `swift build`, `swift test` 36/36. `Packages/Core`: `swift build`, `swift test` 28 + 10.
+- `Packages/Services`: `swift build`, `swift test` 69/69, `swift build -c release` geçti.
+- `./Tooling/Scripts/verify-ios.sh --package MapboxKit` ve `--package Features`: geçti.
+- `xcodebuild test` Features (iPhone SE, iOS 18.3): 78/78 (yeni: `StationFeedTests` 4, seçim testi 1).
+- Tüm UI test paketi (iPhone 16 Pro Max, iOS 18.5, konum izni verili): 14/14. `StationLayerPresentationTests`
+  iOS 18.5 açık ve koyu temada 4/4; iOS 26.3 açık ve koyu temada sokak düzeyi testi geçti, uzaklaşma gerektiren 3 test
+  atlandı (bkz. açık noktalar). Ekran görüntüleri: dört müsaitlik rengi ve logolar, şimşekli pin, seçili pin ve
+  ortalama, seçimin kalkması, kümeler (2–9), kümeye dokununca yakınlaşma, `dense` senaryosunda kümeler ve kaydırma.
+- `dense` (1000 istasyon) kaydırma: simülatörde gözlemde takılma yok; ölçüm (`XCTHitchMetric`) yalnızca iOS 26'da var ve
+  orada hareketler haritaya ulaşmadığı için ölçülemedi. Cihazda Instruments ile ölçülmeli.
+- Release (simülatör): `FixtureStationRepository`, `DenseStationGenerator`, `handwrittenJSON`, `FixtureImageExporter`
+  sembolleri 0, fixture istasyon adları 0, `NoStationsRepository` mevcut. Logo kataloğu ayarsız Release'de
+  `Assets.car`'a giriyor (4 logo); `EXCLUDED_SOURCE_FILE_NAMES = */DebugFixtures/*` ile girmiyor (`Assets.car` hiç
+  oluşmuyor; uygulamanın kendi kataloğunda derlenen görsel yok). Satırı proje sahibi `Release.xcconfig`'e ekleyecek.
+- `swiftlint lint --strict`, `swift format lint --strict`: 0 ihlal.
+- Not: konum izni verili simülatörde harita kullanıcıyı izlerken sürekli hareket ettiği için XCUITest bazı adımlarda
+  uygulamanın boşa çıkmasını ~15 dk bekliyor (test geçiyor, süre uzuyor).
+
+**Bilinen eksikler ve açık noktalar**
+- **Erişilebilirlik:** pinler ve kümeler stil katmanında çizildiği için VoiceOver'da erişilemez; Mapbox stil
+  katmanlarına erişilebilirlik etiketi verilemiyor. Erişilebilir yol sonraki görevlerdeki **şimşek listesi** olacak.
+- **Hata:** istasyon isteği hata verirse haritada o bölgenin pinleri gösterilmez, kullanıcıya hata çıkmaz; kayıt
+  Telemetry bağlanınca eklenecek.
+- **Logo alanı:** taslakta logonun arkasında açık gri bir iç daire görünüyor; bunun için token yok, logo beyaz
+  dairenin içinde 34 pt'lik daireye kırpılıyor. İstenirse ayrı token eklenmeli.
+- **Pin gölgesi** açık tema değeriyle çiziliyor (görseller tek kez, açık temada çizilir).
+- **Konum noktası** izleme sırasında ekranın alt kısmında (y ≈ 700 pt / 956) duruyor; alt sayfa açıkken noktanın
+  hemen üstü sayfayla kapanıyor. Bu davranış bu görevden önce de vardı; izleme kamerasına alt sayfa payı verilmesi
+  ayrı iş.
+- **iOS 26 UI testi:** XCUITest'in iki parmakla dokunuş, kıstırma ve sürükleme hareketleri iOS 26.3 simülatöründe
+  Mapbox haritasına ulaşmıyor; uzaklaşma gerektiren üç test orada atlanıyor (sokak düzeyi testi iki sürümde koşuyor).
+- `onStationSelected` `App/`'te boş; istasyon detayı sonraki görev.
+
+**Sıradaki adım:** İstasyon detayı sayfası (pine dokununca) ve şimşek listesi.
+
+---
+
+## Adım 40 — Araçlarınız ve Araç ekle (GarageFeature)
+
+**Tarih:** 2026-11-15
+
+**Ne yapıldı**
+- **Önceki görevden kalanlar:** `SwipeBackProbeTests` silindi. Varsayılan araç silinince kalanlardan en son
+  eklenen varsayılan olur (fixture uyguluyor, `vehicles.md` açık noktası kapandı). `ValueEditorSheet.initialText`
+  kaldırıldı: geçersiz hal önizlemesi tüketimi aralık dışında (60) olan bir önizleme aracıyla kuruluyor.
+- **Domain:** `VehicleBrand`, `VehicleModel`, `VehicleVariant`, `VehicleCatalog` protokolü;
+  `VehicleRepository.addVehicle(variantID:)` ve `setDefaultVehicle(_:)`; hata `variantNotFound`,
+  `invalidValue(.isDefault)`; `DrivingProfile.defaultMaxSpeedKmh` (120).
+- **Servis:** katalog DTO'ları ve `VehicleCatalogMapper`; `FixtureVehicleCatalog` (10 marka, 20 model, 22 varyant;
+  değerler örnek). `CreateVehicleRequestDTO` (`POST /vehicles`), varsayılan için `PATCH` gövdesine `isDefault`.
+  Fixture backend aracı varyanttan oluşturuyor, varsayılanı tek tutuyor.
+- **Ekranlar:** `GarageView` (kök, iki başlangıç), Araçlarınız (`VehicleListPage`, etkin araçta çerçeve),
+  markalar (arama, logo yoksa araç simgesi, "N model"), modeller, varyantlar (onaysız ekleme, eklerken
+  diğer satırlar pasif). `GarageModel`, `AddVehicleModel` (katalog yanıtları bellekte).
+- **Ortak:** `SearchText` (`OnsarjCore`; şarj ağı fixture'ındaki arama anahtarı buraya taşındı, iki yer
+  kullanıyor; yer tutucu `OnsarjCore.swift` silindi). `SearchField` (`DesignSystem`; proje sahibinin onayıyla
+  `NetworkSearchField`'dan taşındı). `AppIcon.vehicle` (`car.fill`, iOS 13).
+- **App:** `AppRouter.garage` (`GaragePresentation`), `onSwitchVehicle` ve `onAddVehicle` bağlandı; garaj ve
+  ayarlar kapanınca kart yenileniyor (`vehiclesDidChange`). Release'de `EmptyVehicleCatalog`.
+
+**Dosyalar**
+- Eklenen: `Packages/Core/Sources/OnsarjCore/SearchText.swift`, `Packages/Core/Tests/CoreTests/SearchTextTests.swift`,
+  `Packages/Core/Sources/DesignSystem/Components/SearchField.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/Models/VehicleCatalogModels.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/Protocols/VehicleCatalog.swift`,
+  `Packages/Services/Sources/VehicleService/DTO/{VehicleCatalogDTOs,VehicleCatalogMapper}.swift`,
+  `Packages/Services/Sources/VehicleService/Fixtures/{FixtureVehicleCatalog,FixtureVehicleCatalogJSON}.swift`,
+  `Packages/Services/Tests/ServicesTests/VehicleCatalogTests.swift`,
+  `Packages/Features/Sources/GarageFeature/{GarageView,GarageModel,AddVehicleModel,VehicleListPage,BrandListPage,
+  ModelListPage,VariantListPage}.swift`,
+  `Packages/Features/Sources/GarageFeature/Components/{CatalogList,VehicleListCard}.swift`,
+  `Packages/Features/Tests/FeaturesTests/GarageModelTests.swift`, `OnsarjUITests/GaragePresentationTests.swift`,
+  `Docs/Backend/vehicle-catalog.md`
+- Silinen: `OnsarjUITests/SwipeBackProbeTests.swift`, `Packages/Core/Sources/OnsarjCore/OnsarjCore.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/NetworkSearchKey.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/Components/NetworkSearchField.swift`
+- Değişen: `Packages/Domain/Sources/OnsarjDomain/{Protocols/VehicleRepository,Models/VehicleRepositoryError,
+  Models/DrivingProfile}.swift`, `Packages/Services/Sources/VehicleService/DTO/{VehicleDTO,VehicleRequestDTOs}.swift`,
+  `Packages/Services/Sources/VehicleService/Fixtures/{FixtureVehicleRepository,FixtureVehicleBackend}.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/FixtureChargingNetworkCatalog.swift`,
+  `Packages/Services/Tests/ServicesTests/{VehicleRequestDTOTests,ChargingNetworkCatalogTests}.swift`,
+  `Packages/Features/Sources/GarageFeature/{VehicleSettingsModel,ValueEditorSheet,Vehicle+Presentation}.swift`,
+  `Packages/Features/Sources/GarageFeature/Components/{NoticeBanner,PreviewGarageSources}.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/PreviewVehicleSources.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/NetworkPickerView.swift`,
+  `Packages/Features/Tests/FeaturesTests/TestVehicles.swift`, `Packages/Core/Sources/DesignSystem/AppIcon.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`, `App/Navigation/AppRouter.swift`,
+  `App/RootView.swift`, `App/Composition/AppDependencies.swift`, `Docs/Backend/{README,vehicles}.md`, `PROGRESS.md`
+
+**Kararlar**
+- **Sunum (2.9):** sistem `.sheet`; `GarageView` kademeleri kendisi yönetir (`presentationDetents(_:selection:)`).
+  Araçlarınız, sayfanın ölçtüğü ideal yükseklikte (üst çubuk + kartlar + düğme + alt güvenli alan) açılır;
+  yığına sayfa eklenince `.large`'a, geri dönünce yeniden içerik yüksekliğine geçer. Kartın "Araç ekle"sinden
+  yalnızca `.large`. iOS 18.5 ve 26.3'te çalıştırılıp ekran görüntüleriyle karşılaştırıldı.
+  Davranış iki sürümde tutarlı: içerik yüksekliği doğru ölçülüyor (bir ve iki araçla, kesilme yok), "Yeni araç ekle"
+  tam yüksekliğe çıkıyor, geri dönüş yeniden iniyor. Tek fark sistem görünümü: iOS 26.3'te içerik yüksekliğindeki
+  sayfa kenarlardan içeride ("yüzen") çiziliyor, 18.5'te tam genişlik; tam yükseklikte ikisi de tam genişlik
+  (K-22'deki davranış; değer modalında kabul edilen farkla aynı).
+- **Varsayılan araç `PATCH /vehicles/{id}` ile** (`{"isDefault": true}`), ayrı uç nokta yok; `false` reddedilir.
+- **Silinen varsayılan araç:** kalanlardan en son eklenen varsayılan olur (proje sahibinin kararı; backend kuralı).
+- **Ortak metin taşımaları:** `networks.noResults` → `common.noResults` (ağ seçici, markalar);
+  `vehicleSettings.saveFailed` → `common.saveFailed` (araç ayarları, Araçlarınız).
+- `garage.modelCount %lld` anahtarı String Catalog çoğul biçimindedir; çoğul için anahtar `%lld` taşır
+  (Türkçede tek biçim "N model", İngilizcede "1 model" / "N models").
+- Profil adı karşılaştırmasında Türkçe `I/ı`, `İ/i` kuralı onaylandı (Adım 39).
+
+**Doğrulama**
+- `Packages/Core`: `swift build`, `swift test` 26/26.
+- `Packages/Domain`: `swift build`, `swift test` 31/31.
+- `Packages/Services`: `swift build`, `swift test` 62/62, `swift build -c release` geçti.
+- `./Tooling/Scripts/verify-ios.sh --package Features`: geçti. Uygulama Debug derlemesi geçti.
+- `xcodebuild test` Features (iPhone SE, iOS 18.3): 73/73.
+- `GaragePresentationTests` (2 test) iOS 18.5'te geçti: karttaki adla Araçlarınız → "Yeni araç ekle" → Togg → T10X
+  → V1 RWD → kart "Togg T10X"; Araçlarınız'dan BYD → kart "BYD Dolphin"; `noVehicles` ile "Araç ekle" doğrudan
+  markaları açıyor, geri düğmesi yok, "BYD" araması yalnızca BYD'yi bırakıyor.
+- iOS 26.3, tüm UI test paketi (10 test): garaj (2), araç ayarları (2), plan seçenekleri (2), arama (2) ve
+  başlangıç testleri geçti.
+- Uygulama Release: `FixtureVehicleCatalog`, `fixtureVehicleCatalogJSON`, `FixtureVehicleBackend`,
+  `FixtureVehicleRepository`, `PreviewGarageRepository` sembolleri 0; `variant_togg` dizgesi 0; `GarageView` ve
+  `EmptyVehicleCatalog` mevcut.
+- `swiftlint lint --strict`, `swift format lint --strict`: 0 ihlal.
+
+**Bilinen eksikler ve açık noktalar**
+- **Açık nokta:** Kayıt akışı yeniden giriş noktası olduğunda kenardan kaydırarak geri dönme, o akışın kendi UI
+  testi olarak yazılacak (`SwipeBackProbeTests` silindi; `RootView.opensMapOnLaunch` hâlâ `true`).
+- **Geçici:** katalog ve araç değişiklikleri yalnızca bellekte; uygulama yeniden açılınca fixture'a döner.
+- Katalog logoları ve görselleri `null`; eklenen Togg aracı görselsiz (BYD fixture aracının görseli bir Togg
+  çizimi, Adım 35'ten bilinen tutarsızlık).
+- Görselsiz araç kartı görselli karttan alçak (görsel alanı gizleniyor).
+- Araçlarınız'da silme ve düzenleme yok (ayarlar sayfasında).
+
+**Sıradaki adım**
+- İstasyon katmanı (CLAUDE.md 5.4) veya kayıt akışının yeniden giriş noktası olması.
+
+---
+
+## Adım 39 — Araç ayarları ve sürüş profilleri (GarageFeature)
+
+**Tarih:** 2026-11-15
+
+**Ne yapıldı**
+- **Ortak metinler (0):** `common.back`, `common.close`, `common.retry`, `common.search`, `common.save`,
+  `common.cancel`, `common.delete` eklendi; ekranlar arası paylaşılan kullanımlar bunlara taşındı, eski
+  anahtarlar silindi (taşıma tablosu aşağıda).
+- **K-26 (1):** `CLAUDE.md` 9.1'e K-26 ve ek notu, 5.6'ya `Docs/Backend/` satırı eklendi (proje sahibinin izniyle).
+- **Domain:** `DrivingProfile` (sınırlar: tüketim 5,0…50,0, hız 50…250, ad ≤ 40 ve araçta benzersiz),
+  `DrivingProfileDraft`, `VehicleUpdate`, `VehiclePaint` (8 boya), `VehicleRepositoryError`; `Vehicle`'a
+  `drivingProfiles`, `activeProfileID`, `activeProfile`, `batteryDegradationPercent` (aralık 0…50) eklendi,
+  `consumptionWhPerKm` ve `rangeKm` kaldırıldı. Menzil: `kapasite × sağlık × yüzde ÷ etkin tüketim`
+  (fixture %30 → 97 km). `VehicleRepository`'ye beş yazma işlemi.
+- **Servis:** DTO'ya profiller ve `activeProfileId`; istek DTO'ları `UpdateVehicleRequestDTO`
+  (etkin profil de bununla), `DrivingProfileRequestDTO`. `FixtureVehicleRepository` artık `actor`;
+  `FixtureVehicleBackend` istekleri bir backend gibi doğrulayıp bellekteki DTO'ya uygular.
+- **Ekranlar:** araç ayarları (görsel, profil çipleri, tüketim/hız, ayrıntılar, boya, "Aracı sil" + onay),
+  değer modalı, konnektör türleri, sürüş profilleri listesi (kaydırarak sil), profil formu. Anlık seçimler
+  hata olursa geri döner ve "Değişiklik kaydedilemedi" bildirilir.
+- **Ana sayfa kartı:** alt başlık etkin profil adı; menzil yeni hesap; dişli aracın kimliğini verir; ayarlar
+  kapanınca kart yenilenir (`vehicleRevision`), araç silindiyse "Araç ekle".
+- **DesignSystem (proje sahibinin onayıyla):** `ModalHeader`, `WrappingHStack`, `SelectableChip`,
+  `AddRowButton`/`InsetDivider` `RoutePlanningFeature`'dan taşındı; iki özellik de bunları kullanıyor.
+  `AppIcon.disclosure` (`chevron.right`, iOS 13) eklendi.
+- `Docs/Backend/` açıldı: `README.md`, `vehicles.md`, `route-preferences.md`, `charging-networks.md`.
+
+**Metin anahtarı taşımaları**
+
+| Eski | Yeni | Kullanan ekranlar |
+|---|---|---|
+| `signup.phone.accessibility.back` ("Geri dön") | `common.back` ("Geri") | Telefon, SMS kodu, ad ekranları; plan seçenekleri ve garaj üst çubuğu |
+| `search.close` | `common.close` | Arama; plan seçenekleri ve garaj üst çubuğu |
+| `vehicleCard.retry` | `common.retry` | Araç kartı, ağ seçici, araç ayarları |
+| `search.submit` | `common.search` | Arama "Ara" düğmesi, ağ seçici yer tutucusu |
+| `search.delete` | `common.delete` | Arama geçmişi, profil listesi, araç silme onayı |
+
+`home.search.placeholder` ana sayfa ve arama sayfasında aynı soruyu sorduğu için ortak bırakıldı.
+
+**Dosyalar**
+- Eklenen: `Packages/Domain/Sources/OnsarjDomain/Models/{DrivingProfile,DrivingProfileDraft,VehicleUpdate,
+  VehiclePaint,VehicleRepositoryError}.swift`, `Packages/Domain/Tests/DomainTests/DrivingProfileTests.swift`,
+  `Packages/Services/Sources/VehicleService/DTO/VehicleRequestDTOs.swift`,
+  `Packages/Services/Sources/VehicleService/Fixtures/FixtureVehicleBackend.swift`,
+  `Packages/Services/Tests/ServicesTests/{FixtureVehicleWriteTests,VehicleRequestDTOTests}.swift`,
+  `Packages/Features/Sources/GarageFeature/{VehicleSettingsView,VehicleSettingsPage,VehicleSettingsModel,
+  ValueEditor,ValueEditTarget,ValueEditorSheet,ConnectorTypesView,DrivingProfilesView,DrivingProfileForm,
+  DrivingProfileFormView,Vehicle+Presentation}.swift`,
+  `Packages/Features/Sources/GarageFeature/Components/{SettingsRow,ValueInputField,PaintPicker,NoticeBanner,
+  PreviewGarageSources}.swift`, `Packages/Features/Tests/FeaturesTests/{TestVehicles,
+  VehicleSettingsModelTests}.swift`, `Packages/Core/Sources/DesignSystem/Components/{ModalHeader,
+  SelectableChip,AddRowButton}.swift`, `OnsarjUITests/VehicleSettingsPresentationTests.swift`,
+  `Docs/Backend/{README,vehicles,route-preferences,charging-networks}.md`
+- Taşınan: `RoutePlanningFeature/Components/WrappingHStack.swift` → `DesignSystem/Components/WrappingHStack.swift`
+- Silinen: `Packages/Features/Sources/GarageFeature/GarageFeature.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/Components/ModalHeader.swift`
+- Değişen: `CLAUDE.md` (5.6, K-26), `Packages/Domain/Sources/OnsarjDomain/Models/Vehicle.swift`,
+  `Packages/Domain/Sources/OnsarjDomain/Protocols/VehicleRepository.swift`,
+  `Packages/Domain/Tests/DomainTests/VehicleTests.swift`,
+  `Packages/Services/Sources/VehicleService/DTO/{VehicleDTO,VehicleMapper}.swift`,
+  `Packages/Services/Sources/VehicleService/Fixtures/FixtureVehicleRepository.swift`,
+  `Packages/Services/Tests/ServicesTests/VehicleMapperTests.swift`,
+  `Packages/Features/Sources/HomeMapFeature/{HomeMapView,VehicleCardModel}.swift`,
+  `Packages/Features/Sources/HomeMapFeature/Components/{VehicleCard,HomeSheetActions,PreviewVehicleSources}.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/{PlanOptionsPage,ChargingNetworksView,NetworkPickerView}.swift`,
+  `Packages/Features/Sources/RoutePlanningFeature/Components/{AvoidanceChips,NetworkRow,NetworkSearchField}.swift`,
+  `Packages/Features/Sources/{AuthFeature/PhoneEntryView,AuthFeature/VerificationCodeView,AuthFeature/NameEntryView,
+  SearchFeature/SearchView,SearchFeature/Components/SearchTopBar}.swift`,
+  `Packages/Features/Tests/FeaturesTests/VehicleCardModelTests.swift`,
+  `Packages/Core/Sources/DesignSystem/{AppIcon,Components/ScreenHeader}.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings`,
+  `App/Navigation/AppRouter.swift`, `App/RootView.swift`, `App/Composition/AppDependencies.swift`,
+  `OnsarjUITests/{PlanOptionsPresentationTests,SwipeBackProbeTests}.swift`, `PROGRESS.md`
+- Proje sahibi uygulama hedefine `GarageFeature` ürününü bağladı.
+
+**Kararlar**
+- **K-26** (proje sahibi) ve ek notu: DTO/fixture değişikliği aynı görevde `Docs/Backend/`'i günceller.
+- **Ortak bileşenler `DesignSystem`'e taşındı** (proje sahibinin cevabı): kopyalamak 2.4'e aykırıydı.
+- **Değer modalı sunumu (2.9):** sistem `.sheet`, içeriğin ölçülen yüksekliğinde (`presentationDetents(.height)`),
+  görünür tutamaç; plan seçenekleri ve aramayla aynı yaklaşım. İçerik sürümler arasında aynı; iOS 26'da
+  kısa sayfalar sistem gereği kenarlardan içeride ("yüzen") çizilir (K-22'deki davranış), iOS 18'de tam
+  genişlik. Değer modalı kısa ömürlü bir giriş olduğu ve aşağı çekip kapatma gerektiği için kabul edildi;
+  birebir aynılık istenirse karar proje sahibinde.
+- **Etkin profil `PATCH /vehicles/{id}` ile** (`activeProfileId`): ayrı uç nokta açılmadı.
+- **Takma ad:** boş dizge takma adı kaldırır; JSON'da `nil` alanlar yazılmadığı için "değişmesin" ile
+  "kaldır" böyle ayrılır.
+- Profil adı benzersizliği Türkçe `I/ı`, `İ/i`'yi aynı sayar (İngilizce "HIGHWAY"/"highway" de aynı kalsın diye).
+- Kayıt başarısızsa değer modalı kapanır, değer eski haliyle kalır ve bildirim gösterilir; profil formu açık kalır.
+
+**Doğrulama**
+- `Packages/Domain`: `swift build`, `swift test` 31/31.
+- `Packages/Services`: `swift build`, `swift test` 52/52, `swift build -c release` geçti.
+- `./Tooling/Scripts/verify-ios.sh --package Features`: geçti. Uygulama Debug derlemesi geçti.
+- `xcodebuild test` Features (iPhone SE, iOS 18.3): 65/65.
+- `VehicleSettingsPresentationTests` (2 test) iOS 18.5'te geçti: dişliyle açılış, "Otoyol" çipi → kartta
+  "Otoyol" ve ≈84 km (önce "Standart", 97 km), değer modalında geçersiz değer "5 ile 50 arasında bir değer gir" ve
+  pasif Kaydet, 18,5 kaydı, aracı sil + onay → kart "Araç ekle".
+- iOS 26.3, tüm UI test paketi: garaj (2), plan seçenekleri (2), arama (2) ve başlangıç testleri geçti.
+  `SwipeBackProbeTests` (5) başarısız: testler kayıt akışının ilk ekranından başlıyor, uygulama ise Adım 27'den
+  beri doğrudan haritayla açılıyor (`opensMapOnLaunch = true`). Bu adımdan bağımsız, önceden var olan durum;
+  dosyada yalnızca "Geri dön" → "Geri" etiketi güncellendi.
+- Uygulama Release: `FixtureVehicleRepository`, `FixtureVehicleBackend`, `FixtureChargingNetworkCatalog`,
+  `PreviewGarageRepository` sembolleri 0; `prof_fixture` dizgesi 0; `VehicleSettingsView` mevcut.
+- `swiftlint lint --strict`, `swift format lint --strict`: 0 ihlal.
+
+**Bilinen eksikler**
+- **Geçici:** Fixture değişiklikleri yalnızca bellektedir; uygulama yeniden açılınca araç fixture'a döner (K-26).
+- Çevrimdışı davranış (son alınan aracın kullanılması) bu görevin dışında; K-26 açık noktası.
+- "Araç" satırı ve profil adı gibi veriler arayüzde olduğu gibi gösterilir (marka/model çevrilmez).
+- Görselli önizleme gerçek adres olmadığı için görselsiz çizilir; görsel simülatörde fixture'dan görünüyor.
+- `ValueEditorSheet`'in `initialText` parametresini yalnızca önizleme kullanıyor.
+- Silinen araç varsayılansa yeni varsayılanın seçimi backend'e ait (`vehicles.md` açık nokta).
+- Araç değiştirme ("⌄") ve "Araçlarınız" ekranı yok.
+
+**Sıradaki adım**
+- "Araçlarınız" ekranı ve araç değiştirme; ya da istasyon katmanı.
 
 ---
 

@@ -12,7 +12,7 @@ struct RecenterButton: View {
 
     var body: some View {
         FloatingMapButton(
-            systemImage: isFollowingUser ? "location.fill" : "location",
+            icon: isFollowingUser ? .locateActive : .locate,
             accessibilityLabel: "home.map.accessibility.recenter",
             bundle: .onsarj,
             action: action

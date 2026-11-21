@@ -12,15 +12,21 @@ struct VehicleMapperTests {
         // swiftlint:disable no_hardcoded_hex_color
         var vehicle: [String: Any] = [
             "id": "veh_1", "make": "BYD", "model": "Dolphin", "variant": "Standart",
-            "modelYear": 2023, "batteryCapacityKwh": 60.5, "rangeKm": 393,
-            "consumptionWhPerKm": 178, "connectors": ["type2", "ccs2"], "maxAcPowerKw": 11,
+            "modelYear": 2023, "batteryCapacityKwh": 60.5,
+            "connectors": ["type2", "ccs2"], "maxAcPowerKw": 11,
             "maxDcPowerKw": 88, "colorHex": "#F2F2F2", "bodyType": "hatchback",
             "imageUrl": "https://example.com/dolphin.png", "batteryHealthPercent": 95, "isDefault": true,
+            "drivingProfiles": [profile("std", standard: true), profile("hwy", standard: false)],
+            "activeProfileId": "hwy",
         ]
         // swiftlint:enable no_hardcoded_hex_color
         vehicle.merge(overrides) { _, new in new }
         removed.forEach { vehicle.removeValue(forKey: $0) }
         return try JSONSerialization.data(withJSONObject: ["vehicles": [vehicle]])
+    }
+
+    private static func profile(_ id: String, standard: Bool) -> [String: Any] {
+        ["id": id, "name": id, "consumptionKwhPer100Km": 17.8, "maxSpeedKmh": 120, "isStandard": standard]
     }
 
     #if DEBUG
@@ -36,8 +42,49 @@ struct VehicleMapperTests {
         #expect(vehicle.imageURL == nil)
         #expect(vehicle.nickname == nil)
         #expect(vehicle.isDefault)
+        #expect(vehicle.drivingProfiles.map(\.name) == ["Standart", "Otoyol"])
+        #expect(vehicle.activeProfile.name == "Standart")
+        #expect(vehicle.activeProfile.consumptionKwhPer100Km == 17.8)
+        #expect(vehicle.estimatedRangeKm(at: BatteryLevel(percent: 30)) == 97)
     }
     #endif
+
+    @Test("Sürüş profilleri ve etkin profil eşlenir")
+    func profilesMapped() throws {
+        let vehicle = try #require(try VehicleMapper.vehicles(from: try Self.json()).first)
+        #expect(vehicle.drivingProfiles.map(\.id.rawValue) == ["std", "hwy"])
+        #expect(vehicle.standardProfile.id == DrivingProfile.ID("std"))
+        #expect(vehicle.activeProfileID == DrivingProfile.ID("hwy"))
+    }
+
+    @Test("Etkin profil yoksa veya bilinmiyorsa standart profil etkindir", arguments: ["", "yok"])
+    func unknownActiveProfileIsStandard(active: String) throws {
+        let data =
+            active.isEmpty ? try Self.json(removing: ["activeProfileId"]) : try Self.json(["activeProfileId": active])
+        #expect(try VehicleMapper.vehicles(from: data).first?.activeProfileID == DrivingProfile.ID("std"))
+    }
+
+    @Test("Standart profil yoksa, birden fazlaysa veya liste boşsa eşleme hatası verir")
+    func invalidProfiles() {
+        let expected = VehicleMappingError(vehicleID: "veh_1", field: .drivingProfiles, reason: .invalid)
+        let cases: [[[String: Any]]] = [
+            [Self.profile("a", standard: false)],
+            [Self.profile("a", standard: true), Self.profile("b", standard: true)],
+            [],
+        ]
+        for profiles in cases {
+            #expect(throws: expected) {
+                try VehicleMapper.vehicles(from: try Self.json(["drivingProfiles": profiles]))
+            }
+        }
+    }
+
+    @Test("Profil listesi yoksa eksik alan hatası")
+    func missingProfiles() {
+        #expect(throws: VehicleMappingError(vehicleID: "veh_1", field: .drivingProfiles, reason: .missing)) {
+            try VehicleMapper.vehicles(from: try Self.json(removing: ["drivingProfiles"]))
+        }
+    }
 
     @Test("Geçerli görsel adresi korunur")
     func validImageURL() throws {
@@ -102,8 +149,8 @@ struct VehicleMapperTests {
 
     @Test("Eksik zorunlu alan eşleme hatası verir")
     func missingFieldThrows() {
-        #expect(throws: VehicleMappingError(vehicleID: "veh_1", field: .rangeKm, reason: .missing)) {
-            try VehicleMapper.vehicles(from: try Self.json(removing: ["rangeKm"]))
+        #expect(throws: VehicleMappingError(vehicleID: "veh_1", field: .batteryCapacityKwh, reason: .missing)) {
+            try VehicleMapper.vehicles(from: try Self.json(removing: ["batteryCapacityKwh"]))
         }
     }
 
