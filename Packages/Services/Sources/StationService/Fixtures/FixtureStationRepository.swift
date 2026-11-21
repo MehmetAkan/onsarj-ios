@@ -15,6 +15,9 @@ import OnsarjDomain
 /// **Detay.** Özet alanları (`StationDTO`) ile detay alanları tek JSON nesnesinde birleştirilir ve gerçek yanıt
 /// gibi `StationDetailDTO` → `StationDetailMapper` yolundan geçer. Detay alanları elle yazılmış beş istasyon için
 /// `FixtureStationDetailJSON`'dan, diğerleri için `StationDetailGenerator`'dan gelir.
+///
+/// **Yakındakiler.** `nearbyStations(_:)` backend gibi süzer, sıralar ve sınırlar
+/// (`FixtureStationRepository+Nearby.swift`).
 public actor FixtureStationRepository: StationRepository {
     private let scenario: FixtureStationScenario
     private let resourceLookup: @Sendable (String) -> URL?
@@ -59,6 +62,11 @@ public actor FixtureStationRepository: StationRepository {
         let data = try JSONSerialization.data(withJSONObject: object)
         let dto = try JSONDecoder().decode(StationDetailDTO.self, from: data)
         return try StationDetailMapper.detail(from: dto, acceptsFileLogoURLs: true)
+    }
+
+    /// İstasyonun JSON'daki özet kaydı; `all()` çağrılmadıysa veya istasyon yoksa `nil`.
+    func summary(for id: Station.ID) -> StationDTO? {
+        summaries[id.rawValue]
     }
 
     /// Elle yazılmış detay varsa o (tarihleri şimdiye kaydırılmış), yoksa üretilen detay.

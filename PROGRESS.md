@@ -46,7 +46,11 @@ kaynak düzeyinde kümeleme, sembol katmanları; CLAUDE.md 5.4). Veri Debug'da f
 kademede etkileşime açık, başka pine dokununca sayfa o istasyonla yenileniyor; sayfa kapanınca pin seçimi kalkıyor.
 "Yol tarifi al" ve "Oyları göster" `App/`'te boş (rota planlama ve oylar yazılmadı).
 
-**Sırada:** Rota planlama ("Yol tarifi al"), şimşek listesi (haritanın erişilebilir karşılığı), oylar.
+**Yakındaki istasyonlar (Adım 43):** Şimşek düğmesi aynı istasyon sayfasında listeyi açar (süzgeç çipleri, ek
+filtreler, kartlar); karta dokununca detay listenin içinde itilir ve harita o pine gider. VoiceOver kullanıcılarının
+istasyon bulma yoludur. Liste ve detay aynı modülde (`StationDetailFeature`, artık "istasyon ekranları").
+
+**Sırada:** Rota planlama ("Yol tarifi al"), oylar.
 Kayıt akışının ekranları tamam ve ana haritaya bağlı. Kodun doğrulanması,
 tekrar gönderilmesi, kayıtlı kullanıcının ayrılması ve ad-soyadın kaydı backend sözleşmesini
 (K-10) bekliyor. `WelcomeModel` ve `PhoneEntryModel` birim testleri ayrı görev olarak bekliyor.
@@ -59,6 +63,86 @@ diğerleri boş.
 
 **Tüm dosyası `#if canImport(UIKit)` ile korunan dosyalar (CLAUDE.md 6.8, eşik 5):** 3 —
 `UITypography.swift`, `FormTextField.swift`, `HiddenNavigationBar.swift`.
+
+---
+
+## Adım 43 — Yakındaki istasyonlar listesi (şimşek düğmesi)
+
+**Tarih:** 2026-11-18
+
+**Ne yapıldı**
+- **Önceki adımdan iki düzeltme:** Seçili pin artık açık istasyon sayfasının (detay/liste) orta kademesinin üstünde
+  kalan alanın ortasına gelir. App sayfanın üst kenarını yalnızca orta kademedeyken ölçer; `HomeMapView` değeri
+  300 ms durulunca kullanır, harita seçim sürerken kapanan alan değişince pini yeniden ortalar. `MapStations`
+  seçili istasyonun konumunu da taşır: haritada yüklü olmayan (listeden uzaktaki) istasyona da gider ve pin, bölge
+  yüklenmeyi beklemeden görünür. Şablon testi `testLaunchPerformance` silindi.
+- **Domain:** `StationListItem`, `StationSort` (mesafe / güç / müsaitlik; eşitlikte mesafe, sonra kimlik),
+  `StationQuery` (merkez, yarıçap 25 km, limit 50, süzgeçler; `matches` ve `arranged` backend kuralıdır),
+  `GeoDistance` (haversine, adlandırılmış Dünya yarıçapı), `StationRepository.nearbyStations(_:)`.
+- **Servis:** `NearbyStationsRequest` (sorgu → `GET /stations/nearby` parametreleri; varsayılan süzgeç parametre
+  üretmez, kümeler sıralı), `NearbyStationDTO` (özet + liste alanları aynı nesnede), `NearbyStationMapper`.
+  Fixture backend gibi: yarıçap içindeki istasyonların detayını alır, süzer, sıralar, sınırlar; liste öğesi detayla
+  aynı kaynaktan (güç, sayılar, olanaklar tutarlı), `photoUrl` her zaman `null`, sonuç JSON → DTO → eşleme yolundan
+  geçer. Release'de boş liste.
+- **Ekran (`StationDetailFeature`):** `StationListView` (`NavigationStack`: kök liste, karta dokununca detay itilir,
+  geri ile dönülür), `StationListModel` (süzgeç değişince 300 ms bekleme, önceki istek iptal), `StationListFilters`
+  (uygulama katmanında oturum boyunca bellekte), `StationListOrigin` (konum / harita merkezi + not). Kart, ek
+  filtreler sayfası (yalnızca müsait, aracımla uyumlu — araç yoksa pasif ve açıklamalı), süzgeç çipleri (sistem
+  `Menu`'sü), iskelet / boş ("Filtreleri temizle") / hata ("Tekrar dene") halleri. Detay listeden itilince solda
+  geri, sağda paylaş ve X. **Modül adı artık "istasyon ekranları" anlamına geliyor** (detay + liste).
+- **Ortak bileşenler (proje sahibinin onayıyla):** `ModalHeader`'a solda yuvarlak eylem düğmesi
+  (`LeadingAction`: simge, etiket, nokta işareti); `SelectableChip`'in görünümü `selectableChipSurface(isSelected:)`
+  değiştiricisi olarak dışa açıldı (menü etiketleri bunu kullanır). Yeni renk token'ı ve simge eklenmedi
+  (`options`, `dropdown`, `directions`, `back` mevcuttu).
+- **App:** `AppRouter` haritadaki seçimi (`selectedStation`) ve açık istasyon sayfasını (`stationSheet`: detay /
+  liste) ayırır; detay ve liste aynı anda açılamaz. Şimşek düğmesi konumu ve harita merkezini verir
+  (`NearbyStationsOrigin`).
+
+**Dosyalar**
+- Eklenen: `Packages/Domain/Sources/OnsarjDomain/Models/{StationListItem,StationSort,StationQuery,GeoDistance}.swift`,
+  `Packages/Domain/Tests/DomainTests/StationQueryTests.swift`,
+  `Packages/Services/Sources/StationService/DTO/{NearbyStationsRequest,NearbyStationDTO,NearbyStationMapper}.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/FixtureStationRepository+Nearby.swift`,
+  `Packages/Services/Tests/ServicesTests/NearbyStationsTests.swift`,
+  `Packages/Features/Sources/StationDetailFeature/{StationListView,StationListModel,StationListFilters,StationList+Presentation,StationListPreviews}.swift`,
+  `Packages/Features/Sources/StationDetailFeature/Components/{StationListCard,StationFilterBar,ExtraFiltersSheet,StationListPlaceholder,PreviewStationList}.swift`,
+  `Packages/Features/Sources/HomeMapFeature/NearbyStationsOrigin.swift`,
+  `Packages/Features/Tests/FeaturesTests/StationListModelTests.swift`, `OnsarjUITests/StationListPresentationTests.swift`.
+- Değişen: `Packages/Domain/Sources/OnsarjDomain/Protocols/StationRepository.swift`,
+  `Packages/Services/Sources/StationService/Fixtures/FixtureStationRepository.swift`,
+  `Packages/Core/Sources/DesignSystem/Components/{ModalHeader,SelectableChip}.swift`,
+  `Packages/Core/Sources/Localization/Resources/Localizable.xcstrings` (`stationList.*`, `common.all`),
+  `Packages/MapboxKit/Sources/MapEngine/{MapStations,MapView+Stations}.swift`,
+  `Packages/Features/Sources/HomeMapFeature/{HomeMapView,HomeMapModel}.swift`,
+  `Packages/Features/Sources/StationDetailFeature/{StationDetailView}.swift`,
+  `Packages/Features/Sources/StationDetailFeature/Components/{StationSummaryRow,StationDetailMetrics,PreviewStationDetails}.swift`,
+  `Packages/Features/Tests/FeaturesTests/{StationFeedTests,StationDetailModelTests}.swift`,
+  `App/Navigation/AppRouter.swift`, `App/RootView.swift`, `App/Composition/AppDependencies.swift`,
+  `OnsarjUITests/OnsarjUITests.swift` (`testLaunchPerformance` silindi), `Docs/Backend/stations.md`,
+  `Docs/Backend/README.md`.
+
+**Kararlar**
+- Sunum (2.9): sistem `.sheet`, orta ve büyük kademe; detayla aynı sayfa. Liste açıkken arkadaki harita dokunmaya
+  kapalı (`presentationBackgroundInteraction(.disabled)`). Sistem davranışı: sayfanın üstündeki haritaya dokunmak
+  pin seçmez, sayfayı kapatır (iOS 18.5 ve 26.3'te doğrulandı).
+- Süzgeç çipleri sistem `Menu`'sü (proje sahibinin onayı): iOS 17–18'de klasik menü, iOS 26'da cam görünümlü;
+  içerik ve onay işaretleri aynı. Ağlar menüsü çoklu seçimde açık kalır.
+- Seçili çip "Ad: değer" yazar ("Sırala: Güç", "Hız: Hızlı ve üstü", "Soket: 4+"); ağlar "Ağlar · 2".
+- Uzaklık: 1 km altı 10 m'ye yuvarlanır, 10 km altı bir ondalık, üstü tam sayı; birim yerel ayarla mile dönmez.
+- `minSpeed` sözleşme değerleri `normal` / `fast` / `ultrafast` (öneri; backend onaylamalı).
+- Konum yoksa merkez, haritanın en son durduğu bölgenin merkezi; harita hiç durmadıysa açılış bölgesinin merkezi.
+
+**Doğrulama**
+DOGRULAMA_43
+
+**Bilinen eksikler ve açık noktalar**
+- Yol tarifi düğmeleri (kart ve detay) ve "Oyları göster" `App/`'te boş.
+- Fotoğraf (`photoUrl`) için önbellek yok (`AsyncImage`); backend fotoğraf verince disk önbelleği ayrı iş.
+- Sayfa büyük kademeye sürüklenirken yakalanan ara üst kenar değeri, nadiren pini bir kez gereksiz kaydırabilir
+  (büyük kademede pinin örtülmesi kabul edildi).
+- Liste açıkken haritaya dokunmak listeyi kapatır (sistem davranışı); istenmiyorsa ayrı karar gerekir.
+
+**Sıradaki adım:** Rota planlama ("Yol tarifi al") ve oylar.
 
 ---
 

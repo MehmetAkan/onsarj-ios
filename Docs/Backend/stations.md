@@ -1,10 +1,11 @@
-# Şarj istasyonları (harita ve detay)
+# Şarj istasyonları (harita, detay ve yakındakiler)
 
 İstemci: `StationRepository` (Domain), `StationDTO` ve `StationMapper`
 (`Packages/Services/Sources/StationService`). Fixture: `FixtureStationRepository` (yalnızca Debug).
 
 Ana haritada istasyon pinleri ve kümeleri için liste (`GET /stations`), pine dokununca açılan detay sayfası
-için detay (`GET /stations/{id}`) kullanılır. İstemci yalnızca görünen bölgenin istasyonlarını ister;
+için detay (`GET /stations/{id}`), şimşek düğmesiyle açılan yakındaki istasyonlar listesi için
+`GET /stations/nearby` kullanılır. İstemci yalnızca görünen bölgenin istasyonlarını ister;
 kümelemeyi kendisi yapar (Mapbox kaynak düzeyinde kümeleme).
 
 ## Uç nokta (öneri)
@@ -133,6 +134,69 @@ göstermemek). Gösterim para birimi ve kullanıcının yerel ayarıyla yapılı
   `50–149 kW` hızlı (2), `≥ 150 kW` çok hızlı (3). İstasyonun sınıfı gruplardaki en yüksek güçtür.
 - **"Şu an açık mı"** istemcide, `timeZone` ve cihaz saatiyle hesaplanır; backend durum alanı göndermez.
 
+## Yakındakiler: `GET /stations/nearby`
+
+İstemci: `StationRepository.nearbyStations(_:)`, `StationQuery` (Domain), `NearbyStationsRequest`,
+`NearbyStationDTO`, `NearbyStationMapper`. Ana haritadaki şimşek düğmesiyle açılan listedir; aynı zamanda
+VoiceOver kullanıcılarının istasyon bulma yoludur (harita pinleri VoiceOver'da okunmaz).
+
+| Parametre | Zorunlu | Değer | Varsayılan / yokluğu |
+|---|---|---|---|
+| `lat`, `lon` | evet | Merkez, derece (WGS 84). Kullanıcının konumu; konum yoksa harita merkezi | — |
+| `radiusKm` | evet | Arama yarıçapı (km), kuş uçuşu | İstemci `25` gönderir |
+| `limit` | evet | En çok sonuç | İstemci `50` gönderir |
+| `sort` | evet | `distance` · `power` · `availability` | İstemci `distance` gönderir |
+| `minSpeed` | hayır | `normal` · `fast` · `ultrafast` (en düşük hız sınıfı) | Yoksa hepsi |
+| `minStalls` | hayır | En az toplam soket sayısı | Yoksa hepsi |
+| `networks` | hayır | Ağ kimlikleri, virgülle (`net_trugo,net_zes`) | Yoksa tüm ağlar |
+| `onlyAvailable` | hayır | `true`: en az bir boş soketi olanlar | Yoksa hepsi |
+| `connectors` | hayır | Konnektör türleri, virgülle (`ccs2,type2`); en az biri olan istasyonlar | Yoksa hepsi |
+
+Örnek: `GET /stations/nearby?lat=36.8849&lon=30.7046&radiusKm=25&limit=50&sort=power&minSpeed=fast&networks=net_trugo,net_zes`
+
+- İstemci varsayılan değerdeki süzgeç için parametre **göndermez**; kümeleri sıralı yazar (aynı sorgu aynı
+  adres). Sayılar nokta ondalık ayıraçlı, binlik ayıraçsız gelir.
+- Filtre değişince istemci ≈300 ms bekler ve önceki isteği iptal eder.
+- **Sıralama:** `distance` yakından uzağa; `power` en yüksek güç yüksekten düşüğe, eşitlikte yakından uzağa;
+  `availability` boş soketi olanlar önce (canlı verisi olmayan boş sayılmaz), her grup kendi içinde yakından
+  uzağa. Tüm ölçütler eşitse kimliğe göre (sonuç kararlı olsun).
+- **Hız sınıfı** detaydaki kuralla aynıdır (`< 50` normal, `50–149` hızlı, `≥ 150 kW` çok hızlı).
+- Yanıttaki sayılar detay yanıtıyla tutarlı olmalıdır: `maxPowerKw` soket gruplarının en yüksek gücü,
+  `totalCount` ve `availableCount` grupların toplamıdır (bir grubun bile canlı verisi yoksa `null`).
+
+```json
+{
+  "stations": [
+    {
+      "id": "st_001",
+      "name": "Trugo Muratpaşa Lara Yolu",
+      "availability": "available",
+      "network": { "id": "net_trugo", "name": "Trugo", "logoUrl": "https://cdn.onsarj.com/networks/trugo.png" },
+      "coordinate": { "latitude": 36.8712, "longitude": 30.7452 },
+      "maxPowerKw": 160,
+      "availableCount": 4,
+      "totalCount": 4,
+      "amenities": ["food", "restroom"],
+      "photoUrl": "https://cdn.onsarj.com/stations/st_001/cover.jpg",
+      "distanceKm": 1.204
+    }
+  ]
+}
+```
+
+| Alan | Tip | Zorunlu | Açıklama |
+|---|---|---|---|
+| özet alanları | | evet | `GET /stations` ile aynı (`id`, `name`, `availability`, `network`, `coordinate`) |
+| `maxPowerKw` | sayı | evet | En yüksek güç (kW), `> 0` |
+| `totalCount` | tam sayı | evet | Toplam soket, `≥ 0` |
+| `availableCount` | tam sayı / `null` | evet | Boş soket, `0…totalCount`; canlı veri yoksa `null` |
+| `amenities` | dizge dizisi | hayır | Detaydaki olanak değerleri; tanınmayan atlanır |
+| `photoUrl` | dizge / `null` | hayır | İstasyon fotoğrafı, yalnızca `https`; yoksa `null` (kartta fotoğraf alanı çıkmaz) |
+| `distanceKm` | sayı | evet | Merkeze kuş uçuşu uzaklık (km), metre hassasiyeti yeterli |
+
+Bir kayıt eşlenemezse (eksik zorunlu alan, aralık dışı sayı) tüm yanıt geçersiz sayılır ve liste hata
+durumunu gösterir.
+
 ## Müsaitlik değerleri
 
 | Değer | Anlamı | Pindeki renk |
@@ -157,6 +221,10 @@ Detay: elle yazılmış beş istasyonun (`st_001`–`st_004`, `st_012`) zengin d
 gece yarısını geçen saatler, kısıtlı erişim, birden çok soket türü ve tarife, olanaklı/olanaksız, puanlı/
 puansız, son şarjlı/son şarjsız). Diğer tüm istasyonların (`dense` dahil) detayı istasyon kimliğinden türetilen
 sabit tohumla üretilir. Fixture tarihleri her açılışta şimdiye kaydırılır.
+
+Yakındakiler: fixture backend gibi çalışır; yarıçap içindeki istasyonların detayını alır, süzgeçleri uygular,
+sıralar ve sınırlar (kurallar Domain'deki `StationQuery`'de). Liste öğesinin güç, soket sayıları ve olanakları
+aynı detaydan gelir; detay sayfasıyla tutarlıdır. `photoUrl` fixture'da her zaman `null`dır.
 
 Ad ve koordinatlar örnektir, gerçeklik iddiası yoktur. Fixture'da `logoUrl` bir görsel adıdır
 (`operator-togg`, `operator-zes`, `operator-esarj`, `operator-shell`); Debug kompozisyonu bunu yerel

@@ -30,6 +30,8 @@ public struct HomeMapView: View {
     /// kapanan kısmıdır.
     @State private var mapBottom: CGFloat = 0
     @State private var bottomButtonsTop: CGFloat = 0
+    /// Üstte açık istasyon sayfasının yerleşmiş üst kenarı (global); ölçüm durulunca güncellenir.
+    @State private var settledStationSheetTop: CGFloat?
 
     private let onMenu: () -> Void
     private let onSearchTapped: () -> Void
@@ -37,13 +39,14 @@ public struct HomeMapView: View {
     private let onCategory: (PlaceCategory) -> Void
     private let onOptions: () -> Void
     private let onSavedPlans: () -> Void
-    private let onNearbyChargers: () -> Void
+    private let onNearbyChargers: (NearbyStationsOrigin) -> Void
     private let onSavedPlaces: () -> Void
     private let onSwitchVehicle: () -> Void
     private let onVehicleSettings: (Vehicle.ID) -> Void
     private let vehicleRevision: Int
     private let onAddVehicle: () -> Void
     @Binding private var selectedStation: Station?
+    private let stationSheetTop: CGFloat?
 
     /// - Parameters:
     ///   - locationSource: Uygulama boyunca paylaşılan konum kaynağı.
@@ -56,13 +59,17 @@ public struct HomeMapView: View {
     ///   - onCategory: Kategori şeridindeki bir çipe dokunulduğunda, o kategoriyle çağrılır.
     ///   - onOptions: Alt sayfadaki "Seçenekler" butonuna dokunulduğunda çağrılır.
     ///   - onSavedPlans: Alt sayfadaki "Kayıtlı planlar" butonuna dokunulduğunda çağrılır.
-    ///   - onNearbyChargers: Şimşek butonuna dokunulduğunda çağrılır.
+    ///   - onNearbyChargers: Şimşek butonuna dokunulduğunda, kullanıcının konumu ve harita merkeziyle çağrılır.
     ///   - onSavedPlaces: Yer imi butonuna dokunulduğunda çağrılır.
     ///   - onSwitchVehicle: Araç kartında araç adına dokunulduğunda çağrılır.
     ///   - onVehicleSettings: Araç kartında ayarlar simgesine dokunulduğunda, kartın aracıyla çağrılır.
     ///   - onAddVehicle: Araç yokken kartta "Araç ekle"ye dokunulduğunda çağrılır.
     ///   - selectedStation: Haritada seçili istasyon. Pine dokununca yazılır, boş haritaya dokununca `nil` olur;
-    ///     dışarıdan `nil` yapılınca pin seçimi kalkar.
+    ///     dışarıdan `nil` yapılınca pin seçimi kalkar. Dışarıdan verilen istasyon haritada yüklü olmasa da
+    ///     harita ona gider.
+    ///   - stationSheetTop: Haritanın üstünde açık istasyon sayfasının (detay, liste) orta kademedeki üst kenarı,
+    ///     global koordinatta. Verilirse seçili pin bu kenarın üstünde kalan alanın ortasına getirilir; `nil` ise
+    ///     ana sayfanın alt sayfasına göre.
     ///   - vehicleRevision: Araç verisinin sürümü. Değiştiğinde (ör. araç ayarları kapandığında) kart
     ///     aracı yeniden yükler; araç silindiyse "Araç ekle" haline geçer.
     public init(
@@ -76,12 +83,13 @@ public struct HomeMapView: View {
         onCategory: @escaping (PlaceCategory) -> Void,
         onOptions: @escaping () -> Void,
         onSavedPlans: @escaping () -> Void,
-        onNearbyChargers: @escaping () -> Void,
+        onNearbyChargers: @escaping (NearbyStationsOrigin) -> Void,
         onSavedPlaces: @escaping () -> Void,
         onSwitchVehicle: @escaping () -> Void,
         onVehicleSettings: @escaping (Vehicle.ID) -> Void,
         onAddVehicle: @escaping () -> Void,
         selectedStation: Binding<Station?>,
+        stationSheetTop: CGFloat?,
         vehicleRevision: Int
     ) {
         self.init(
@@ -99,6 +107,7 @@ public struct HomeMapView: View {
             onVehicleSettings: onVehicleSettings,
             onAddVehicle: onAddVehicle,
             selectedStation: selectedStation,
+            stationSheetTop: stationSheetTop,
             vehicleRevision: vehicleRevision
         )
     }
@@ -112,12 +121,13 @@ public struct HomeMapView: View {
         onCategory: @escaping (PlaceCategory) -> Void = { _ in },
         onOptions: @escaping () -> Void = {},
         onSavedPlans: @escaping () -> Void = {},
-        onNearbyChargers: @escaping () -> Void = {},
+        onNearbyChargers: @escaping (NearbyStationsOrigin) -> Void = { _ in },
         onSavedPlaces: @escaping () -> Void = {},
         onSwitchVehicle: @escaping () -> Void = {},
         onVehicleSettings: @escaping (Vehicle.ID) -> Void = { _ in },
         onAddVehicle: @escaping () -> Void = {},
         selectedStation: Binding<Station?> = .constant(nil),
+        stationSheetTop: CGFloat? = nil,
         vehicleRevision: Int = 0
     ) {
         _model = State(initialValue: model)
@@ -134,6 +144,7 @@ public struct HomeMapView: View {
         self.onVehicleSettings = onVehicleSettings
         self.onAddVehicle = onAddVehicle
         _selectedStation = selectedStation
+        self.stationSheetTop = stationSheetTop
         self.vehicleRevision = vehicleRevision
     }
 
@@ -166,6 +177,7 @@ public struct HomeMapView: View {
         .task { await model.observeAuthorization() }
         .task { await model.observeLocation() }
         .task { await vehicleCard.load() }
+        .task(id: stationSheetTop) { await settleStationSheetTop() }
         .onChange(of: vehicleRevision) {
             Task { await vehicleCard.refresh() }
         }
@@ -189,16 +201,44 @@ public struct HomeMapView: View {
 
     private var mapStations: MapStations {
         MapStations(
-            stations: model.stationFeed.stations,
+            stations: stationsIncludingSelection,
             selectedID: selectedStation?.id,
-            obscuredBottom: max(0, mapBottom - bottomButtonsTop),
+            selectedCoordinate: selectedStation?.coordinate,
+            obscuredBottom: max(0, mapBottom - (settledStationSheetTop ?? bottomButtonsTop)),
             onStationTapped: { id in
                 selectedStation = model.station(withID: id)
             },
             onMapTapped: { selectedStation = nil },
-            onCameraIdle: model.stationFeed.cameraDidIdle
+            onCameraIdle: model.cameraDidIdle
         )
     }
+
+    /// Haritadaki istasyonlar ve seçili istasyon. Listeden uzaktaki bir istasyon seçilince o bölge henüz
+    /// yüklenmemiş olabilir; seçili pin bölge yüklenmeyi beklemeden görünür.
+    private var stationsIncludingSelection: [Station] {
+        let stations = model.stationFeed.stations
+        guard let selectedStation, !stations.contains(where: { $0.id == selectedStation.id }) else { return stations }
+        return stations + [selectedStation]
+    }
+
+    /// İstasyon sayfasının üst kenarı, sayfa açılırken ve sürüklenirken sürekli değişir. Değer
+    /// `stationSheetSettleDelay` boyunca değişmeden kalınca kullanılır; böylece pin her ara değerde yeniden
+    /// ortalanmaz, yalnızca sayfa yerleşince bir kez ortalanır. Sayfa kapanınca (`nil`) hemen bırakılır.
+    private func settleStationSheetTop() async {
+        guard let stationSheetTop else {
+            settledStationSheetTop = nil
+            return
+        }
+        do {
+            try await Task.sleep(for: Self.stationSheetSettleDelay)
+        } catch {
+            return
+        }
+        settledStationSheetTop = stationSheetTop
+    }
+
+    /// İstasyon sayfasının üst kenarının yerleşmiş sayılması için değişmeden kalması gereken süre.
+    private static let stationSheetSettleDelay: Duration = .milliseconds(300)
 
     // MARK: - Yüzen butonlar
 
@@ -230,7 +270,7 @@ public struct HomeMapView: View {
                 icon: .charger,
                 accessibilityLabel: "home.accessibility.nearbyChargers",
                 bundle: .onsarj,
-                action: onNearbyChargers
+                action: { onNearbyChargers(model.nearbyOrigin) }
             )
             RecenterButton(isFollowingUser: model.camera.isFollowingUser, action: model.recenter)
             Spacer()
@@ -315,6 +355,7 @@ private struct PreviewStationRepository: StationRepository {
     func stationDetail(_ id: Station.ID) async throws -> StationDetail {
         throw StationRepositoryError.stationNotFound
     }
+    func nearbyStations(_ query: StationQuery) async throws -> [StationListItem] { [] }
 }
 
 /// Önizleme için konum kaynağı: izin sorulmamış, konum yok.

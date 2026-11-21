@@ -1,5 +1,7 @@
+import CoreGraphics
 import Observation
 import OnsarjDomain
+import StationDetailFeature
 
 /// Özellikler arası tek geçiş noktası (CLAUDE.md 5.3 kural 1).
 ///
@@ -34,9 +36,45 @@ final class AppRouter {
     /// "Araçlarınız" / "Araç ekle" modalı; `nil` ise kapalı.
     var garage: GaragePresentation?
 
-    /// Haritada seçili istasyon; seçiliyken istasyon detay sayfası açıktır. Sayfa kapanınca `nil` olur ve
-    /// haritadaki pin seçimi kalkar.
-    var selectedStation: Station?
+    /// Haritada seçili istasyon (pin büyür, harita ortalar). Pine dokununca detay sayfası açılır; listeden bir
+    /// istasyon açılınca liste açık kalır. İstasyon sayfası kapanınca `nil` olur.
+    private(set) var selectedStation: Station?
+
+    /// Haritanın üstündeki istasyon sayfası; `nil` ise kapalı. Detay ve liste aynı anda açık olamaz.
+    private(set) var stationSheet: StationSheet?
+
+    /// Yakındaki istasyonlar listesinin süzgeçleri; oturum boyunca bellekte kalır, kalıcı saklanmaz.
+    var stationListFilters = StationListFilters()
+
+    /// İstasyon sayfasının orta kademedeki üst kenarı (global); harita seçili pini bunun üstünde kalan alanın
+    /// ortasına getirir. Sayfa kapanınca `nil`.
+    var stationSheetTop: CGFloat?
+
+    /// Haritadaki seçim değişti (pine veya boş haritaya dokunuldu). Liste açık değilse pin detay sayfasını açar,
+    /// boş harita kapatır. Liste açıkken harita dokunmaya kapalıdır.
+    func mapSelectionChanged(_ station: Station?) {
+        if case .list = stationSheet { return }
+        selectedStation = station
+        stationSheet = station == nil ? nil : .detail
+    }
+
+    /// Listeden itilen detay değişti (karta dokunuldu veya geri dönüldü); harita o istasyonu seçer.
+    func listSelectionChanged(_ station: Station?) {
+        selectedStation = station
+    }
+
+    /// Şimşek düğmesi: yakındaki istasyonlar listesi. Haritadaki seçim kalkar.
+    func openNearbyStations(from origin: StationListOrigin) {
+        selectedStation = nil
+        stationSheet = .list(origin)
+    }
+
+    /// İstasyon sayfası kapandı (X, aşağı çekme, boş harita); seçim kalkar.
+    func closeStationSheet() {
+        stationSheet = nil
+        selectedStation = nil
+        stationSheetTop = nil
+    }
 
     /// Araç verisinin sürümü. Araç ayarları veya garaj modalı kapanınca artar; ana sayfadaki kart aracı
     /// yeniden yükler.
@@ -87,6 +125,14 @@ struct VehicleSettingsPresentation: Identifiable, Equatable {
     let vehicleID: Vehicle.ID
 
     var id: String { vehicleID.rawValue }
+}
+
+/// Haritanın üstündeki istasyon sayfası.
+enum StationSheet: Equatable {
+    /// Pinden açılan detay; istasyon `selectedStation`.
+    case detail
+    /// Şimşekten açılan yakındaki istasyonlar listesi; detaylar listenin içinde itilir.
+    case list(StationListOrigin)
 }
 
 /// "Araçlarınız" / "Araç ekle" modalının sunumu: hangi sayfayla açıldığı.

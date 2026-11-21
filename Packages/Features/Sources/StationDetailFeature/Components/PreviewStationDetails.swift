@@ -88,8 +88,20 @@ enum PreviewStationDetails {
 /// Önizleme deposu: yükleniyor halinde hiç dönmez, hata halinde hata fırlatır.
 struct PreviewStationRepository: StationRepository {
     let content: PreviewStationDetails.Content
+    var list: PreviewStationList.Content = .full
 
     func stations(in box: GeoBoundingBox) async throws -> [Station] { [] }
+
+    func nearbyStations(_ query: StationQuery) async throws -> [StationListItem] {
+        switch list {
+        case .full: await PreviewStationList.items
+        case .empty: []
+        case .failure: throw StationRepositoryError.stationNotFound
+        case .loading:
+            try await Task.sleep(for: .seconds(3_600))
+            throw CancellationError()
+        }
+    }
 
     func stationDetail(_ id: Station.ID) async throws -> StationDetail {
         switch content {

@@ -32,7 +32,20 @@ public struct SelectableChip: View {
                 }
                 title
             }
-            .font(Typography.secondary)
+            .selectableChipSurface(isSelected: isSelected)
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+extension View {
+    /// `SelectableChip`'in görünümü: yazı, renk, iç boşluk, zemin ve en az `Spacing.minTapTarget` dokunma alanı.
+    ///
+    /// Düğme olmayan bir öğeyi (ör. açılır menünün etiketi) çip gibi göstermek için kullanılır; dokunma
+    /// davranışını ve VoiceOver özelliklerini öğeyi kullanan taraf verir.
+    public func selectableChipSurface(isSelected: Bool) -> some View {
+        font(Typography.secondary)
             .foregroundStyle(isSelected ? Theme.onActionPrimary : Theme.textPrimary)
             .padding(.vertical, Spacing.sm)
             .padding(.horizontal, Spacing.md)
@@ -42,9 +55,6 @@ public struct SelectableChip: View {
             )
             .frame(minHeight: Spacing.minTapTarget)
             .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 

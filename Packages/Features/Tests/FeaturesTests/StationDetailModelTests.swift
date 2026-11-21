@@ -101,4 +101,5 @@ actor ScriptedStationRepository: StationRepository {
         case .failure: throw StationRepositoryError.stationNotFound
         }
     }
+    func nearbyStations(_ query: StationQuery) async throws -> [StationListItem] { [] }
 }

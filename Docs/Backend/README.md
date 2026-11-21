@@ -13,7 +13,7 @@ göre güncellenir.
 | [vehicle-catalog.md](vehicle-catalog.md) | Araç kataloğu: marka → model → varyant | Debug'da fixture, Release'de boş |
 | [route-preferences.md](route-preferences.md) | Rota planlama tercihleri | Şimdilik cihazda (`UserDefaults`) |
 | [charging-networks.md](charging-networks.md) | Şarj ağı kataloğu: arama ve kimlikle getirme | Debug'da fixture, Release'de boş |
-| [stations.md](stations.md) | Şarj istasyonları: bölgeye göre liste, müsaitlik, istasyon detayı (saatler, soketler, tarifeler, olanaklar) | Debug'da fixture, Release'de boş |
+| [stations.md](stations.md) | Şarj istasyonları: bölgeye göre liste, müsaitlik, istasyon detayı (saatler, soketler, tarifeler, olanaklar), yakındakiler (süzgeç ve sıralama) | Debug'da fixture, Release'de boş |
 
 ## K-26 özeti
 

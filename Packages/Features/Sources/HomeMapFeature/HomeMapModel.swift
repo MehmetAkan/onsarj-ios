@@ -31,6 +31,9 @@ final class HomeMapModel {
     /// Alt sayfanın kademesi. Ekran orta kademede açılır.
     var sheetDetent: SheetDetent = .medium
 
+    /// Haritada en son görünen bölgenin merkezi; harita henüz durmadıysa `nil`.
+    @ObservationIgnored private var visibleCenter: GeoCoordinate?
+
     /// İzin reddedilmişken butona dokunulunca Ayarlar'a yönlendiren uyarı.
     var isLocationDeniedAlertPresented = false
 
@@ -65,6 +68,28 @@ final class HomeMapModel {
         case .denied:
             isLocationDeniedAlertPresented = true
         }
+    }
+
+    /// Kamera durdu; görünen bölge `visible`. Bölgenin merkezi saklanır, istasyonlar istenir.
+    func cameraDidIdle(_ visible: GeoBoundingBox) {
+        visibleCenter = GeoCoordinate(
+            latitude: (visible.southWest.latitude + visible.northEast.latitude) / 2,
+            longitude: (visible.southWest.longitude + visible.northEast.longitude) / 2)
+        stationFeed.cameraDidIdle(visible)
+    }
+
+    /// Yakındaki istasyonların merkezi için konum bilgisi. Harita henüz hiç durmadıysa açılış bölgesinin merkezi;
+    /// açılış bölgesi de yoksa harita dünyanın tamamıyla açılmıştır ve merkezi (0, 0) noktasıdır.
+    var nearbyOrigin: NearbyStationsOrigin {
+        let initialCenter = camera.initialRegion.map {
+            GeoCoordinate(latitude: ($0.south + $0.north) / 2, longitude: ($0.west + $0.east) / 2)
+        }
+        return NearbyStationsOrigin(
+            userLocation: userLocation.map {
+                GeoCoordinate(latitude: $0.coordinate.latitude, longitude: $0.coordinate.longitude)
+            },
+            mapCenter: visibleCenter ?? initialCenter ?? GeoCoordinate(latitude: 0, longitude: 0)
+        )
     }
 
     /// Dokunulan pinin istasyonu; haritada yoksa `nil`.

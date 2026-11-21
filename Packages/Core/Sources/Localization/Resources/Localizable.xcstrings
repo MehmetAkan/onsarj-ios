@@ -127,6 +127,24 @@
         }
       }
     },
+    "common.all" : {
+      "comment" : "Ortak: süzgeçte \"hepsi\" seçeneği.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tümü"
+          }
+        }
+      }
+    },
     "common.back" : {
       "comment" : "Ortak: geri düğmesi (VoiceOver etiketi).",
       "extractionState" : "manual",
@@ -2811,6 +2829,492 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tarifeler"
+          }
+        }
+      }
+    },
+    "stationList.card.accessibility" : {
+      "comment" : "Yakındaki istasyonlar listesi: kartın VoiceOver etiketi: ağ, istasyon, uzaklık, hız ve güç, müsaitlik.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@, %3$@, %4$@, %5$@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@, %3$@, %4$@, %5$@"
+          }
+        }
+      }
+    },
+    "stationList.card.accessibilityNoDistance" : {
+      "comment" : "Yakındaki istasyonlar listesi: uzaklık bilinmiyorken kartın VoiceOver etiketi: ağ, istasyon, hız ve güç, müsaitlik.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@, %3$@, %4$@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@, %3$@, %4$@"
+          }
+        }
+      }
+    },
+    "stationList.card.speedPower.accessibility" : {
+      "comment" : "Yakındaki istasyonlar listesi: VoiceOver: küçük harfli hız sınıfı ve güç (\"çok hızlı 160 kilovat\").",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "stationList.clearFilters" : {
+      "comment" : "Yakındaki istasyonlar listesi: boş durumda süzgeçleri varsayılana döndürür.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear filters"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtreleri temizle"
+          }
+        }
+      }
+    },
+    "stationList.empty" : {
+      "comment" : "Yakındaki istasyonlar listesi: boş durum.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No stations match these filters"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu filtrelerle istasyon bulunamadı"
+          }
+        }
+      }
+    },
+    "stationList.loadFailed" : {
+      "comment" : "Yakındaki istasyonlar listesi: hata durumu.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t load stations"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İstasyonlar yüklenemedi"
+          }
+        }
+      }
+    },
+    "stationList.mapCenterNote" : {
+      "comment" : "Yakındaki istasyonlar listesi: konum yokken listenin üstündeki not.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location is off. Showing stations around the map center."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konumun kapalı. Harita merkezine göre gösteriliyor."
+          }
+        }
+      }
+    },
+    "stationList.matchesVehicle" : {
+      "comment" : "Yakındaki istasyonlar listesi: ek filtre anahtarı: etkin aracın konnektörleri.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compatible with my vehicle"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aracımla uyumlu"
+          }
+        }
+      }
+    },
+    "stationList.moreFilters" : {
+      "comment" : "Yakındaki istasyonlar listesi: soldaki düğme ve açılan sayfanın başlığı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More filters"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ek filtreler"
+          }
+        }
+      }
+    },
+    "stationList.moreFilters.active" : {
+      "comment" : "Yakındaki istasyonlar listesi: ek filtrelerden biri açıkken düğmenin VoiceOver değeri.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filters on"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Açık filtre var"
+          }
+        }
+      }
+    },
+    "stationList.networks" : {
+      "comment" : "Yakındaki istasyonlar listesi: ağ çipi (varsayılan).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Networks"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ağlar"
+          }
+        }
+      }
+    },
+    "stationList.networks.selected" : {
+      "comment" : "Yakındaki istasyonlar listesi: ağ seçiliyken çip; %lld seçili ağ sayısı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Networks · %lld"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ağlar · %lld"
+          }
+        }
+      }
+    },
+    "stationList.noActiveVehicle" : {
+      "comment" : "Yakındaki istasyonlar listesi: \"Aracımla uyumlu\" pasifken açıklama.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No active vehicle"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Etkin araç yok"
+          }
+        }
+      }
+    },
+    "stationList.onlyAvailable" : {
+      "comment" : "Yakındaki istasyonlar listesi: ek filtre anahtarı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available only"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yalnızca müsait olanlar"
+          }
+        }
+      }
+    },
+    "stationList.sort" : {
+      "comment" : "Yakındaki istasyonlar listesi: sıralama çipi (varsayılan).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sırala"
+          }
+        }
+      }
+    },
+    "stationList.sort.availability" : {
+      "comment" : "Yakındaki istasyonlar listesi: sıralama seçeneği.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Availability"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Müsaitlik"
+          }
+        }
+      }
+    },
+    "stationList.sort.distance" : {
+      "comment" : "Yakındaki istasyonlar listesi: sıralama seçeneği.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distance"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesafe"
+          }
+        }
+      }
+    },
+    "stationList.sort.power" : {
+      "comment" : "Yakındaki istasyonlar listesi: sıralama seçeneği.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Power"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güç"
+          }
+        }
+      }
+    },
+    "stationList.sort.selected" : {
+      "comment" : "Yakındaki istasyonlar listesi: varsayılan dışı sıralama seçiliyken çip; %@ seçenek adı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sırala: %@"
+          }
+        }
+      }
+    },
+    "stationList.speed" : {
+      "comment" : "Yakındaki istasyonlar listesi: hız çipi (varsayılan).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speed"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hız"
+          }
+        }
+      }
+    },
+    "stationList.speed.fastAndAbove" : {
+      "comment" : "Yakındaki istasyonlar listesi: hız seçeneği (≥ 50 kW).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fast and above"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hızlı ve üstü"
+          }
+        }
+      }
+    },
+    "stationList.speed.selected" : {
+      "comment" : "Yakındaki istasyonlar listesi: hız seçiliyken çip; %@ seçenek adı.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speed: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hız: %@"
+          }
+        }
+      }
+    },
+    "stationList.speed.ultraFastOnly" : {
+      "comment" : "Yakındaki istasyonlar listesi: hız seçeneği (≥ 150 kW).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ultra-fast only"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yalnızca çok hızlı"
+          }
+        }
+      }
+    },
+    "stationList.stalls" : {
+      "comment" : "Yakındaki istasyonlar listesi: soket sayısı çipi (varsayılan).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stalls"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soket"
+          }
+        }
+      }
+    },
+    "stationList.stalls.minimum" : {
+      "comment" : "Yakındaki istasyonlar listesi: en az soket sayısı seçeneği (\"4+\").",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld+"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld+"
+          }
+        }
+      }
+    },
+    "stationList.stalls.selected" : {
+      "comment" : "Yakındaki istasyonlar listesi: soket sayısı seçiliyken çip; %@ seçenek (\"4+\").",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stalls: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soket: %@"
+          }
+        }
+      }
+    },
+    "stationList.title" : {
+      "comment" : "Yakındaki istasyonlar listesi: başlık.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Charging stations"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şarj istasyonları"
           }
         }
       }

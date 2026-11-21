@@ -114,4 +114,5 @@ actor RecordingStationRepository: StationRepository {
     func stationDetail(_ id: Station.ID) async throws -> StationDetail {
         throw StationRepositoryError.stationNotFound
     }
+    func nearbyStations(_ query: StationQuery) async throws -> [StationListItem] { [] }
 }

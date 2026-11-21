@@ -11,9 +11,10 @@ import UIKit
 /// detay yüklenirken geri kalanı iskelet olarak çizilir, yüklenemezse hata ve "Tekrar dene" gösterilir.
 ///
 /// Sayfa kendi sunumunu yapmaz (CLAUDE.md 5.3 kural 1): kapatma, yol tarifi ve oylar kapanışlarla dışarı
-/// bildirilir.
+/// bildirilir. Yakındaki istasyonlar listesinden itildiğinde solda geri düğmesi, sağda paylaş ve kapat durur.
 public struct StationDetailView: View {
     @State private var model: StationDetailModel
+    private let onBack: (() -> Void)?
     private let onClose: () -> Void
     private let onDirections: (Station.ID) -> Void
     private let onShowReviews: (Station.ID) -> Void
@@ -33,21 +34,26 @@ public struct StationDetailView: View {
     ) {
         self.init(
             model: StationDetailModel(
-                station: station, repository: repository,
-                copyToPasteboard: { UIPasteboard.general.string = $0 }),
+                station: station, repository: repository, copyToPasteboard: Self.copyToPasteboard),
             onClose: onClose,
             onDirections: onDirections,
             onShowReviews: onShowReviews
         )
     }
 
+    /// Sistem panosuna yazar.
+    static let copyToPasteboard: @MainActor (String) -> Void = { UIPasteboard.general.string = $0 }
+
+    /// - Parameter onBack: Verilirse solda geri düğmesi çıkar (listeden itilen detay).
     init(
         model: StationDetailModel,
+        onBack: (() -> Void)? = nil,
         onClose: @escaping () -> Void = {},
         onDirections: @escaping (Station.ID) -> Void = { _ in },
         onShowReviews: @escaping (Station.ID) -> Void = { _ in }
     ) {
         _model = State(initialValue: model)
+        self.onBack = onBack
         self.onClose = onClose
         self.onDirections = onDirections
         self.onShowReviews = onShowReviews
@@ -69,15 +75,25 @@ public struct StationDetailView: View {
     }
 
     private var topButtons: some View {
-        HStack {
-            ShareLink(item: model.shareText) { AppIcon.share.floatingMapButtonSurface() }
-                .buttonStyle(.plain)
-                .accessibilityLabel(StationDetailText.localized("stationDetail.share"))
-            Spacer()
+        HStack(spacing: Spacing.sm) {
+            if let onBack {
+                FloatingMapButton(icon: .back, accessibilityLabel: "common.back", bundle: .onsarj, action: onBack)
+                Spacer()
+                shareButton
+            } else {
+                shareButton
+                Spacer()
+            }
             FloatingMapButton(icon: .close, accessibilityLabel: "common.close", bundle: .onsarj, action: onClose)
         }
         .padding(.horizontal, Spacing.screenMargin)
         .padding(.vertical, Spacing.sm)
+    }
+
+    private var shareButton: some View {
+        ShareLink(item: model.shareText) { AppIcon.share.floatingMapButtonSurface() }
+            .buttonStyle(.plain)
+            .accessibilityLabel(StationDetailText.localized("stationDetail.share"))
     }
 
     private var header: some View {

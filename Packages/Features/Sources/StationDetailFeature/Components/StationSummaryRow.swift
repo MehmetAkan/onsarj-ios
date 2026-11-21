@@ -2,15 +2,38 @@ import DesignSystem
 import OnsarjDomain
 import SwiftUI
 
-/// Başlığın altındaki özet: hız sınıfı şimşekleri ve en yüksek güç, müsaitlik noktası ve boş/toplam soket,
-/// en sağda en çok üç olanak simgesi.
+/// İstasyon özeti: hız sınıfı şimşekleri ve en yüksek güç, müsaitlik noktası ve boş/toplam soket, en sağda en
+/// çok üç olanak simgesi. Detay sayfasında başlığın altında ve yakındaki istasyonlar listesindeki kartlarda
+/// aynen kullanılır.
 struct StationSummaryRow: View {
-    let detail: StationDetail
+    let maxPowerKw: Double?
+    let availableCount: Int?
+    let totalCount: Int
+    let amenities: [Amenity]
     @Environment(\.locale) private var locale
+
+    init(detail: StationDetail) {
+        maxPowerKw = detail.maxPowerKw
+        availableCount = detail.availableCount
+        totalCount = detail.totalCount
+        amenities = detail.amenities
+    }
+
+    init(item: StationListItem) {
+        maxPowerKw = item.maxPowerKw
+        availableCount = item.availableCount
+        totalCount = item.totalCount
+        amenities = item.amenities
+    }
+
+    private var availability: StationAvailability {
+        StationAvailability(available: availableCount, total: totalCount)
+    }
 
     var body: some View {
         HStack(spacing: Spacing.lg) {
-            if let speed = detail.speed, let power = detail.maxPowerKw {
+            if let power = maxPowerKw {
+                let speed = ChargingSpeed(powerKw: power)
                 HStack(spacing: Spacing.xs) {
                     bolts(speed)
                     Text(StationDetailText.power(power, locale: locale))
@@ -21,20 +44,20 @@ struct StationSummaryRow: View {
             }
             HStack(spacing: Spacing.xs) {
                 Circle()
-                    .fill(detail.availability.color)
+                    .fill(availability.color)
                     .frame(
                         width: StationDetailMetrics.availabilityDotDiameter,
                         height: StationDetailMetrics.availabilityDotDiameter)
-                Text(StationDetailText.ratio(available: detail.availableCount, total: detail.totalCount))
+                Text(StationDetailText.ratio(available: availableCount, total: totalCount))
                     .font(Typography.numeric)
                     .foregroundStyle(Theme.textSecondary)
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(
-                StationDetailText.ratioAccessibility(available: detail.availableCount, total: detail.totalCount))
+                StationDetailText.ratioAccessibility(available: availableCount, total: totalCount))
             Spacer(minLength: 0)
             HStack(spacing: Spacing.sm) {
-                ForEach(detail.amenities.prefix(StationDetailMetrics.summaryAmenityLimit), id: \.self) { amenity in
+                ForEach(amenities.prefix(StationDetailMetrics.summaryAmenityLimit), id: \.self) { amenity in
                     amenity.icon
                 }
             }

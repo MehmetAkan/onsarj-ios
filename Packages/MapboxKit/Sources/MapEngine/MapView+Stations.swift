@@ -7,6 +7,11 @@ extension MapView.Coordinator {
     private static let selectionDuration: TimeInterval = 0.4
     /// Kamera kullanıcıyı izlerken görünen bölgenin en sık bildirilme aralığı (sn).
     private static let followingReportInterval: TimeInterval = 1
+    /// Ortalamada hesaba katılan en büyük kapanan oran. Sayfa bundan büyükse (ör. büyük kademe) pin üstte kalan
+    /// şeridin ortasına sıkışmaz, bu oranın üstündeki alanın ortasına gelir.
+    private static let maximumObscuredFraction: CGFloat = 0.7
+    /// Kapanan alt kısımdaki, pini yeniden ortalatan en küçük değişiklik (pt); ölçüm titreşimini yok sayar.
+    private static let insetChangeThreshold: CGFloat = 1
 
     func attachStations(to mapView: MapboxMaps.MapView, displayScale: CGFloat) {
         let layer = StationLayer(mapView: mapView, displayScale: displayScale)
@@ -18,14 +23,18 @@ extension MapView.Coordinator {
             .store(in: &cancelables)
     }
 
-    /// İstasyonları ve seçimi katmana verir; seçim yeni bir istasyona geçtiyse pini ortalar.
+    /// İstasyonları ve seçimi katmana verir. Seçim yeni bir istasyona geçtiyse ya da seçim sürerken haritanın
+    /// kapanan alt kısmı değiştiyse pini ortalar.
     func apply(_ stations: MapStations) {
-        let previousSelection = self.stations.selectedID
+        let previous = self.stations
         self.stations = stations
         stationLayer?.update(stations: stations.stations, selectedID: stations.selectedID)
-        if let id = stations.selectedID, id != previousSelection, let station = stationLayer?.station(withID: id) {
-            center(on: station.coordinate, obscuredBottom: stations.obscuredBottom)
-        }
+        guard let id = stations.selectedID else { return }
+        let insetChanged = abs(stations.obscuredBottom - previous.obscuredBottom) >= Self.insetChangeThreshold
+        guard id != previous.selectedID || insetChanged,
+            let coordinate = stations.selectedCoordinate ?? stationLayer?.station(withID: id)?.coordinate
+        else { return }
+        center(on: coordinate, obscuredBottom: stations.obscuredBottom)
     }
 
     /// Noktayı, haritanın kapanmayan üst kısmının ortasına yakınlaşmayı değiştirmeden getirir.
@@ -33,7 +42,8 @@ extension MapView.Coordinator {
         guard let mapView else { return }
         let map: MapboxMap = mapView.mapboxMap
         let target = CLLocationCoordinate2D(latitude: coordinate.latitude, longitude: coordinate.longitude)
-        let padding = UIEdgeInsets(top: 0, left: 0, bottom: min(obscuredBottom, mapView.bounds.height / 2), right: 0)
+        let bottom = min(obscuredBottom, mapView.bounds.height * Self.maximumObscuredFraction)
+        let padding = UIEdgeInsets(top: 0, left: 0, bottom: bottom, right: 0)
         guard
             let camera = try? map.camera(
                 for: [target], camera: CameraOptions(), coordinatesPadding: padding,

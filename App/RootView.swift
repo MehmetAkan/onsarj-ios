@@ -24,6 +24,8 @@ struct RootView: View {
     private static let opensMapOnLaunch = true
 
     @State private var router = AppRouter(flow: Self.opensMapOnLaunch ? .home : .signUp)
+    /// İstasyon sayfasının kademesi; sayfanın üst kenarı yalnızca orta kademedeyken haritaya bildirilir.
+    @State private var stationSheetDetent: PresentationDetent = .medium
 
     var body: some View {
         Group {
@@ -44,12 +46,17 @@ struct RootView: View {
                     onCategory: { _ in },
                     onOptions: { router.isPlanOptionsPresented = true },
                     onSavedPlans: {},
-                    onNearbyChargers: {},
+                    onNearbyChargers: { origin in
+                        router.openNearbyStations(
+                            from: origin.userLocation.map(StationListOrigin.userLocation)
+                                ?? .mapCenter(origin.mapCenter))
+                    },
                     onSavedPlaces: {},
                     onSwitchVehicle: { router.garage = .vehicles },
                     onVehicleSettings: { router.vehicleSettings = VehicleSettingsPresentation(vehicleID: $0) },
                     onAddVehicle: { router.garage = .addVehicle },
-                    selectedStation: $router.selectedStation,
+                    selectedStation: Binding(get: { router.selectedStation }, set: router.mapSelectionChanged),
+                    stationSheetTop: router.stationSheet == nil ? nil : router.stationSheetTop,
                     vehicleRevision: router.vehicleRevision
                 )
                 .sheet(isPresented: $router.isSearchPresented) {
@@ -64,43 +71,71 @@ struct RootView: View {
                 .sheet(item: $router.garage, onDismiss: router.vehiclesDidChange) { presentation in
                     garageSheet(presentation)
                 }
-                .sheet(isPresented: isStationDetailPresented) {
-                    stationDetailSheet
-                }
+                .sheet(
+                    isPresented: isStationSheetPresented,
+                    onDismiss: { stationSheetDetent = .medium },
+                    content: { stationSheet }
+                )
             }
         }
         .onsarjDynamicTypeRange()
     }
 
-    /// İstasyon detayı, haritada bir pin seçiliyken açık. Sayfa kapanınca (X, aşağı çekme) seçim kalkar.
-    private var isStationDetailPresented: Binding<Bool> {
+    /// İstasyon sayfası (detay veya liste) açık mı. Sayfa kapanınca (X, aşağı çekme) seçim kalkar.
+    private var isStationSheetPresented: Binding<Bool> {
         Binding(
-            get: { router.selectedStation != nil },
+            get: { router.stationSheet != nil },
             set: { isPresented in
-                if !isPresented { router.selectedStation = nil }
+                if !isPresented { router.closeStationSheet() }
             }
         )
     }
 
-    /// İstasyon detay sayfası (2.9: sistem `.sheet`, orta ve büyük kademe). Orta kademede arkadaki harita
-    /// etkileşime açıktır: başka bir pine dokununca seçim değişir ve sayfa kapanmadan o istasyonla yenilenir
-    /// (`.id`); boş haritaya dokununca seçim kalkar ve sayfa kapanır. Yol tarifi (rota planlama) ve oylar
-    /// henüz yazılmadı; o istekler boş.
-    @ViewBuilder
-    private var stationDetailSheet: some View {
-        if let station = router.selectedStation {
-            StationDetailView(
-                station: station,
-                repository: dependencies.stationRepository,
-                onClose: { router.selectedStation = nil },
-                onDirections: { _ in },
-                onShowReviews: { _ in }
-            )
-            .id(station.id)
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
-            .presentationBackgroundInteraction(.enabled(upThrough: .medium))
+    /// İstasyon sayfası (2.9: sistem `.sheet`, orta ve büyük kademe). Pinden açılan detayda orta kademede arkadaki
+    /// harita etkileşime açıktır: başka bir pine dokununca seçim değişir ve sayfa kapanmadan o istasyonla yenilenir
+    /// (`.id`); boş haritaya dokununca sayfa kapanır. Şimşekten açılan liste odaklı bir ekrandır; harita dokunmaya
+    /// kapalıdır. Sayfanın orta kademedeki üst kenarı haritaya bildirilir; seçili pin onun üstünde kalan alanın
+    /// ortasına gelir. Yol tarifi (rota planlama) ve oylar henüz yazılmadı; o istekler boş.
+    private var stationSheet: some View {
+        Group {
+            switch router.stationSheet {
+            case .detail:
+                if let station = router.selectedStation {
+                    StationDetailView(
+                        station: station,
+                        repository: dependencies.stationRepository,
+                        onClose: router.closeStationSheet,
+                        onDirections: { _ in },
+                        onShowReviews: { _ in }
+                    )
+                    .id(station.id)
+                }
+            case .list(let origin):
+                StationListView(
+                    origin: origin,
+                    filters: router.stationListFilters,
+                    stationRepository: dependencies.stationRepository,
+                    vehicleRepository: dependencies.vehicleRepository,
+                    networkCatalog: dependencies.chargingNetworkCatalog,
+                    onFiltersChange: { router.stationListFilters = $0 },
+                    onSelectionChange: router.listSelectionChanged,
+                    onClose: router.closeStationSheet,
+                    onDirections: { _ in },
+                    onShowReviews: { _ in }
+                )
+            case nil:
+                EmptyView()
+            }
         }
+        .onGeometryChange(for: CGFloat.self) {
+            $0.frame(in: .global).minY
+        } action: { top in
+            if stationSheetDetent == .medium { router.stationSheetTop = top }
+        }
+        .presentationDetents([.medium, .large], selection: $stationSheetDetent)
+        .presentationDragIndicator(.visible)
+        .presentationBackgroundInteraction(router.stationSheet == .detail ? .enabled(upThrough: .medium) : .disabled)
+        .onsarjDynamicTypeRange()
     }
 
     /// Arama sayfası. Sonuç listesi ve kayıtlı yer ekranları henüz yazılmadı; o istekler boş.
